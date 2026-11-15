@@ -32,9 +32,13 @@ slash-command skills. This fork runs on **Devin**, not Claude Code:
 
 ## Technology Stack
 
-- **Engine**: [CHOOSE: Web / Godot 4 / Unity / Unreal Engine 5] — set by `/setup-engine`
-- **Language**: [CHOOSE per engine]
+- **Engine**: Godot 4.7 (`4.7.2.stable.official.ed1daf0bf`)
+- **Language**: GDScript
 - **Version Control**: Git, trunk-based
+- **Build System**: SCons (engine), Godot Export Templates
+- **Asset Pipeline**: Godot Import System + custom resource pipeline (`tools/assets/`: Qwen image → Hunyuan3D 3.0 LowPoly → Blender 5.2 `flatten_glb.py` → GLB)
+
+Engine version reference: `docs/engine-reference/godot/VERSION.md`
 
 `project.yaml` is the single source of truth for engine, rigor (`modes.rigor`),
 automation, naming and performance budgets. Resolve config keys with

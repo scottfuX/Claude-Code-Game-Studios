@@ -52,3 +52,12 @@ with the "Use Instead" column.
 | GodotPhysics3D for new projects | Jolt Physics 3D | Default since 4.6; better stability |
 | `event.device == 0` to detect mouse or keyboard | `event is InputEventMouse` / `InputEventKey`, or `InputEvent.DEVICE_ID_MOUSE` / `DEVICE_ID_KEYBOARD` | Since 4.7 mouse and keyboard no longer report device `0`, which some joypads use |
 | Installing addons from the editor's AssetLib tab | The editor's Asset Store workspace (4.7+) | 4.7 replaced the Asset Library with the Asset Store |
+
+## Verified on this project (2026-11-16, Godot 4.7.2)
+
+Empirically hit in `prototypes/lookdev/godot/` — training-data traps, not
+deprecations. Source: observed errors on the pinned binary, not a fetched page.
+
+| Assumed API | Reality on 4.7 | Fix |
+|-------------|----------------|-----|
+| `ConeMesh` primitive | Does not exist in Godot 4.7 (`Could not find type "ConeMesh"`) | `CylinderMesh` with `top_radius = 0` |

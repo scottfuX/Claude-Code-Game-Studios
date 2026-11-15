@@ -239,3 +239,22 @@ Sources:
 - **SDL3 gamepad driver**: Better cross-platform gamepad support
 - **Android**: Edge-to-edge display, camera feed access, 16KB page support (Android 15+)
 - **Linux**: Wayland subwindow support for multi-window capability
+
+## Verified on this project (2026-11-16)
+
+Empirically confirmed on the pinned binary in `prototypes/lookdev/godot/` —
+project-verified, not web-sourced:
+
+- **Headless/screenshot capture**: read back the viewport only after
+  `await RenderingServer.frame_post_draw`; without it captures come out blank.
+- **Untyped scene-tree queries**: `var cone = node as CylinderMesh`-style
+  inference can fail with "Cannot infer the type" — annotate the variable type
+  explicitly.
+- **`--headless --path <proj> --import`** exits 0 even when resources fail;
+  scan output for `ERROR`/`SCRIPT ERROR` rather than trusting the exit code.
+
+### Toolchain — Blender 5.2 (asset pipeline, `tools/assets/flatten_glb.py`)
+
+- `export_vertex_color` replaces `export_colors` on the glTF exporter.
+- `Mesh.calc_normals()` no longer exists — `polygon.normal` is already valid
+  without it.
