@@ -54,4 +54,9 @@ $G --path prototypes/lookdev/godot --windowed --resolution 1280x720 -- --capture
 Flags: `--mode face|texture` (default face), `--lightness-weight` (default
 0.5; lower ignores baked shading), `--smooth` (face-label smoothing passes
 over edge adjacency, >=60% area majority required; default 2, 0 disables),
-`--despeckle` / `--tex-size` (texture mode only), `--asset-config`/`--asset`.
+`--despeckle` / `--tex-size` (texture mode only), `--asset-config`/`--asset`,
+`--max-tris N` (Decimate COLLAPSE before colouring when tris > N).
+Asset-config entries may also carry `max_tris` and `rules` — a list of
+`{"color": <palette name>, "where": {height_min, height_max, radial_min,
+radial_max, normal_y_min}}` applied after quantization+smoothing (rules win);
+heights are 0–1 of final bbox, radial is 0–1 of max horizontal extent.

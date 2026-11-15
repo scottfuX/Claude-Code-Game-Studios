@@ -129,12 +129,13 @@ func _flame_cone(radius: float, height: float, col: Color) -> MeshInstance3D:
 
 func _apply_dusk() -> void:
 	var env := _world_env.environment
-	env.ambient_light_color = Color(0.10, 0.15, 0.30)
-	env.ambient_light_energy = 0.8
-	env.background_color = Color(0.08, 0.11, 0.24)
-	env.fog_light_color = Color(0.10, 0.13, 0.27)
-	_sun.light_color = Color(1.0, 0.42, 0.30)
-	_sun.light_energy = 0.55
+	env.ambient_light_color = Color(0.02, 0.10, 0.26)
+	env.ambient_light_energy = 1.6
+	env.background_color = Color(0.02, 0.05, 0.16)
+	env.fog_light_color = Color(0.03, 0.06, 0.18)
+	env.fog_light_energy = 0.7
+	_sun.light_color = Color(1.0, 0.386, 0.128)   # #FFA764
+	_sun.light_energy = 0.08
 	_sun.rotation = Vector3(-0.11, -0.61087, 0.0)
 	_fire_light.light_energy = 4.5
 	_fire_light.light_color = Color(1.0, 0.38, 0.12)

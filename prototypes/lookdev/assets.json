@@ -44,6 +44,10 @@
       ],
       "lightness_weight": 0.5,
       "smooth": 2,
+      "max_tris": 1500,
+      "rules": [
+        {"color": "stone_gray", "where": {"height_max": 0.3, "radial_min": 0.7}}
+      ],
       "prompt": "A small unlit campfire: a ring of chunky gray stones around a teepee stack of short brown wooden logs, no flames, no smoke, no ash, 3D game asset, stylized low-poly, flat shading, faceted geometric shapes, minimalist, solid flat colors with no gradients and no surface texture detail, isolated on a plain light gray background, centered, the whole object visible, three-quarter view from slightly above, soft even lighting, no ground plane, no cast shadow, no text"
     },
     {
@@ -55,6 +59,9 @@
       ],
       "lightness_weight": 0.5,
       "smooth": 2,
+      "rules": [
+        {"color": "snow_light", "where": {"normal_y_min": 0.55, "height_min": 0.45}}
+      ],
       "prompt": "A single chunky gray boulder with a thick white snow cap on top, 3D game asset, stylized low-poly, flat shading, faceted geometric shapes, minimalist, solid flat colors with no gradients and no surface texture detail, isolated on a plain light gray background, centered, the whole object visible, three-quarter view from slightly above, soft even lighting, no ground plane, no cast shadow, no text"
     },
     {
@@ -68,6 +75,9 @@
       ],
       "lightness_weight": 1.0,
       "smooth": 2,
+      "rules": [
+        {"color": "warm_orange", "where": {"height_min": 0.72, "height_max": 0.82, "radial_max": 0.5}}
+      ],
       "prompt": "A full-body stylized wilderness survivor character standing upright in a neutral A-pose with arms held slightly away from the body and legs slightly apart, wearing a dark slate-blue hooded winter parka with the hood up, a bright orange scarf, dark navy trousers, brown boots and a brown backpack, a simple minimal face with no detailed features, chunky proportions, 3D game asset, stylized low-poly, flat shading, faceted geometric shapes, minimalist, solid flat colors with no gradients and no surface texture detail, isolated on a plain light gray background, centered, the whole object visible, straight front view at eye level, soft even lighting, no ground plane, no cast shadow, no text"
     }
   ]

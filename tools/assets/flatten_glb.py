@@ -29,6 +29,7 @@
 #    (export_colors is gone); export_image_format NONE|AUTO.
 import argparse
 import json
+import math
 import os
 import struct
 import sys
@@ -92,6 +93,8 @@ def parse_args():
                     help="Face-label smoothing passes over edge adjacency (default 2; 0 disables).")
     ap.add_argument("--despeckle", type=int, default=1, help="3x3 majority-filter passes (texture mode).")
     ap.add_argument("--tex-size", type=int, default=512, help="Max texture side after downsampling.")
+    ap.add_argument("--max-tris", type=int, default=None,
+                    help="Decimate (COLLAPSE) before colouring when tris exceed N.")
     return ap.parse_args(argv)
 
 
@@ -112,12 +115,17 @@ def apply_asset_config(args):
             args.lightness_weight = ent.get("lightness_weight")
         if args.smooth is None:
             args.smooth = ent.get("smooth")
+        if args.max_tris is None:
+            args.max_tris = ent.get("max_tris")
+        args.rules = ent.get("rules", [])
     if args.height is None:
         sys.exit("flatten_glb: --height required (or provided by --asset-config)")
     if args.lightness_weight is None:
         args.lightness_weight = 0.5
     if args.smooth is None:
         args.smooth = 2
+    if not hasattr(args, "rules"):
+        args.rules = []
 
 
 def import_and_join(inp):
@@ -333,6 +341,14 @@ def main():
 
     obj = import_and_join(args.inp)
     me = obj.data
+    if args.max_tris and len(me.polygons) > args.max_tris:
+        before = len(me.polygons)
+        mod = obj.modifiers.new("decimate", "DECIMATE")
+        mod.decimate_type = "COLLAPSE"
+        mod.ratio = args.max_tris / before
+        bpy.context.view_layer.objects.active = obj
+        bpy.ops.object.modifier_apply(modifier=mod.name)
+        print(f"decimate: {before} -> {len(me.polygons)} tris (target {args.max_tris})")
     img = find_texture_image()
     w0, h0 = img.size
     uvl = me.uv_layers.active if me.uv_layers else None
@@ -377,14 +393,48 @@ def main():
             hfs.append((poly.center.z - zmin0) / zspan)
         smooth_changes = smooth_face_labels(me, labels, args.smooth)
         pal_by_name = {p[0]: p for p in palette}
+        rule_changes = []
+        if args.rules:
+            for rn in palette_all:
+                if rn not in pal_by_name:
+                    h = palette_all[rn].lstrip("#")
+                    srgb = tuple(int(h[i:i + 2], 16) / 255.0 for i in (0, 2, 4))
+                    lin = tuple(srgb_to_linear(c) for c in srgb)
+                    pal_by_name[rn] = (rn, lin, linear_to_oklab(*lin), None)
+            xs0 = [v.co.x for v in me.vertices]
+            ys0 = [v.co.y for v in me.vertices]
+            ax = (min(xs0) + max(xs0)) / 2.0
+            ay = (min(ys0) + max(ys0)) / 2.0
+            rmax = max(math.hypot(v.co.x - ax, v.co.y - ay) for v in me.vertices) or 1.0
+            for rule in args.rules:
+                rname = rule.get("color")
+                where = rule.get("where", {})
+                if rname not in pal_by_name:
+                    sys.exit(f"flatten_glb: rule color '{rname}' not in palette")
+                changed = 0
+                for i, poly in enumerate(me.polygons):
+                    c = poly.center
+                    rad = math.hypot(c.x - ax, c.y - ay) / rmax
+                    hf_i, ny = hfs[i], poly.normal.z
+                    if ("height_min" in where and hf_i < where["height_min"]) or \
+                       ("height_max" in where and hf_i > where["height_max"]) or \
+                       ("radial_min" in where and rad < where["radial_min"]) or \
+                       ("radial_max" in where and rad > where["radial_max"]) or \
+                       ("normal_y_min" in where and ny < where["normal_y_min"]):
+                        continue
+                    if labels[i] != rname:
+                        labels[i] = rname
+                        changed += 1
+                rule_changes.append((rname, where, changed))
         counts = {n: 0 for n, _, _, _ in palette}
         hrange = {n: [1.0, 0.0] for n, _, _, _ in palette}
         for i, poly in enumerate(me.polygons):
             name, hf, avg = labels[i], hfs[i], avgs[i]
             col = pal_by_name[name][1]
-            counts[name] += 1
-            hrange[name][0] = min(hrange[name][0], hf)
-            hrange[name][1] = max(hrange[name][1], hf)
+            counts[name] = counts.get(name, 0) + 1
+            lo_hi = hrange.setdefault(name, [1.0, 0.0])
+            lo_hi[0] = min(lo_hi[0], hf)
+            lo_hi[1] = max(lo_hi[1], hf)
             assigned.append((name, hf, avg))
             for li in poly.loop_indices:
                 ca.data[li].color = (col[0], col[1], col[2], 1.0)
@@ -441,6 +491,8 @@ def main():
     if args.mode == "face":
         print(f"lightness_weight={args.lightness_weight}, smooth={args.smooth} "
               f"(changed per pass: {', '.join(str(c) for c in smooth_changes)})")
+        for rname, where, ch in rule_changes:
+            print(f"  rule -> {rname} {where}: {ch} faces changed")
         for nme, cnt in counts.items():
             if cnt:
                 lo, hi = hrange[nme]
