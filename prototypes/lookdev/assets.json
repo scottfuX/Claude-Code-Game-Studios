@@ -42,6 +42,8 @@
         "stone_gray",
         "wood_brown"
       ],
+      "lightness_weight": 0.5,
+      "smooth": 2,
       "prompt": "A small unlit campfire: a ring of chunky gray stones around a teepee stack of short brown wooden logs, no flames, no smoke, no ash, 3D game asset, stylized low-poly, flat shading, faceted geometric shapes, minimalist, solid flat colors with no gradients and no surface texture detail, isolated on a plain light gray background, centered, the whole object visible, three-quarter view from slightly above, soft even lighting, no ground plane, no cast shadow, no text"
     },
     {
@@ -51,6 +53,8 @@
         "stone_gray",
         "snow_light"
       ],
+      "lightness_weight": 0.5,
+      "smooth": 2,
       "prompt": "A single chunky gray boulder with a thick white snow cap on top, 3D game asset, stylized low-poly, flat shading, faceted geometric shapes, minimalist, solid flat colors with no gradients and no surface texture detail, isolated on a plain light gray background, centered, the whole object visible, three-quarter view from slightly above, soft even lighting, no ground plane, no cast shadow, no text"
     },
     {

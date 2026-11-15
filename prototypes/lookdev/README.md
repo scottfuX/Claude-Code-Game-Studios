@@ -10,7 +10,7 @@ Texture mode (`--mode texture`) is kept for comparison; its outputs are
 #    come from prototypes/lookdev/assets.json via --asset-config/--asset;
 #    explicit CLI flags win over the config entry)
 B=/Applications/Blender.app/Contents/MacOS/Blender
-for a in pine bare_tree shelter; do
+for a in pine bare_tree shelter campfire rock; do
   $B --background --python tools/assets/flatten_glb.py -- \
     --in prototypes/lookdev/out/${a}_raw.glb --out prototypes/lookdev/out/${a}_flat.glb \
     --palette tools/assets/palette.json \
@@ -29,6 +29,13 @@ $B --background --python tools/assets/flatten_glb.py -- \
   --palette tools/assets/palette.json --colors snow_light,pine_dark \
   --height 6.0 --mode texture
 
+# 1c. Mesh generation (PAID Hunyuan3D API, ~25 credits/job — used once for
+#     campfire + rock; do not re-run casually)
+python3 tools/assets/gen_mesh.py --image prototypes/lookdev/out/campfire_concept_1024.png \
+  --out prototypes/lookdev/out/campfire_raw.glb
+python3 tools/assets/gen_mesh.py --image prototypes/lookdev/out/rock_concept_1024.png \
+  --out prototypes/lookdev/out/rock_raw.glb
+
 # 2. Inspect any output GLB (face mode: 0 images + COLOR_0; texture: 1 PNG)
 python3 tools/assets/inspect_glb.py prototypes/lookdev/out/pine_flat.glb
 
@@ -37,8 +44,11 @@ G=/Applications/Godot.app/Contents/MacOS/Godot
 $G --headless --path prototypes/lookdev/godot --import
 $G --path prototypes/lookdev/godot --windowed --resolution 1280x720
 
-# 4. Unattended capture -> prototypes/lookdev/evidence/*.png (5 shots), then quits
+# 4. Unattended captures -> prototypes/lookdev/evidence/*.png, then quits.
+#    Day preset: camp_wide + 5 close-ups. Dusk preset: camp_wide_dusk +
+#    campfire_close_dusk (low warm-pink sun, dark blue ambient, fire lit).
 $G --path prototypes/lookdev/godot --windowed --resolution 1280x720 -- --capture
+$G --path prototypes/lookdev/godot --windowed --resolution 1280x720 -- --capture --preset dusk
 ```
 
 Flags: `--mode face|texture` (default face), `--lightness-weight` (default
