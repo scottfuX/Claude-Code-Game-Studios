@@ -1,0 +1,139 @@
+{
+  "SessionStart": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash \"$DEVIN_PROJECT_DIR/.devin/hooks/ccgs-hook.sh\" context SessionStart .claude/hooks/session-start.sh",
+          "timeout": 20
+        },
+        {
+          "type": "command",
+          "command": "bash \"$DEVIN_PROJECT_DIR/.devin/hooks/ccgs-hook.sh\" context SessionStart .claude/hooks/detect-gaps.sh",
+          "timeout": 15
+        }
+      ]
+    }
+  ],
+  "PreToolUse": [
+    {
+      "matcher": "^exec$",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash \"$DEVIN_PROJECT_DIR/.devin/hooks/ccgs-hook.sh\" gate .claude/hooks/validate-commit.sh",
+          "timeout": 15
+        },
+        {
+          "type": "command",
+          "command": "bash \"$DEVIN_PROJECT_DIR/.devin/hooks/ccgs-hook.sh\" gate .claude/hooks/validate-push.sh",
+          "timeout": 10
+        }
+      ]
+    },
+    {
+      "matcher": "^(write|edit)$",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash \"$DEVIN_PROJECT_DIR/.devin/hooks/ccgs-hook.sh\" gate .claude/hooks/validate-registry.sh",
+          "timeout": 10
+        },
+        {
+          "type": "command",
+          "command": "bash \"$DEVIN_PROJECT_DIR/.devin/hooks/ccgs-hook.sh\" gate .claude/hooks/validate-write.sh",
+          "timeout": 10
+        }
+      ]
+    },
+    {
+      "matcher": "^read$",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash \"$DEVIN_PROJECT_DIR/.devin/hooks/ccgs-hook.sh\" gate .claude/hooks/validate-read.sh",
+          "timeout": 10
+        }
+      ]
+    },
+    {
+      "matcher": "^run_subagent$",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash \"$DEVIN_PROJECT_DIR/.devin/hooks/ccgs-hook.sh\" xlate agent-start .claude/hooks/log-agent.sh",
+          "timeout": 5
+        }
+      ]
+    }
+  ],
+  "PostToolUse": [
+    {
+      "matcher": "^run_subagent$",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash \"$DEVIN_PROJECT_DIR/.devin/hooks/ccgs-hook.sh\" xlate agent-stop .claude/hooks/log-agent-stop.sh",
+          "timeout": 5
+        },
+        {
+          "type": "command",
+          "command": "bash \"$DEVIN_PROJECT_DIR/.devin/hooks/check-artifact.sh\"",
+          "timeout": 10
+        }
+      ]
+    },
+    {
+      "matcher": "^(write|edit)$",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash \"$DEVIN_PROJECT_DIR/.devin/hooks/ccgs-hook.sh\" context PostToolUse .claude/hooks/validate-assets.sh",
+          "timeout": 10
+        },
+        {
+          "type": "command",
+          "command": "bash \"$DEVIN_PROJECT_DIR/.devin/hooks/ccgs-hook.sh\" context PostToolUse .claude/hooks/validate-skill-change.sh",
+          "timeout": 10
+        }
+      ]
+    }
+  ],
+  "PermissionRequest": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash \"$DEVIN_PROJECT_DIR/.devin/hooks/ccgs-hook.sh\" xlate notify-perm .claude/hooks/notify.sh",
+          "timeout": 5
+        }
+      ]
+    }
+  ],
+  "PostCompaction": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"PostCompaction\",\"additionalContext\":\"Context was compacted. CCGS: restore state from production/session-state/active.md before continuing — it is the session checkpoint.\"}}'",
+          "timeout": 5
+        }
+      ]
+    }
+  ],
+  "Stop": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash \"$DEVIN_PROJECT_DIR/.devin/hooks/ccgs-hook.sh\" raw .claude/hooks/session-stop.sh",
+          "timeout": 10
+        }
+      ]
+    }
+  ]
+}
