@@ -8,6 +8,8 @@
         "snow_light",
         "pine_dark"
       ],
+      "lightness_weight": 0.5,
+      "smooth": 2,
       "prompt": "A single stylized low-poly snow-covered pine tree, 3D game asset, flat shading, faceted geometric shapes, three stacked chunky cone tiers of dark blue-green foliage with a thick white snow cap on each tier, short dark navy trunk, minimalist, muted cold color palette, isolated on a plain light gray background, centered, the whole object visible, three-quarter view from slightly above, soft even lighting, no ground plane, no cast shadow, no text"
     },
     {
@@ -17,6 +19,8 @@
         "trunk_navy",
         "snow_light"
       ],
+      "lightness_weight": 0.5,
+      "smooth": 2,
       "prompt": "A single leafless winter tree with a thick dark navy-blue trunk that splits into a few thick chunky bare branches, no thin twigs, no leaves, small white snow patches resting on top of the branches, 3D game asset, stylized low-poly, flat shading, faceted geometric shapes, minimalist, solid flat colors with no gradients and no surface texture detail, isolated on a plain light gray background, centered, the whole object visible, three-quarter view from slightly above, soft even lighting, no ground plane, no cast shadow, no text"
     },
     {
@@ -27,6 +31,8 @@
         "wood_brown",
         "snow_light"
       ],
+      "lightness_weight": 0.5,
+      "smooth": 2,
       "prompt": "A small improvised wilderness survival shelter: a low A-frame lean-to made of a rust-red tarp stretched over a ridge pole and a simple frame of brown wooden branches, open at the front, thick white snow resting on top of the tarp, a few brown logs along its base, 3D game asset, stylized low-poly, flat shading, faceted geometric shapes, minimalist, solid flat colors with no gradients and no surface texture detail, isolated on a plain light gray background, centered, the whole object visible, three-quarter view from slightly above, soft even lighting, no ground plane, no cast shadow, no text"
     },
     {
@@ -53,10 +59,11 @@
       "colors": [
         "roof_slate",
         "warm_orange",
-        "trunk_navy",
         "wood_brown",
         "skin_warm"
       ],
+      "lightness_weight": 1.0,
+      "smooth": 2,
       "prompt": "A full-body stylized wilderness survivor character standing upright in a neutral A-pose with arms held slightly away from the body and legs slightly apart, wearing a dark slate-blue hooded winter parka with the hood up, a bright orange scarf, dark navy trousers, brown boots and a brown backpack, a simple minimal face with no detailed features, chunky proportions, 3D game asset, stylized low-poly, flat shading, faceted geometric shapes, minimalist, solid flat colors with no gradients and no surface texture detail, isolated on a plain light gray background, centered, the whole object visible, straight front view at eye level, soft even lighting, no ground plane, no cast shadow, no text"
     }
   ]

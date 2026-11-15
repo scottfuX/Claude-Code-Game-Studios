@@ -40,8 +40,17 @@ def read_accessor(gltf, binc, idx):
 def main(path):
     gltf, binc, total = load(path)
     print(f"file: {path} ({total} bytes)")
-    print(f"images: {len(gltf.get('images', []))}  textures: {len(gltf.get('textures', []))}  "
+    imgs = gltf.get("images", [])
+    print(f"images: {len(imgs)}  textures: {len(gltf.get('textures', []))}  "
           f"materials: {len(gltf.get('materials', []))}  meshes: {len(gltf.get('meshes', []))}")
+    for i, im in enumerate(imgs):
+        info = f"  image{i}: '{im.get('name')}' mime={im.get('mimeType')}"
+        if "bufferView" in im:
+            bv = gltf["bufferViews"][im["bufferView"]]
+            info += f" bytes={bv['byteLength']}"
+        if "uri" in im:
+            info += f" uri={im['uri'][:60]}"
+        print(info)
     for m in gltf.get("materials", []):
         pbr = m.get("pbrMetallicRoughness", {})
         print(f"  material '{m.get('name')}': baseColorTexture={'baseColorTexture' in pbr} "
