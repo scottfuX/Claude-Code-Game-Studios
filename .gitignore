@@ -173,3 +173,9 @@ $RECYCLE.BIN/
 # the project root. Anchored so a reports/ folder elsewhere stays tracked.
 /reports/
 /test-results/
+
+# AI asset pipeline: generator sidecar files (job ids, raw API responses with
+# expiring signed URLs). Raw meshes and responses live under out/, which is
+# already ignored above; images worth keeping go in evidence/.
+*.job.json
+*.resp.json

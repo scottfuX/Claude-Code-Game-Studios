@@ -1,0 +1,76 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://main.gd" id="1"]
+[ext_resource type="Material" path="res://materials/snow_ground.tres" id="2"]
+
+[sub_resource type="Environment" id="env"]
+background_mode = 1
+background_color = Color(0.6584, 0.7758, 0.9131, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.3968, 0.5333, 0.7305, 1)
+ambient_light_energy = 1.15
+tonemap_mode = 0
+fog_enabled = true
+fog_light_color = Color(0.6584, 0.7758, 0.9131, 1)
+fog_light_energy = 1.0
+fog_density = 0.008
+
+[sub_resource type="PlaneMesh" id="ground"]
+size = Vector2(160, 160)
+
+[sub_resource type="StandardMaterial3D" id="mat_body"]
+albedo_color = Color(0.0437, 0.0685, 0.1248, 1)
+roughness = 1.0
+metallic_specular = 0.0
+
+[sub_resource type="StandardMaterial3D" id="mat_scarf"]
+albedo_color = Color(0.8714, 0.2542, 0.0704, 1)
+roughness = 1.0
+metallic_specular = 0.0
+
+[sub_resource type="CapsuleMesh" id="body"]
+radius = 0.3
+height = 1.75
+
+[sub_resource type="CylinderMesh" id="scarf"]
+top_radius = 0.32
+bottom_radius = 0.32
+height = 0.12
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+mesh = SubResource("ground")
+surface_material_override/0 = ExtResource("2")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation = Vector3(-0.38397, -0.61087, 0.0)
+light_color = Color(0.8879, 0.9301, 1.0, 1)
+light_energy = 1.35
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("env")
+
+[node name="Person" type="Node3D" parent="."]
+position = Vector3(2, 0, 2)
+
+[node name="Body" type="MeshInstance3D" parent="Person"]
+position = Vector3(0, 0.875, 0)
+mesh = SubResource("body")
+surface_material_override/0 = SubResource("mat_body")
+
+[node name="Scarf" type="MeshInstance3D" parent="Person"]
+position = Vector3(0, 1.48, 0)
+mesh = SubResource("scarf")
+surface_material_override/0 = SubResource("mat_scarf")
+
+[node name="CamWide" type="Camera3D" parent="."]
+current = true
+position = Vector3(0, 36.8, 31.0)
+rotation = Vector3(-0.89358, 0, 0)
+fov = 30.0
+
+[node name="CamClose" type="Camera3D" parent="."]
+fov = 30.0
