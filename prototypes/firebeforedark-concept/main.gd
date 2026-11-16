@@ -541,9 +541,6 @@ func _cam_step(delta: float) -> void:
 		_cam_yaw_target += PI / 4.0
 	if Input.is_action_just_pressed(A_ROT_R) and not (_dead or _won):
 		_cam_yaw_target -= PI / 4.0
-	# E tap = rotate right only when nothing to interact with (spec Q/E + E action)
-	if not _autoplay and not _autoplay_nofire and Input.is_action_just_pressed(A_USE) and _prompt_target() == null:
-		_cam_yaw_target -= PI / 4.0
 	_cam_yaw = lerp_angle(_cam_yaw, _cam_yaw_target, minf(delta * 8.0, 1.0))
 	_cam_pivot.rotation.y = _cam_yaw
 	_cam_pivot.position = _cam_pivot.position.lerp(_player.position, minf(delta * 6.0, 1.0))

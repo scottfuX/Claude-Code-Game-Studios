@@ -31,7 +31,7 @@ All input goes through InputMap actions created at runtime in `_make_actions()`
 | Zoom | wheel | right stick Y |
 | Restart after death/win | R | start |
 
-\* E doubles as camera-rotate only when no interactable is in range.
+* Q / R rotate the camera 45°; E is only ever the interact key.
 
 ## Loop
 
