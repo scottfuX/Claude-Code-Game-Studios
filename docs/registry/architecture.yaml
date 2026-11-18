@@ -40,7 +40,7 @@
 #   unsupported layout, with its number.
 
 version: 1
-last_updated: ""
+last_updated: "2026-11-18"
 
 # ─── STATE OWNERSHIP ─────────────────────────────────────────────────────────
 # Who is the authoritative owner of each piece of shared game state.
@@ -53,7 +53,49 @@ last_updated: ""
 # interface: how other systems access this state (read-only property, method call,
 #   signal, shared resource, etc.) — this is the contract other ADRs depend on.
 
-state_ownership: []
+state_ownership:
+  - state: run_lifecycle
+    status: active
+    owner_system: RunCoordinator
+    adr: docs/architecture/adr-0001-run-scene-composition-and-service-lifecycle.md
+    interface: "start_run(config) -> Result; stop_run(reason) -> void; run-tagged owner ports and detached snapshots"
+    write_access: RunCoordinator-only
+    referenced_by:
+      - docs/architecture/adr-0002-input-routing-contexts-and-ui-pause-requests.md
+      - docs/architecture/adr-0003-ordered-clock-dispatch-typed-events-and-run-randomness.md
+    notes: "Source ADR is Proposed, not Accepted; active means current registry entry, not implementation authorization."
+    added: 2026-11-18
+    revised: ""
+  - state: input_context_holds_buffers_active_device
+    status: active
+    owner_system: InputRouter
+    adr: docs/architecture/adr-0002-input-routing-contexts-and-ui-pause-requests.md
+    interface: "sample_actions(real_delta_s) -> InputSnapshot; set_context(context) -> void"
+    write_access: InputRouter-only
+    referenced_by: []
+    notes: "Source ADR is Proposed; exactly one Gameplay/UI/Locked context; context transitions clear and rearm only after release."
+    added: 2026-11-18
+    revised: ""
+  - state: survival_clock
+    status: active
+    owner_system: Clock
+    adr: docs/architecture/adr-0003-ordered-clock-dispatch-typed-events-and-run-randomness.md
+    interface: "request_rate_mode(mode, reason) -> void; snapshot() -> ClockSnapshot; original GDD clock signals"
+    write_access: Clock-only
+    referenced_by: []
+    notes: "Source ADR is Proposed; day/minute/phase/rate/accumulator have one owner; Needs retains sole is_asleep ownership."
+    added: 2026-11-18
+    revised: ""
+  - state: authoritative_run_random_state
+    status: active
+    owner_system: RunCoordinator
+    adr: docs/architecture/adr-0003-ordered-clock-dispatch-typed-events-and-run-randomness.md
+    interface: "draw_unit(request) -> RandomDrawResult; export_random_state() -> RandomState; restore_random_state(state) -> Result"
+    write_access: run-RNG-adapter-only
+    referenced_by: []
+    notes: "Source ADR is Proposed; one seeded gameplay stream, seed plus opaque state/draw position; Mishaps retains fumble guards; cosmetics isolated."
+    added: 2026-11-18
+    revised: ""
 
 # Example:
 #
@@ -81,7 +123,43 @@ state_ownership: []
 #
 # pattern options: signal | direct_call | event_bus | shared_resource | rpc | none
 
-interfaces: []
+interfaces:
+  - contract: explicit_run_owner_ports
+    status: active
+    pattern: direct_call
+    producer: RunCoordinator
+    consumers: [InputRouter, Clock, Core, Feature, Presentation]
+    adr: docs/architecture/adr-0001-run-scene-composition-and-service-lifecycle.md
+    interface: "Inject narrow typed ports before activation; snapshots contain detached values/IDs; owner-only writes; invalidate run tokens before teardown."
+    referenced_by:
+      - docs/architecture/adr-0002-input-routing-contexts-and-ui-pause-requests.md
+      - docs/architecture/adr-0003-ordered-clock-dispatch-typed-events-and-run-randomness.md
+    notes: "Proposed source; not an Accepted stance."
+    added: 2026-11-18
+    revised: ""
+  - contract: ui_context_and_pause_requests
+    status: active
+    pattern: direct_call
+    producer: UI-and-input-recovery-adapters
+    consumers: [RunCoordinator, InputRouter, Clock, ActionRunner]
+    adr: docs/architecture/adr-0002-input-routing-contexts-and-ui-pause-requests.md
+    interface: "request_ui_context(source, open); request_pause(source) -> PauseToken; release_pause(token)"
+    referenced_by:
+      - docs/architecture/adr-0003-ordered-clock-dispatch-typed-events-and-run-randomness.md
+    notes: "Proposed ADR; Scott decided QQ-08 backpack UI does not pause simulation/actions; explicit pause menu does. Loading/disconnect safety gates remain. Time Rule 8 GDD fix pending separately."
+    added: 2026-11-18
+    revised: ""
+  - contract: ordered_minute_dispatch
+    status: active
+    pattern: direct_call
+    producer: RunCoordinator
+    consumers: [ThermalField, FireController, InventoryModel, BodyThermoregulation, NeedsModel, MoraleModel, Presentation]
+    adr: docs/architecture/adr-0003-ordered-clock-dispatch-typed-events-and-run-randomness.md
+    interface: "step_minute(context) staged synchronously; public GDD minute_tick/boundary signals notify only, never a second integration path"
+    referenced_by: []
+    notes: "Proposed ADR; pre-step activity, Thermal, Fire, Inventory, Body, Needs, terminal arbitration, Morale, publication; run-tagged typed events; C4/C5 must ratify exact consumer boundaries."
+    added: 2026-11-18
+    revised: ""
 
 # Example:
 #
@@ -141,7 +219,25 @@ performance_budgets: []
 # Register an API decision when the choice is non-obvious and other ADRs might
 # make a different choice for the same purpose without knowing this was decided.
 
-api_decisions: []
+api_decisions:
+  - purpose: named_action_input_boundary
+    status: active
+    api: InputMap-and-typed-InputEvent-router
+    not: per-consumer-raw-input-or-device-zero-detection
+    adr: docs/architecture/adr-0002-input-routing-contexts-and-ui-pause-requests.md
+    reason: "Proposed ADR; sole raw reader, unchanged authored actions; 4.7 keyboard/mouse device IDs are not zero."
+    referenced_by: []
+    added: 2026-11-18
+    revised: ""
+  - purpose: gameplay_random_draws
+    status: active
+    api: run-owned-RandomNumberGenerator-adapter
+    not: global-or-per-consumer-gameplay-RNG
+    adr: docs/architecture/adr-0003-ordered-clock-dispatch-typed-events-and-run-randomness.md
+    reason: "Proposed ADR; deterministic same-pin draw order and seed/state/position restore; exact engine state APIs require runtime verification."
+    referenced_by: []
+    added: 2026-11-18
+    revised: ""
 
 # Example:
 #
@@ -167,7 +263,34 @@ api_decisions: []
 # Register a pattern when an ADR explicitly bans it AND other ADRs might
 # unknowingly use it (i.e., it's a tempting but wrong approach for this project).
 
-forbidden_patterns: []
+forbidden_patterns:
+  - pattern: global_mutable_gameplay_or_foreign_owner_writes
+    status: active
+    adr: docs/architecture/adr-0001-run-scene-composition-and-service-lifecycle.md
+    reason: "Proposed ADR; gameplay autoloads, mutable shared definition Resources and cross-owner state writes defeat run isolation."
+    alternative: explicit-run-owned-ports-and-detached-snapshots
+    referenced_by:
+      - docs/architecture/adr-0002-input-routing-contexts-and-ui-pause-requests.md
+      - docs/architecture/adr-0003-ordered-clock-dispatch-typed-events-and-run-randomness.md
+    added: 2026-11-18
+    revised: ""
+  - pattern: ui_context_implies_simulation_pause
+    status: active
+    adr: docs/architecture/adr-0002-input-routing-contexts-and-ui-pause-requests.md
+    reason: "Proposed ADR; violates Scott's QQ-08 backpack exception."
+    alternative: separate-context-sources-and-coordinator-pause-tokens
+    referenced_by:
+      - docs/architecture/adr-0003-ordered-clock-dispatch-typed-events-and-run-randomness.md
+    added: 2026-11-18
+    revised: ""
+  - pattern: unordered_or_duplicate_survival_integration
+    status: active
+    adr: docs/architecture/adr-0003-ordered-clock-dispatch-typed-events-and-run-randomness.md
+    reason: "Proposed ADR; independent survival clocks, signal connection order, skipped debt and double integration invalidate reproducibility."
+    alternative: one-clock-and-staged-once-only-coordinator-dispatch
+    referenced_by: []
+    added: 2026-11-18
+    revised: ""
 
 # Example:
 #
