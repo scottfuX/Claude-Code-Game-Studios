@@ -1,0 +1,41 @@
+name: Automated Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Run GdUnit4 Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          lfs: true
+          persist-credentials: false
+
+      - name: Run GdUnit4 Tests
+        uses: godot-gdunit-labs/gdUnit4-action@379a0b1e41f07246c3d58b7e253bc4f1b90094c9 # v1.4.3
+        with:
+          godot-version: '4.7.2'
+          version: 'installed'
+          paths: tests
+          headless: true
+          arguments: '--ignoreHeadlessMode'
+          publish-report: false
+          upload-report: false
+
+      - name: Upload Test Results
+        if: '!cancelled()'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: test-results
+          path: reports/report_*/
+          if-no-files-found: error
