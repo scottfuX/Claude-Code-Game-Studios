@@ -126,6 +126,16 @@ state_ownership:
     added: 2026-11-18
     revised: ""
 
+  - state: thermal_table_minute_inputs_and_source_registry
+    status: active
+    owner_system: ThermalField
+    adr: docs/architecture/adr-0006-thermal-spatial-queries-and-source-registration.md
+    interface: "effective_temp_c(p); components(p); wind_eff(p); is_sheltered(p); detached air/wind/source snapshots"
+    referenced_by: []
+    notes: "Proposed source; no per-point state; polygon/band exact evaluation behind coarse index, stable source sum; Fire owns heat/radius, Thermal owns registration/table."
+    added: 2026-11-18
+    revised: ""
+
 # Example:
 #
 # state_ownership:
@@ -187,6 +197,18 @@ interfaces:
     interface: "step_minute(context) staged synchronously; public GDD minute_tick/boundary signals notify only, never a second integration path"
     referenced_by: []
     notes: "Proposed ADR; pre-step activity, Thermal, Fire, Inventory, Body, Needs, terminal arbitration, Morale, publication; run-tagged typed events; C4/C5 must ratify exact consumer boundaries."
+    added: 2026-11-18
+    revised: ""
+
+  - contract: thermal_owner_sources_and_same_minute_publication
+    status: active
+    pattern: direct_call
+    producer: FireController
+    consumers: [ThermalField, BodyThermoregulation, InventoryModel]
+    adr: docs/architecture/adr-0006-thermal-spatial-queries-and-source-registration.md
+    interface: "register_heat_source; update_heat_source; unregister_heat_source; begin_minute then Fire publication then seal_sources before Body"
+    referenced_by: []
+    notes: "Proposed source; run/owner/revision validation, disabled retained at heat0, invalid source contributes0; Fire warm_radius equals registered radius; no Core concrete Fire import."
     added: 2026-11-18
     revised: ""
 
