@@ -305,6 +305,18 @@ interfaces:
     added: 2026-11-18
     revised: ""
 
+  - contract: gathering_success_depletion_and_conserved_produce
+    status: active
+    pattern: direct_call
+    producer: GatheringResolver
+    consumers: [WorldMap, InventoryModel, ActionRunner]
+    adr: docs/architecture/adr-0010-gathering-resolver-depletion-and-overflow-transactions.md
+    interface: "prepare_gather -> revision-validated Map depletion and Inventory add_or_pile plans -> once-only commit"
+    referenced_by: []
+    notes: "Proposed source; G1 success depletes attempted, failure partial yield leaves node unchanged; wetness recipes, no extra wear/roll; bonus failure interpretation awaits confirmation."
+    added: 2026-11-18
+    revised: ""
+
 # Example:
 #
 # interfaces:
