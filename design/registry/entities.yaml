@@ -54,7 +54,7 @@
 #   in any other shape is reported as unsupported layout, with its number.
 
 version: 1
-last_updated: ""
+last_updated: "2026-11-16"
 
 # ─── ENTITIES ────────────────────────────────────────────────────────────────
 # Named game-world objects: enemies, NPCs, characters, factions, bosses.
@@ -94,7 +94,148 @@ entities: []
 # Attribute fields: value_gold, weight, stackable, category, and any stat
 #   modifiers that another system (e.g., economy, crafting) might reference.
 
-items: []
+items:
+  - name: hatchet
+    status: active
+    source: design/gdd/item-database-and-inventory.md
+    referenced_by:
+      - design/gdd/item-database-and-inventory.md
+    category: tool
+    mass_kg: 1.0
+    durability_max: 600
+    added: 2026-11-17
+    revised: ""
+  - name: knife
+    status: active
+    source: design/gdd/item-database-and-inventory.md
+    referenced_by:
+      - design/gdd/item-database-and-inventory.md
+    category: tool
+    mass_kg: 0.2
+    durability_max: 800
+    added: 2026-11-17
+    revised: ""
+  - name: ferro_rod
+    status: active
+    source: design/gdd/item-database-and-inventory.md
+    referenced_by:
+      - design/gdd/item-database-and-inventory.md
+    category: tool
+    mass_kg: 0.1
+    durability_max: 1000
+    added: 2026-11-17
+    revised: ""
+  - name: pemmican
+    status: active
+    source: design/gdd/item-database-and-inventory.md
+    referenced_by:
+      - design/gdd/item-database-and-inventory.md
+      - design/gdd/needs-and-weight.md
+    category: food
+    mass_kg: 0.1
+    stack_max: 8
+    food_kcal: 500
+    eat_minutes: 5
+    mvp_kit_units: 8
+    added: 2026-11-17
+    revised: ""
+  - name: sleeping_bag
+    status: active
+    source: design/gdd/item-database-and-inventory.md
+    referenced_by:
+      - design/gdd/item-database-and-inventory.md
+      - design/gdd/body-temperature.md
+    category: clothing
+    mass_kg: 2.0
+    sleep_insulation_bonus: 0.5
+    sleep_bonus_active_mvp: false
+    added: 2026-11-17
+    revised: ""
+  - name: winter_clothing
+    status: active
+    source: design/gdd/item-database-and-inventory.md
+    referenced_by:
+      - design/gdd/item-database-and-inventory.md
+      - design/gdd/body-temperature.md
+    category: clothing
+    insulation: 1.0
+    added: 2026-11-17
+    revised: ""
+  - name: birch_bark
+    status: active
+    source: design/gdd/item-database-and-inventory.md
+    referenced_by:
+      - design/gdd/item-database-and-inventory.md
+    category: tinder
+    mass_kg: 0.05
+    stack_max: 30
+    fuel_value: 1
+    tinder_quality: 0.9
+    can_get_wet: true
+    added: 2026-11-17
+    revised: ""
+  - name: dry_grass
+    status: active
+    source: design/gdd/item-database-and-inventory.md
+    referenced_by:
+      - design/gdd/item-database-and-inventory.md
+    category: tinder
+    mass_kg: 0.02
+    stack_max: 30
+    fuel_value: 0.5
+    tinder_quality: 0.7
+    can_get_wet: true
+    added: 2026-11-17
+    revised: ""
+  - name: feather_stick
+    status: active
+    source: design/gdd/item-database-and-inventory.md
+    referenced_by:
+      - design/gdd/item-database-and-inventory.md
+      - design/gdd/fire.md
+    category: tinder
+    mass_kg: 0.2
+    stack_max: 10
+    fuel_value: 3
+    tinder_quality: 0.8
+    can_get_wet: true
+    added: 2026-11-17
+    revised: ""
+  - name: dry_stick
+    status: active
+    source: design/gdd/item-database-and-inventory.md
+    referenced_by:
+      - design/gdd/item-database-and-inventory.md
+    category: fuel
+    mass_kg: 0.2
+    stack_max: 20
+    fuel_value: 6
+    tinder_quality: 0.3
+    can_get_wet: true
+    added: 2026-11-17
+    revised: ""
+  - name: log
+    status: active
+    source: design/gdd/item-database-and-inventory.md
+    referenced_by:
+      - design/gdd/item-database-and-inventory.md
+    category: fuel
+    mass_kg: 2.5
+    stack_max: 8
+    fuel_value: 60
+    can_get_wet: true
+    added: 2026-11-17
+    revised: ""
+  - name: stone
+    status: active
+    source: design/gdd/item-database-and-inventory.md
+    referenced_by:
+      - design/gdd/item-database-and-inventory.md
+    category: misc
+    mass_kg: 2.0
+    stack_max: 5
+    added: 2026-11-17
+    revised: ""
 
 # Example:
 #
@@ -123,7 +264,281 @@ items: []
 #   output_range[min, max], added
 # Optional: expression (the actual formula), notes
 
-formulas: []
+formulas:
+  - name: fire_heat_and_radius
+    status: active
+    source: design/gdd/fire.md
+    referenced_by:
+      - design/gdd/fire.md
+      - design/gdd/thermal-environment.md
+      - design/gdd/morale-and-mental-state.md
+    variables:
+      - F
+      - w_burn
+    output_range: [0, 27.8]
+    expression: "s = 1-exp(-F/60); heat_c = 28*s*(1-0.4*w_burn) (embers 4); radius_m = 0.8+2.6*s (embers 1.0); light = 1.5+5*s"
+    notes: "F 120 dry -> 24.2 C / 3.05 m / light 5.8 m. warm_radius = radius_m registered in Thermal."
+    added: 2026-11-17
+    revised: ""
+  - name: fire_burn_rate
+    status: active
+    source: design/gdd/fire.md
+    referenced_by:
+      - design/gdd/fire.md
+      - design/gdd/gathering.md
+      - design/gdd/map-and-resource-distribution.md
+    variables:
+      - F
+      - wind_eff
+      - ringed
+    output_range: [0.25, 2.2]
+    expression: "(0.25 + F/240) * (1 + 0.08*wind_eff*(ringed ? 0.6 : 1)) fuel units per game minute"
+    notes: "~0.84 dry logs/h at F 120 ringed; 4 bedtime logs -> embers after ~5.5 h; ~8 logs per night."
+    added: 2026-11-17
+    revised: ""
+  - name: gather_yield
+    status: active
+    source: design/gdd/gathering.md
+    referenced_by:
+      - design/gdd/gathering.md
+      - design/gdd/map-and-resource-distribution.md
+      - design/gdd/mishaps-and-failure.md
+    variables:
+      - take
+      - remaining
+      - success
+    output_range: [0, 3]
+    expression: "attempted = min(take, remaining); kept = success ? attempted : (chop ? 0 : floor(attempted/2)); remaining -= success ? attempted : 0"
+    notes: "Takes: bush 3 sticks (+1 grass), deadfall 2 sticks or 1 log, birch 2 bark, grass 2, stones 1. Produce wetness: standing bush 0.0, deadfall 0.3 (forest 0.2), birch 0.0, grass 0.1 lee / 0.4 open."
+    added: 2026-11-17
+    revised: ""
+  - name: p_fail
+    status: active
+    source: design/gdd/mishaps-and-failure.md
+    referenced_by:
+      - design/gdd/mishaps-and-failure.md
+      - design/gdd/morale-and-mental-state.md
+      - design/gdd/body-temperature.md
+      - design/gdd/needs-and-weight.md
+      - design/gdd/interaction-and-timed-actions.md
+    variables:
+      - base_fail
+      - c_damp
+      - c_wind
+      - c_tinder
+      - reliability_penalty
+      - cold_hands_penalty
+      - fatigue_penalty
+    output_range: [0, 0.90]
+    expression: "clamp(base + k_damp*wetness + k_wind*max(0, wind_eff-2) + k_tinder*(1-quality) + morale + cold_hands + fatigue, 0, 0.90)"
+    notes: "Named cause = largest physical term >= 0.05 else fumble; morale never named. Strike base 0.35 (dry birch, open snow, healthy = 0.406)."
+    added: 2026-11-17
+    revised: ""
+  - name: ice_break_per_footfall
+    status: active
+    source: design/gdd/mishaps-and-failure.md
+    referenced_by:
+      - design/gdd/mishaps-and-failure.md
+      - design/gdd/terrain-and-snow-surface.md
+    variables:
+      - thickness
+      - carry_load_frac
+      - hurrying
+    output_range: [0, 0.09]
+    expression: "thickness >= 15 ? 0 : 0.03*(15-thickness)/15*(1+0.5*load)*(hurry ? 2 : 1)"
+    notes: "On break: fell_in_water, cell broken, major failure to Morale, 10% chance to lose a carried tool (hatchet 2:1:1)."
+    added: 2026-11-17
+    revised: ""
+  - name: action_duration
+    status: active
+    source: design/gdd/interaction-and-timed-actions.md
+    referenced_by:
+      - design/gdd/interaction-and-timed-actions.md
+      - design/gdd/morale-and-mental-state.md
+      - design/gdd/body-temperature.md
+      - design/gdd/needs-and-weight.md
+      - design/gdd/character-controller-and-animation.md
+    variables:
+      - base_game_min
+      - action_duration_mult
+      - body_action_mult
+      - needs_action_mult
+      - real_seconds_per_game_minute
+    output_range: [0.25, 60]
+    expression: "game_min = base_game_min * min(2.0, morale * body * needs); real_s = game_min * real_seconds_per_game_minute(at start)"
+    notes: "Cap answers Needs' open note. Character C7 loops the effort segment to fill real_s."
+    added: 2026-11-17
+    revised: ""
+  - name: target_speed
+    status: active
+    source: design/gdd/character-controller-and-animation.md
+    referenced_by:
+      - design/gdd/character-controller-and-animation.md
+      - design/gdd/terrain-and-snow-surface.md
+    variables:
+      - move_vector
+      - terrain_speed_mult
+      - move_speed_mult
+      - needs_move_speed_mult
+      - carry_speed_mult
+      - hurry_mult
+    output_range: [0, 1.82]
+    expression: "|move_vector| * (Critical ? 0.35 : 1.4) * max(0.15, terrain * (Critical ? 1 : body) * needs * carry * hurry)"
+    notes: "Floor answers Terrain's worst-case stack (~5%). Body's 0.40 Critical mult is not applied on top of the crawl base."
+    added: 2026-11-17
+    revised: ""
+  - name: terrain_speed_mult
+    status: active
+    source: design/gdd/terrain-and-snow-surface.md
+    referenced_by:
+      - design/gdd/terrain-and-snow-surface.md
+    variables:
+      - effective_depth_m
+      - grade_deg
+      - type_speed_mult
+    output_range: [0.225, 1.0]
+    expression: "max(0.45, 1 - 1.0*snow_depth*(1-compaction)) * (grade<=0 ? 1 : max(0.5, 1 - 0.5*grade/30)) * type_speed_mult"
+    notes: "Character multiplies with Body move_speed_mult, Needs move mult and Inventory carry_speed_mult (needs a floor - Character GDD). Grades > 35 deg impassable."
+    added: 2026-11-17
+    revised: ""
+  - name: burn_kcal_per_hour
+    status: active
+    source: design/gdd/needs-and-weight.md
+    referenced_by:
+      - design/gdd/needs-and-weight.md
+    variables:
+      - base_awake
+      - base_asleep
+      - activity_extra
+      - shiver_extra
+    output_range: [65, 390]
+    expression: "(asleep ? 65 : 110) + max(activity_extra: walk 60, wade 120, light 80, heavy 200) + (shivering ? 80 : 0)"
+    notes: "Paid from stomach first, then body reserve at kcal_per_kg. Shivering flag from Body Temperature."
+    added: 2026-11-16
+    revised: ""
+  - name: core_temp_rate
+    status: active
+    source: design/gdd/body-temperature.md
+    referenced_by:
+      - design/gdd/body-temperature.md
+    variables:
+      - effective_temp_c
+      - t_neutral
+      - k_cool
+      - k_warm
+      - wetness
+      - insulation
+      - heat_activity
+      - heat_shiver
+    output_range: [-4.0, 3.0]
+    expression: "clamp((gap<0 ? k_cool*gap*(1+w_wet*wetness)/insulation : k_warm*gap) + heat_activity + heat_shiver, -4, 3); gap = effective_temp_c - t_neutral"
+    notes: "Degrees C per game hour. Defaults t_neutral 5, k_cool 0.088, k_warm 0.3, w_wet 1.0. Held at 37.0 max."
+    added: 2026-11-16
+    revised: ""
+  - name: air_temp_c
+    status: active
+    source: design/gdd/thermal-environment.md
+    referenced_by:
+      - design/gdd/thermal-environment.md
+    variables:
+      - daily_mean_temp_c
+      - t_swing
+      - solar_noon
+      - peak_lag
+      - hour
+      - weather_offset_c
+    output_range: [-45, 10]
+    expression: "max(t_floor, t_start - t_ramp*(day-1)) + t_swing*cos(2*pi*(hour-(solar_noon+peak_lag))/24) + weather_offset_c"
+    notes: "Owns the cold ramp. Defaults t_start -5, t_ramp 0.4, t_floor -25 (day 51), t_swing 4, peak_lag 2.0. Weather (VS) supplies weather_offset_c."
+    added: 2026-11-16
+    revised: ""
+  - name: effective_temp_c
+    status: active
+    source: design/gdd/thermal-environment.md
+    referenced_by:
+      - design/gdd/thermal-environment.md
+      - design/gdd/body-temperature.md
+    variables:
+      - air_temp_c
+      - zone_offset_c
+      - wind_chill_c
+      - heat_total
+      - shelter_bonus_c
+    output_range: [-67, 40]
+    expression: "air_temp_c + zone_offset_c - min(chill_cap, k_wind*wind_speed*exposure) + min(heat_cap_c, sum(heat_c*(1-(d/r)^2))) + shelter_bonus_c"
+    notes: "Felt temperature at a point. Read by Body Temperature each minute_tick. Fire registers heat sources (heat_c, radius_m = its warm_radius)."
+    added: 2026-11-16
+    revised: ""
+  - name: daylight_hours
+    status: active
+    source: design/gdd/time-and-day-cycle.md
+    referenced_by:
+      - design/gdd/time-and-day-cycle.md
+    variables:
+      - d_start
+      - d_shrink
+      - d_min
+      - day
+    output_range: [5.0, 8.0]
+    expression: "max(d_min, d_start - d_shrink * (day - 1))"
+    notes: "Defaults 8.0 / 0.1 / 5.0; sunrise/sunset symmetric around solar_noon 12.5, twilight 0.75 h. Read by Thermal Environment and lighting."
+    added: 2026-11-16
+    revised: ""
+  - name: real_seconds_per_game_minute
+    status: active
+    source: design/gdd/time-and-day-cycle.md
+    referenced_by:
+      - design/gdd/time-and-day-cycle.md
+    variables:
+      - rate_mode
+      - phase
+    output_range: [0.05, 1.5]
+    expression: "day 1.5 | night 1.0 | wait 0.25 | sleep 0.05"
+    notes: "Interaction converts game-minute action durations to real time with this."
+    added: 2026-11-16
+    revised: ""
+  - name: morale_reliability_penalty
+    status: active
+    source: design/gdd/morale-and-mental-state.md
+    referenced_by:
+      - design/gdd/morale-and-mental-state.md
+    variables:
+      - mental_state
+    output_range: [0, 0.10]
+    expression: "penalty_table[mental_state] (Steady 0.00, Strained 0.03, Fraying 0.06, Breaking 0.10)"
+    notes: "Added to every action's failure chance by Mishaps & Failure, which clamps the total to <= 0.90."
+    added: 2026-11-16
+    revised: ""
+  - name: morale_action_duration_mult
+    status: active
+    source: design/gdd/morale-and-mental-state.md
+    referenced_by:
+      - design/gdd/morale-and-mental-state.md
+    variables:
+      - mental_state
+    output_range: [1.0, 1.20]
+    expression: "duration_table[mental_state] (1.00, 1.05, 1.12, 1.20)"
+    notes: "Multiplies timed-action durations in Interaction & Timed Actions."
+    added: 2026-11-16
+    revised: ""
+  - name: morale_resolve
+    status: active
+    source: design/gdd/morale-and-mental-state.md
+    referenced_by:
+      - design/gdd/morale-and-mental-state.md
+    variables:
+      - loneliness
+      - frustration
+      - grief
+      - hunger_distress
+      - pain
+      - a_mean
+      - strain_weights
+    output_range: [0, 100]
+    expression: "100 - (a_mean * weighted_mean(strains) + (1 - a_mean) * max(strains))"
+    notes: "Hidden; drives mental_state (falling thresholds 65/40/20, +5 hysteresis). Read by Emotional Feedback, Diary, Tap-out."
+    added: 2026-11-16
+    revised: ""
 
 # Example:
 #
@@ -156,7 +571,266 @@ formulas: []
 #
 # Required fields: name, status, source, referenced_by, value, unit, added
 
-constants: []
+constants:
+  - name: fire_max_fuel
+    status: active
+    source: design/gdd/fire.md
+    referenced_by:
+      - design/gdd/fire.md
+    value: 300
+    unit: fuel units
+    notes: "~5 logs. Embers below 5 units; ember_life 90 game min; ember_window 3 game min; fuel_value stick 6, log 60, bark 1, grass 0.5, feather stick 3 (confirmed for Item DB)."
+    added: 2026-11-17
+    revised: ""
+  - name: mvp_map_size_m
+    status: active
+    source: design/gdd/map-and-resource-distribution.md
+    referenced_by:
+      - design/gdd/map-and-resource-distribution.md
+      - design/gdd/terrain-and-snow-surface.md
+      - design/gdd/camera.md
+    value: 240
+    unit: m (square playable area)
+    notes: "Heightmap 1 m (241x241); snow grid 0.5 m (480x480). Resource rings near 0-40, mid 40-100, far 100-170 m from the drop; no regrowth in MVP."
+    added: 2026-11-17
+    revised: ""
+  - name: failure_chance_cap
+    status: active
+    source: design/gdd/mishaps-and-failure.md
+    referenced_by:
+      - design/gdd/mishaps-and-failure.md
+      - design/gdd/morale-and-mental-state.md
+      - design/gdd/body-temperature.md
+      - design/gdd/needs-and-weight.md
+    value: 0.90
+    unit: probability
+    notes: "No action is ever impossible; the clamp all state penalties rely on."
+    added: 2026-11-17
+    revised: ""
+  - name: max_duration_mult
+    status: active
+    source: design/gdd/interaction-and-timed-actions.md
+    referenced_by:
+      - design/gdd/interaction-and-timed-actions.md
+      - design/gdd/needs-and-weight.md
+    value: 2.0
+    unit: multiplier
+    notes: "Cap on Morale x Body x Needs duration multipliers (worst stack 2.475)."
+    added: 2026-11-17
+    revised: ""
+  - name: interact_reach_m
+    status: active
+    source: design/gdd/interaction-and-timed-actions.md
+    referenced_by:
+      - design/gdd/interaction-and-timed-actions.md
+    value: 1.5
+    unit: m
+    notes: "Targeting reach; cone +/-50 deg; fire priority bonus 0.3; switch hysteresis 0.15."
+    added: 2026-11-17
+    revised: ""
+  - name: camera_default_framing
+    status: active
+    source: design/gdd/camera.md
+    referenced_by:
+      - design/gdd/camera.md
+      - design/gdd/character-controller-and-animation.md
+    value: "pitch 50 deg, distance 22 m (zoom 14-40), fov 30 deg"
+    unit: framing
+    notes: "From the owner-tested prototype. Survivor ~69 px tall at 720p (CA3, includes cos(pitch)); >= 20 px at every framing."
+    added: 2026-11-17
+    revised: ""
+  - name: base_walk_speed
+    status: active
+    source: design/gdd/character-controller-and-animation.md
+    referenced_by:
+      - design/gdd/character-controller-and-animation.md
+      - design/gdd/terrain-and-snow-surface.md
+    value: 1.4
+    unit: m/s
+    notes: "Crawl base 0.35 m/s (Body Critical). Hurry x1.3 (counts as heavy work)."
+    added: 2026-11-17
+    revised: ""
+  - name: speed_floor_mult
+    status: active
+    source: design/gdd/character-controller-and-animation.md
+    referenced_by:
+      - design/gdd/character-controller-and-animation.md
+      - design/gdd/terrain-and-snow-surface.md
+    value: 0.15
+    unit: fraction of base speed
+    notes: "Minimum of the combined movement multipliers (0.21 m/s walking)."
+    added: 2026-11-17
+    revised: ""
+  - name: wade_depth_m
+    status: active
+    source: design/gdd/terrain-and-snow-surface.md
+    referenced_by:
+      - design/gdd/terrain-and-snow-surface.md
+      - design/gdd/body-temperature.md
+      - design/gdd/needs-and-weight.md
+    value: 0.25
+    unit: m effective snow depth
+    notes: "Moving with effective depth >= this reports the wade activity (Body +0.45 C/h; Needs +120 kcal/h, -3.5 energy/h, hydration x1.5)."
+    added: 2026-11-17
+    revised: ""
+  - name: snow_compaction_step
+    status: active
+    source: design/gdd/terrain-and-snow-surface.md
+    referenced_by:
+      - design/gdd/terrain-and-snow-surface.md
+    value: 0.25
+    unit: fraction per footfall pass
+    notes: "c' = min(0.85, c + 0.25*(1-c)); one pass per cell per 5 real s. Trail at c >= 0.5 (3 passes)."
+    added: 2026-11-17
+    revised: ""
+  - name: stick_deadzone
+    status: active
+    source: design/gdd/input-and-action-map.md
+    referenced_by:
+      - design/gdd/input-and-action-map.md
+    value: 0.2
+    unit: stick magnitude
+    notes: "Radial deadzone; move_vector length 0-1 rescaled past it. Character Controller reads move_vector, never raw axes."
+    added: 2026-11-17
+    revised: ""
+  - name: hold_confirm_s
+    status: active
+    source: design/gdd/input-and-action-map.md
+    referenced_by:
+      - design/gdd/input-and-action-map.md
+    value: 1.5
+    unit: real seconds
+    notes: "Hold-to-confirm for irreversible actions (VS radio tap-out). Tap < 0.25 s, hold >= 0.35 s, buffer 0.15 s."
+    added: 2026-11-17
+    revised: ""
+  - name: carry_capacity_kg
+    status: active
+    source: design/gdd/item-database-and-inventory.md
+    referenced_by:
+      - design/gdd/item-database-and-inventory.md
+    value: 25
+    unit: kg
+    notes: "Backpack limit. Hauling (load > 0.7) counts as heavy work for Body and Needs; carry_speed_mult 0.70-1.00."
+    added: 2026-11-17
+    revised: ""
+  - name: start_weight_kg
+    status: active
+    source: design/gdd/needs-and-weight.md
+    referenced_by:
+      - design/gdd/needs-and-weight.md
+      - design/gdd/morale-and-mental-state.md
+    value: 72.0
+    unit: kg
+    notes: "Survivor weight at the drop; Morale F4 divides by it (must be > 0, load floor 50)."
+    added: 2026-11-16
+    revised: ""
+  - name: stomach_capacity_kcal
+    status: active
+    source: design/gdd/needs-and-weight.md
+    referenced_by:
+      - design/gdd/needs-and-weight.md
+    value: 1500
+    unit: kcal
+    notes: "fullness 0-100 = stomach_kcal / 15. Item DB food_kcal values must be sized against it."
+    added: 2026-11-16
+    revised: ""
+  - name: kcal_per_kg
+    status: active
+    source: design/gdd/needs-and-weight.md
+    referenced_by:
+      - design/gdd/needs-and-weight.md
+    value: 7700
+    unit: kcal/kg
+    notes: "Body-reserve burn converts to weight loss at this rate."
+    added: 2026-11-16
+    revised: ""
+  - name: normal_core_temp_c
+    status: active
+    source: design/gdd/body-temperature.md
+    referenced_by:
+      - design/gdd/body-temperature.md
+      - design/gdd/morale-and-mental-state.md
+    value: 37.0
+    unit: degC
+    notes: "Start and maximum core temperature."
+    added: 2026-11-16
+    revised: ""
+  - name: body_warm_threshold_c
+    status: active
+    source: design/gdd/body-temperature.md
+    referenced_by:
+      - design/gdd/body-temperature.md
+      - design/gdd/morale-and-mental-state.md
+    value: 36.5
+    unit: degC
+    notes: "Warm/Chilled boundary; equals Morale's t_comfort default (pain starts below it)."
+    added: 2026-11-16
+    revised: ""
+  - name: hypothermia_death_c
+    status: active
+    source: design/gdd/body-temperature.md
+    referenced_by:
+      - design/gdd/body-temperature.md
+    value: 30.0
+    unit: degC
+    notes: "Core at or below this ends the run (body_died hypothermia). Stage thresholds 36.5/35.5/34.0/32.0."
+    added: 2026-11-16
+    revised: ""
+  - name: heat_cap_c
+    status: active
+    source: design/gdd/thermal-environment.md
+    referenced_by:
+      - design/gdd/thermal-environment.md
+    value: 30
+    unit: degC
+    notes: "Summed heat from all sources at a point never exceeds this; Fire and Shelter must design within it."
+    added: 2026-11-16
+    revised: ""
+  - name: wind_base
+    status: active
+    source: design/gdd/thermal-environment.md
+    referenced_by:
+      - design/gdd/thermal-environment.md
+    value: 3
+    unit: m/s
+    notes: "MVP world wind until Weather & Cold Snaps (VS) registers as wind source."
+    added: 2026-11-16
+    revised: ""
+  - name: run_max_days
+    status: active
+    source: design/gdd/time-and-day-cycle.md
+    referenced_by:
+      - design/gdd/time-and-day-cycle.md
+      - design/gdd/morale-and-mental-state.md
+      - design/gdd/thermal-environment.md
+    value: 60
+    unit: days
+    notes: "Time holds the clock at day 60; Morale F1 assumes day <= 60."
+    added: 2026-11-16
+    revised: ""
+  - name: game_minute_tick
+    status: active
+    source: design/gdd/time-and-day-cycle.md
+    referenced_by:
+      - design/gdd/time-and-day-cycle.md
+      - design/gdd/morale-and-mental-state.md
+      - design/gdd/thermal-environment.md
+      - design/gdd/body-temperature.md
+    value: 1
+    unit: game minutes
+    notes: "All per-game-hour rates integrate on this tick; ticks never skip, including during sleep."
+    added: 2026-11-16
+    revised: ""
+  - name: morale_meaningful_success_min_fail_chance
+    status: active
+    source: design/gdd/morale-and-mental-state.md
+    referenced_by:
+      - design/gdd/morale-and-mental-state.md
+    value: 0.10
+    unit: probability
+    notes: "A success lifts frustration only if base_fail_chance >= this (or it ends a streak). Mishaps must report base_fail_chance."
+    added: 2026-11-16
+    revised: ""
 
 # Example:
 #

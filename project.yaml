@@ -27,7 +27,7 @@ framework:
 # precedence order.
 
 modes:
-  rigor: minimal        # lightest rigor — pre-production look-dev/feel prototype;
+  rigor: standard        # lightest rigor — pre-production look-dev/feel prototype;
                         # PLAN.md: switch to `standard` when core-system design starts
   automation: autonomous
 
