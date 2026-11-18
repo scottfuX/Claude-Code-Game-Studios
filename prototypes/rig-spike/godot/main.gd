@@ -56,7 +56,7 @@ func _spawn(kind: String, label: String, pos: Vector3) -> void:
 	var ap: AnimationPlayer = s.find_child("AnimationPlayer", true, false)
 	if kind == "idle":
 		_check_profile(skel)
-	for n in ["idle", "walk", "shiver"]:
+	for n in ["idle", "walk", "strike", "shiver"]:
 		ap.get_animation(n).loop_mode = Animation.LOOP_LINEAR
 	match kind:
 		"chop":
