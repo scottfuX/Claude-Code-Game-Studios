@@ -223,6 +223,16 @@ state_ownership:
     added: 2026-11-18
     revised: ""
 
+  - state: emotional_presentation_layers_beats_and_grade_targets
+    status: active
+    owner_system: EmotionPresenter
+    adr: docs/architecture/adr-0014-read-only-emotional-feedback-layers-and-warm-hue-safe-grade.md
+    interface: "posture/beat requests; owned Camera tokens; detached grade parameters; set_mix targets; reduced-effects hooks"
+    referenced_by: []
+    notes: "Proposed source; gameplay read-only, Body>Needs>Morale, cause-first single beat/20s cooldown, warm hue15-55 saturation protected, Resource Compositor/Effect, sparse score not continuous music."
+    added: 2026-11-18
+    revised: ""
+
 # Example:
 #
 # state_ownership:
