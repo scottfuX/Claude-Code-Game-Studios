@@ -193,6 +193,16 @@ state_ownership:
     added: 2026-11-18
     revised: ""
 
+  - state: fire_stage_fuel_escrow_and_ember_deadlines
+    status: active
+    owner_system: FireController
+    adr: docs/architecture/adr-0011-fire-stage-machine-material-consumption-and-heat-light-publication.md
+    interface: "prepare_fire_action; step_minute; snapshot; exact Thermal source/warm_radius, light snapshot, unattended loss"
+    referenced_by: []
+    notes: "Proposed source; Inventory-owned escrow container, atomic consumption, Clock-minute windows, no direct wake; exact authority versus >0.1 cosmetic threshold needs confirmation."
+    added: 2026-11-18
+    revised: ""
+
 # Example:
 #
 # state_ownership:
