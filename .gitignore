@@ -42,6 +42,9 @@ bin/
 # ...but not an addon's own scripts: gdUnit4's test runner lives in
 # addons/gdUnit4/bin/, and without it neither /smoke-check nor CI can run tests.
 !addons/gdUnit4/bin/
+# Godot generates these when importing the upstream gdUnit4 archive.
+/addons/gdUnit4/**/*.gd.uid
+/addons/gdUnit4/**/*.import
 obj/
 out/
 dist/
