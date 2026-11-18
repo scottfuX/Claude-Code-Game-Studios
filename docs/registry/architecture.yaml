@@ -136,6 +136,25 @@ state_ownership:
     added: 2026-11-18
     revised: ""
 
+  - state: action_token_and_prepared_completion
+    status: active
+    owner_system: ActionRunner
+    adr: docs/architecture/adr-0007-timed-action-transactions-seeded-mishaps-and-simultaneous-death-precedence.md
+    interface: "try_start(action_id,target_id); cancel(reason); progress(); prepare_completion(token,snapshots)"
+    referenced_by: []
+    notes: "Proposed source; Core ActionRunner governs Feature MishapResolver boundary; real-time duration snapshot, forced cancel before use/roll/result; owner-held kept progress."
+    added: 2026-11-18
+    revised: ""
+  - state: mishap_profiles_and_per_action_fumble_guards
+    status: active
+    owner_system: MishapResolver
+    adr: docs/architecture/adr-0007-timed-action-transactions-seeded-mishaps-and-simultaneous-death-precedence.md
+    interface: "resolve_attempt(attempt) -> Outcome; check_ice(footfall); export/restore guards plus injected run random-state view"
+    referenced_by: []
+    notes: "Proposed source; sole F3 run RNG, stable draw ledger; no-profile/cancelled work no roll, physical cause only, owner-requested once-only consequences."
+    added: 2026-11-18
+    revised: ""
+
 # Example:
 #
 # state_ownership:
@@ -209,6 +228,18 @@ interfaces:
     interface: "register_heat_source; update_heat_source; unregister_heat_source; begin_minute then Fire publication then seal_sources before Body"
     referenced_by: []
     notes: "Proposed source; run/owner/revision validation, disabled retained at heat0, invalid source contributes0; Fire warm_radius equals registered radius; no Core concrete Fire import."
+    added: 2026-11-18
+    revised: ""
+
+  - contract: prepared_action_commits_and_terminal_arbitration
+    status: active
+    pattern: direct_call
+    producer: RunCoordinator
+    consumers: [ActionRunner, MishapResolver, InventoryModel, BodyThermoregulation, NeedsModel, Presentation]
+    adr: docs/architecture/adr-0007-timed-action-transactions-seeded-mishaps-and-simultaneous-death-precedence.md
+    interface: "validate_plan; commit_plan with consequence_id; submit_terminal_candidate; forced cancel before completion checkpoint"
+    referenced_by: []
+    notes: "Proposed source; non-yielding owner commits, cause before result, exactly one terminal; hypothermia > dehydration, death > collapse/immersion; Rule7 immersion already resolved."
     added: 2026-11-18
     revised: ""
 
