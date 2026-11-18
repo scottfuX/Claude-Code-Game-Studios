@@ -3,7 +3,7 @@
 > **Status**: Designed (pending review)
 > **Creative Director Review (CD-GDD-ALIGN)**: skipped — Lean mode
 > **Author**: owner + Devin (game-designer / systems-designer / economy-designer lenses)
-> **Last Updated**: 2026-11-16
+> **Last Updated**: 2026-11-19
 > **Last Verified**: 2026-11-16
 > **Implements Pillar**: 冷是真的 · 退赛是赌注
 
@@ -28,7 +28,7 @@ For the player this system supplies the 饥饿感 that Morale turns into feeling
 3. **Burn.** Calories burnt per hour = base (awake 110 / asleep 65) + the highest activity extra (walking 60 · wading deep snow 120 · light work 80 · heavy work 200) + shivering 80 when Body Temperature reports `is_shivering`. Activity comes from Character Controller and Interaction (the same reports Body Temperature uses).
 4. **Stomach first, then the body.** Each minute's burn is taken from `stomach_kcal`; any shortfall is taken from body reserve and lowers `weight_kg` (N2). Weight never rises above `start_weight_kg`; in the MVP it never rises at all (open question).
 5. **Eating.** Eating a food item (Interaction) adds its `food_kcal` (Item Database) to the stomach. If it would exceed 1,500 kcal, eating is refused ("吃不下") and the item is kept. Eating takes the item's `eat_minutes` (default 5 game minutes).
-6. **Drinking.** Drinking adds the item's `drink_hydration`. **MVP stand-in — eating snow:** an action available anywhere on snow: +3 hydration, 3 game minutes, −1 energy per handful. It is slow and tiring on purpose; melting and boiling water (Water, VS) is the good way.
+6. **Drinking.** Drinking adds the item's `drink_hydration`. **MVP stand-in — eating snow:** an action available anywhere on snow except in Critical (Body's whitelist applies): +3 hydration, 3 game minutes, −1 energy per handful. It is slow and tiring on purpose; melting and boiling water (Water, VS) is the good way.
 7. **Hydration drain** (N3): −1.4 per hour awake, −0.7 asleep, ×1.5 while wading or doing heavy work.
 8. **Energy** (N4): drains by activity (idle 1.0 · walking 2.0 · light work 2.5 · wading 3.5 · heavy work 5.0 per hour, highest applies) + 1.5 while shivering; resting by a burning fire in `wait` mode restores +1.5 per hour instead of draining; sleep restores 8 per hour × warmth quality × food quality. Energy cannot exceed `energy_cap`, which falls as weight is lost (N5).
 9. **Sleep.**
@@ -186,7 +186,7 @@ One step per tick in each machine; each change emits `needs_stage_changed(need, 
 - **If the player eats while Empty or Starving**: the stage returns to Hungry or Fed at once and the 24-hour starving timer resets.
 - **If an item has no `food_kcal`/`drink_hydration`**: it cannot be eaten/drunk; no default value is assumed.
 - **If `start_weight_kg` ≤ 0 or `stomach_capacity` ≤ 0 in data**: reject at load, use defaults.
-- **If the player eats snow while Hypothermic or worse**: allowed (no Body input yet); see Open Questions about a core-temperature cost.
+- **If the player eats snow while Hypothermic**: allowed, but refused in Critical by Body's whitelist (O1 resolved by Scott, 2026-11-19); see Open Questions about a core-temperature cost.
 - **If a save is loaded mid-sleep**: restore `is_asleep` and request Time `sleep` on the first tick (matches Time's load rule).
 
 ## Dependencies
@@ -243,6 +243,8 @@ One step per tick in each machine; each change emits `needs_stage_changed(need, 
 | Summary | `design/game-brief.md` | "体重是慢慢流失的生命线", "第 3 天起饱腹不够" | exists |
 
 ## Acceptance Criteria
+
+Owner decision O1 (2026-11-19): verify snow intake is allowed in Hypothermic on snow and refused in Critical, with no hydration/energy change on refusal. No new core-temperature cost.
 
 *qa-lead lens applied (Section H, high-risk in Lean mode).* **[A]** automated logic test · **[P]** playtest / evidence.
 

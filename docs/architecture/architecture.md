@@ -151,7 +151,7 @@ Signatures are typed pseudocode. IDs are stable StringName-compatible values; po
 ### M6 — Camera
 
 - **Owns:** follow transform, user yaw/distance, framing arbitration and occluder fades. **Consumes:** Character transform, Terrain, Map bounds, routed input, Feedback tokens and terminal state. **Exposes:** yaw/projection/current framing.
-- **API:** request_framing(id, source) -> FramingToken; release_framing(token) -> void; snapshot() -> CameraSnapshot.
+- **API:** request_framing(id,distance_mult,pitch_offset_deg,blend_in_s,blend_out_s,priority,cinematic); release_framing(id); yaw_snapshot(); project_world(p) -> ProjectionResult{visible,viewport_point}; orientation_snapshot().
 - **Guarantees:** default pitch 50°, distance 22 m/FOV 30°, user distance 14–40 m. Preserve GDD priority/blends, input-break behavior, 3 m terrain clearance and never fade survivor. end_rise locks turn/zoom.
 - **Flow:** Character/Terrain/Map -> Camera queries; Feedback -> Camera commands; Camera -> Character/HUD/Audio read-only snapshot. No gameplay movement from cinematics.
 - **Engine:** Camera3D and physics occlusion adapter; rendering.md/physics.md, MEDIUM. Projection/capsule-query signatures NEEDS VERIFICATION. **ADR:** P1.
@@ -159,7 +159,7 @@ Signatures are typed pseudocode. IDs are stable StringName-compatible values; po
 ### M7 — Thermal Environment
 
 - **Owns:** cold ramp/base wind and registered heat-source values; no per-point state. **Consumes:** Clock/Map samples and Fire-owned source updates. **Exposes:** felt temperature/components, wind_eff and shelter query contract.
-- **API:** effective_temp_c(p) -> float; components(p) -> ThermalSample; upsert_heat_source(source) -> void; remove_heat_source(id) -> void.
+- **API:** effective_temp_c(p) -> float; components(p) -> ThermalComponents{air,zone,wind_chill,heat,shelter_bonus}; register_heat_source(source) -> Result; update_heat_source(source) -> Result; unregister_heat_source(id) -> Result.
 - **Guarantees:** TH1–TH5 deterministic math/units; sum/cap sources; absent/disabled source contributes zero. Source owner alone updates its entry. Fire radius_m equals warm_radius. No direct Fire -> Body warming.
 - **Flow:** Fire -> Thermal source command; Time/Map -> Thermal queries; Body/Inventory/Mishaps/Audio -> Thermal synchronous sample calls.
 - **Engine:** Node/Resource/Vector3 values; engine-wide refs, LOW math / MEDIUM spatial indexing. Compare polygon lookup versus coarse index before ADR acceptance. **ADR:** C3.
@@ -327,11 +327,11 @@ Terrain/snow spike remains the next unresolved technical proof: full-run footpri
 
 ## Technical Requirements Baseline
 
-Extracted from **18 system GDDs** out of **21** root design/gdd/*.md files (the other three are concept, index and cross-review) | **521 requirements** | **0 registered, 521 provisional**. TR registry read: requirements: [], zero entries. registry.sh next-id tr was queried for every system and returned 001; sequential IDs below remain provisional until /architecture-review registers them. No registry writes or permanent IDs are implied.
+Extracted from **18 system GDDs** out of **21** root design/gdd/*.md files (the other three are concept, index and cross-review) | **521 requirements, all registered** by /architecture-review on 2026-11-18. IDs below are permanent and unchanged.
 
 Rows extract each numbered rule, named formula and explicit edge case; their cited source sections include subordinate tables, ranges and equations in full. The final row per GDD binds its full acceptance/dependency contract, avoiding accidental loss of unnumbered constraints. No system contributed zero requirements. Module contracts and scenarios support all rows; **support is not existing ADR coverage**.
 
-| Req ID (all provisional) | GDD / source section | System | Requirement | Domain | Architecture / required ADR |
+| Req ID (registered) | GDD / source section | System | Requirement | Domain | Architecture / required ADR |
 |---|---|---|---|---|---|
 | TR-input-and-action-map-001 | [input-and-action-map.md](../../design/gdd/input-and-action-map.md), Detailed Design / Core Rules | Input & Action Map | Actions only. No gameplay or UI code reads a raw key, button or axis. All input is read through named actions in the project's InputMap (defined in project.godot, not created at runtime). Action names are a contract shared with consuming GDDs. | Input | M1 / F1 |
 | TR-input-and-action-map-002 | [input-and-action-map.md](../../design/gdd/input-and-action-map.md), Detailed Design / Core Rules | Input & Action Map | Action set (MVP unless marked): | Input | M1 / F1 |
@@ -596,7 +596,7 @@ Rows extract each numbered rule, named formula and explicit edge case; their cit
 | TR-mishaps-and-failure-025 | [mishaps-and-failure.md](../../design/gdd/mishaps-and-failure.md), Edge Cases | Mishaps & Failure | If the player keeps striking with soaked tinder: each strike fails at 0.90 with cause damp shown every time — the game tells them what to fix, it does not stop them. | Core/Physics | M9 / C4 |
 | TR-mishaps-and-failure-026 | [mishaps-and-failure.md](../../design/gdd/mishaps-and-failure.md), Dependencies / Acceptance Criteria | Mishaps & Failure | Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning. | Core/Physics | M9 / C4 |
 | TR-gathering-001 | [gathering.md](../../design/gdd/gathering.md), Detailed Design / Core Rules | Gathering | Gather actions (Interaction's catalogue; durations confirmed here): | Core | M10 / S1 |
-| TR-gathering-002 | [gathering.md](../../design/gdd/gathering.md), Detailed Design / Core Rules | Gathering | Yield. Each completion takes take units (or what is left) from the node's remaining yield (G1). On a Mishaps failure the player gets half, rounded down (chop: nothing — a glancing blow). The node's remaining yield falls by what was *attempted*, not what was kept, only on success; a failure leaves the node's yield untouched (the wood is still there; you fumbled it). | Core | M10 / S1 |
+| TR-gathering-002 | [gathering.md](../../design/gdd/gathering.md), Detailed Design / Core Rules | Gathering | Yield. Each completion takes take units (or what is left) from the node's remaining yield (G1). On a Mishaps failure the player gets half of each output separately, rounded down (one bonus grass becomes 0; chop: nothing — a glancing blow). The node's remaining yield falls by what was *attempted*, not what was kept, only on success; a failure leaves the node's yield untouched (the wood is still there; you fumbled it). | Core | M10 / S1 |
 | TR-gathering-003 | [gathering.md](../../design/gdd/gathering.md), Detailed Design / Core Rules | Gathering | Dampness of produce (G2, data table — the bushcraft lesson): | Core | M10 / S1 |
 | TR-gathering-004 | [gathering.md](../../design/gdd/gathering.md), Detailed Design / Core Rules | Gathering | Where produce goes. To the backpack through Inventory's pick-up rule; anything that does not fit is dropped as a pile at the survivor's feet (Interaction's overflow rule). Nothing is ever lost. | Core | M10 / S1 |
 | TR-gathering-005 | [gathering.md](../../design/gdd/gathering.md), Detailed Design / Core Rules | Gathering | Without the tool. Without the hatchet, deadfall gives only sticks; without the knife, birch gives nothing (bark refused: "没有刀"). The fixed MVP kit has both; losing one (ice, Mishaps) is a real setback. | Core | M10 / S1 |
@@ -625,7 +625,7 @@ Rows extract each numbered rule, named formula and explicit edge case; their cit
 | TR-fire-005 | [fire.md](../../design/gdd/fire.md), Detailed Design / Core Rules | Fire | Fuel and wetness. Adding an item adds its effective fuel (FI5: damp wood gives less) and mixes its wetness into the fire's burning wetness, which dries at 0.05 per game minute while burning. Burning wetness lowers heat (FI2) and makes the fire smoke. | Core/Rendering | M11 / S2 |
 | TR-fire-006 | [fire.md](../../design/gdd/fire.md), Detailed Design / Core Rules | Fire | Smothering. Adding a log with wetness > 0.6 to a fire in Kindling flame (F < 30) smothers it to Embers (hiss, white smoke) — the cause is visible; dry the log at the fire first (Inventory camp piles) or build the flame up with sticks. | Core/Rendering | M11 / S2 |
 | TR-fire-007 | [fire.md](../../design/gdd/fire.md), Detailed Design / Core Rules | Fire | Too big. Adding fuel that would push F above F_max is refused ("火已经够大了"). | Core/Rendering | M11 / S2 |
-| TR-fire-008 | [fire.md](../../design/gdd/fire.md), Detailed Design / Core Rules | Fire | Heat and light (FI1–FI3, FI6) update each game minute and are pushed to Thermal (register/update heat source {position, heat_c, radius_m, enabled}; enabled false at Out) and to rendering. warm_radius = the registered radius_m (Morale's contract). Inventory piles within warm_radius are camp piles and dry. | Core/Rendering | M11 / S2 |
+| TR-fire-008 | [fire.md](../../design/gdd/fire.md), Detailed Design / Core Rules | Fire | Heat and light (FI1–FI3, FI6) update each game minute. Exact heat/radius/enabled values are published to Thermal via register_heat_source / update_heat_source before Body queries that minute, regardless of change magnitude; rendering reads the visual values. Source records contain {position, heat_c, radius_m, enabled} (enabled false at Out). warm_radius = the registered radius_m (Morale's contract). Inventory piles within warm_radius are camp piles and dry. | Core/Rendering | M11 / S2 |
 | TR-fire-009 | [fire.md](../../design/gdd/fire.md), Detailed Design / Core Rules | Fire | Unattended death. When a fire goes Out while the survivor is asleep or more than 15 m away, emit loss{kind: fire_died_unattended} (Morale: G +10, F +8). Watching it die while awake and near is not a loss event. | Core/Rendering | M11 / S2 |
 | TR-fire-010 | [fire.md](../../design/gdd/fire.md), Detailed Design / Core Rules | Fire | No wake-up from Fire. Fire does not wake the sleeping survivor; the body does (Body Temperature wakes them when Cold). The dying fire and the cold that follows are the night's story. | Core/Rendering | M11 / S2 |
 | TR-fire-011 | [fire.md](../../design/gdd/fire.md), Detailed Design / Core Rules | Fire | Fire tending in Critical. add_fuel and blow_embers are critical_allowed (Interaction): a crawling survivor can still save the fire. | Core/Rendering | M11 / S2 |
@@ -683,7 +683,7 @@ Rows extract each numbered rule, named formula and explicit edge case; their cit
 | TR-needs-and-weight-003 | [needs-and-weight.md](../../design/gdd/needs-and-weight.md), Detailed Design / Core Rules | Needs & Weight | Burn. Calories burnt per hour = base (awake 110 / asleep 65) + the highest activity extra (walking 60 · wading deep snow 120 · light work 80 · heavy work 200) + shivering 80 when Body Temperature reports is_shivering. Activity comes from Character Controller and Interaction (the same reports Body Temperature uses). | Core | M13 / C5 |
 | TR-needs-and-weight-004 | [needs-and-weight.md](../../design/gdd/needs-and-weight.md), Detailed Design / Core Rules | Needs & Weight | Stomach first, then the body. Each minute's burn is taken from stomach_kcal; any shortfall is taken from body reserve and lowers weight_kg (N2). Weight never rises above start_weight_kg; in the MVP it never rises at all (open question). | Core | M13 / C5 |
 | TR-needs-and-weight-005 | [needs-and-weight.md](../../design/gdd/needs-and-weight.md), Detailed Design / Core Rules | Needs & Weight | Eating. Eating a food item (Interaction) adds its food_kcal (Item Database) to the stomach. If it would exceed 1,500 kcal, eating is refused ("吃不下") and the item is kept. Eating takes the item's eat_minutes (default 5 game minutes). | Core | M13 / C5 |
-| TR-needs-and-weight-006 | [needs-and-weight.md](../../design/gdd/needs-and-weight.md), Detailed Design / Core Rules | Needs & Weight | Drinking. Drinking adds the item's drink_hydration. MVP stand-in — eating snow: an action available anywhere on snow: +3 hydration, 3 game minutes, −1 energy per handful. It is slow and tiring on purpose; melting and boiling water (Water, VS) is the good way. | Core | M13 / C5 |
+| TR-needs-and-weight-006 | [needs-and-weight.md](../../design/gdd/needs-and-weight.md), Detailed Design / Core Rules | Needs & Weight | Drinking. Drinking adds the item's drink_hydration. MVP stand-in — eating snow: an action available anywhere on snow except in Critical (Body's whitelist applies): +3 hydration, 3 game minutes, −1 energy per handful. It is slow and tiring on purpose; melting and boiling water (Water, VS) is the good way. | Core | M13 / C5 |
 | TR-needs-and-weight-007 | [needs-and-weight.md](../../design/gdd/needs-and-weight.md), Detailed Design / Core Rules | Needs & Weight | Hydration drain (N3): −1.4 per hour awake, −0.7 asleep, ×1.5 while wading or doing heavy work. | Core | M13 / C5 |
 | TR-needs-and-weight-008 | [needs-and-weight.md](../../design/gdd/needs-and-weight.md), Detailed Design / Core Rules | Needs & Weight | Energy (N4): drains by activity (idle 1.0 · walking 2.0 · light work 2.5 · wading 3.5 · heavy work 5.0 per hour, highest applies) + 1.5 while shivering; resting by a burning fire in wait mode restores +1.5 per hour instead of draining; sleep restores 8 per hour × warmth quality × food quality. Energy cannot exceed energy_cap, which falls as weight is lost (N5). | Core | M13 / C5 |
 | TR-needs-and-weight-009 | [needs-and-weight.md](../../design/gdd/needs-and-weight.md), Detailed Design / Core Rules | Needs & Weight | Sleep. | Core | M13 / C5 |
@@ -708,7 +708,7 @@ Rows extract each numbered rule, named formula and explicit edge case; their cit
 | TR-needs-and-weight-028 | [needs-and-weight.md](../../design/gdd/needs-and-weight.md), Edge Cases | Needs & Weight | If the player eats while Empty or Starving: the stage returns to Hungry or Fed at once and the 24-hour starving timer resets. | Core | M13 / C5 |
 | TR-needs-and-weight-029 | [needs-and-weight.md](../../design/gdd/needs-and-weight.md), Edge Cases | Needs & Weight | If an item has no food_kcal/drink_hydration: it cannot be eaten/drunk; no default value is assumed. | Core | M13 / C5 |
 | TR-needs-and-weight-030 | [needs-and-weight.md](../../design/gdd/needs-and-weight.md), Edge Cases | Needs & Weight | If start_weight_kg ≤ 0 or stomach_capacity ≤ 0 in data: reject at load, use defaults. | Core | M13 / C5 |
-| TR-needs-and-weight-031 | [needs-and-weight.md](../../design/gdd/needs-and-weight.md), Edge Cases | Needs & Weight | If the player eats snow while Hypothermic or worse: allowed (no Body input yet); see Open Questions about a core-temperature cost. | Core | M13 / C5 |
+| TR-needs-and-weight-031 | [needs-and-weight.md](../../design/gdd/needs-and-weight.md), Edge Cases | Needs & Weight | If the player eats snow while Hypothermic: allowed, but refused in Critical by Body's whitelist (O1 resolved by Scott, 2026-11-19); see Open Questions about a core-temperature cost. | Core | M13 / C5 |
 | TR-needs-and-weight-032 | [needs-and-weight.md](../../design/gdd/needs-and-weight.md), Edge Cases | Needs & Weight | If a save is loaded mid-sleep: restore is_asleep and request Time sleep on the first tick (matches Time's load rule). | Core | M13 / C5 |
 | TR-needs-and-weight-033 | [needs-and-weight.md](../../design/gdd/needs-and-weight.md), Dependencies / Acceptance Criteria | Needs & Weight | Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning. | Core | M13 / C5 |
 | TR-morale-and-mental-state-001 | [morale-and-mental-state.md](../../design/gdd/morale-and-mental-state.md), Detailed Design / Core Rules | Morale & Mental State | §1 Feeling map (owns the project-wide contract). Each feeling the owner named has one mechanical home, the show features that feed it, what relieves it, and how it is shown. Systems marked VS arrive in the Vertical Slice; their inputs are absent (zero) in the MVP. | Core | M14 / S3 |
@@ -857,34 +857,36 @@ Rows extract each numbered rule, named formula and explicit edge case; their cit
 
 ## ADR Audit
 
-No docs/architecture/adr-*.md files exist; inventory is empty, not “all decisions approved.” Therefore engine compatibility, version, post-cutoff flags, GDD linkage, layer conflicts and current validity checks are **not assessable for existing ADRs**. The baseline has **0 existing-ADR-covered requirements and 521 gaps**; every gap maps to a required backlog item below. Proposed architecture support covers all 18 modules but does not close an ADR gap.
+Updated 2026-11-19 after owner decisions O1–O4. All 16 ADRs remain **Status: Proposed**; none is Accepted. The full 2026-11-18 review verdict remains CONCERNS. Current traceability has 519 Covered (Proposed), 2 Partial (pending O4 profiling), 0 gaps, and 0 Accepted-covered requirements.
 
-| System | Provisional TR range (same prefix through suffix) | Count | Architecture / new ADR | Existing coverage |
+The 16 proposals contain Engine Compatibility sections and target Godot 4.7.2/Jolt consistently. The review found no verified engine contradiction or dependency cycle; runtime adapters and performance remain unverified. Every registered requirement maps to a proposal below. Proposed coverage is not acceptance or implementation permission.
+
+| System | Registered TR range (same prefix through suffix) | Count | Architecture / ADR backlog key | Existing coverage |
 |---|---|---|---|---|
-| Input & Action Map | TR-input-and-action-map-001 … 028 | 28 | M1 / F1 | GAP: no existing ADR |
-| Time & Day Cycle | TR-time-and-day-cycle-001 … 029 | 29 | M2 / F1 | GAP: no existing ADR |
-| Terrain & Snow Surface | TR-terrain-and-snow-surface-001 … 031 | 31 | M3 / C1 | GAP: no existing ADR |
-| Map & Resource Distribution | TR-map-and-resource-distribution-001 … 025 | 25 | M4 / C1 | GAP: no existing ADR |
-| Character Controller & Animation | TR-character-controller-and-animation-001 … 035 | 35 | M5 / C2 | GAP: no existing ADR |
-| Camera | TR-camera-001 … 029 | 29 | M6 / P1 | GAP: no existing ADR |
-| Thermal Environment | TR-thermal-environment-001 … 029 | 29 | M7 / C3 | GAP: no existing ADR |
-| Interaction & Timed Actions | TR-interaction-and-timed-actions-001 … 030 | 30 | M8 / C4 | GAP: no existing ADR |
-| Mishaps & Failure | TR-mishaps-and-failure-001 … 026 | 26 | M9 / C4 | GAP: no existing ADR |
-| Gathering | TR-gathering-001 … 023 | 23 | M10 / S1 | GAP: no existing ADR |
-| Fire | TR-fire-001 … 031 | 31 | M11 / S2 | GAP: no existing ADR |
-| Body Temperature | TR-body-temperature-001 … 029 | 29 | M12 / C5 | GAP: no existing ADR |
-| Needs & Weight | TR-needs-and-weight-001 … 033 | 33 | M13 / C5 | GAP: no existing ADR |
-| Morale & Mental State | TR-morale-and-mental-state-001 … 038 | 38 | M14 / S3 | GAP: no existing ADR |
-| Item Database & Inventory | TR-item-database-and-inventory-001 … 030 | 30 | M15 / C6 | GAP: no existing ADR |
-| Emotional Feedback | TR-emotional-feedback-001 … 027 | 27 | M16 / P2 | GAP: no existing ADR |
-| Ambient & Foley Audio | TR-ambient-and-foley-audio-001 … 024 | 24 | M17 / P3 | GAP: no existing ADR |
-| HUD | TR-hud-001 … 024 | 24 | M18 / P4 | GAP: no existing ADR |
+| Input & Action Map | TR-input-and-action-map-001 … 028 | 28 | M1 / F1 | Proposed ADR-0001, 0002 |
+| Time & Day Cycle | TR-time-and-day-cycle-001 … 029 | 29 | M2 / F1 | Proposed ADR-0001, 0003 |
+| Terrain & Snow Surface | TR-terrain-and-snow-surface-001 … 031 | 31 | M3 / C1 | Proposed ADR-0004 |
+| Map & Resource Distribution | TR-map-and-resource-distribution-001 … 025 | 25 | M4 / C1 | Proposed ADR-0004 |
+| Character Controller & Animation | TR-character-controller-and-animation-001 … 035 | 35 | M5 / C2 | Proposed ADR-0005 |
+| Camera | TR-camera-001 … 029 | 29 | M6 / P1 | Proposed ADR-0013 |
+| Thermal Environment | TR-thermal-environment-001 … 029 | 29 | M7 / C3 | Proposed ADR-0006; O4 profiling pending |
+| Interaction & Timed Actions | TR-interaction-and-timed-actions-001 … 030 | 30 | M8 / C4 | Proposed ADR-0007 |
+| Mishaps & Failure | TR-mishaps-and-failure-001 … 026 | 26 | M9 / C4 | Proposed ADR-0003, 0007 |
+| Gathering | TR-gathering-001 … 023 | 23 | M10 / S1 | Proposed ADR-0010 |
+| Fire | TR-fire-001 … 031 | 31 | M11 / S2 | Proposed ADR-0011 |
+| Body Temperature | TR-body-temperature-001 … 029 | 29 | M12 / C5 | Proposed ADR-0008; O4 profiling pending |
+| Needs & Weight | TR-needs-and-weight-001 … 033 | 33 | M13 / C5 | Proposed ADR-0008 |
+| Morale & Mental State | TR-morale-and-mental-state-001 … 038 | 38 | M14 / S3 | Proposed ADR-0012 |
+| Item Database & Inventory | TR-item-database-and-inventory-001 … 030 | 30 | M15 / C6 | Proposed ADR-0009 |
+| Emotional Feedback | TR-emotional-feedback-001 … 027 | 27 | M16 / P2 | Proposed ADR-0014 |
+| Ambient & Foley Audio | TR-ambient-and-foley-audio-001 … 024 | 24 | M17 / P3 | Proposed ADR-0015 |
+| HUD | TR-hud-001 … 024 | 24 | M18 / P4 | Proposed ADR-0016 |
 
-Required ADR authors must include Engine Compatibility for 4.7.2, post-cutoff risk/API evidence, GDD Requirements Addressed with the full associated TR range, alternatives/consequences, and test obligations. Validate actual APIs on the pin; do not cite this proposed blueprint as proof of runtime behavior. /architecture-review later allocates permanent IDs and writes the RTM; do not synthesize those artifacts now.
+All 16 proposals include Engine Compatibility, Requirements Addressed, alternatives/consequences and validation obligations. Validate actual adapters on the pin before acceptance; document review is not runtime proof. Permanent IDs and the full index are in tr-registry.yaml and requirements-traceability.md.
 
-## Required ADRs — Missing ADR List (Phase 6)
+## Required ADRs — Proposal Inventory (Phase 6 backlog mapping)
 
-All entries are missing, not Proposed/Accepted records. Backlog keys do not reserve ADR numbers. Coverage includes every provisional TR under the associated system prefixes in the audit table, not just its first rule.
+All entries now have Proposed records: F1–F3 → ADR-0001–0003, C1–C6 → ADR-0004–0009, S1–S3 → ADR-0010–0012, P1 → ADR-0013, P2 (audio) → ADR-0015, P3 (feedback) → ADR-0014, P4 → ADR-0016. These backlog keys are not additional missing ADR requests. Coverage includes every registered TR in the audit table.
 
 ### Must have before coding starts — Foundation first
 
@@ -900,7 +902,7 @@ All entries are missing, not Proposed/Accepted records. Backlog keys do not rese
 | 8 / C5 — Core | Body/Needs minute integration, sleep and terminal candidate ports | All Body and Needs TRs. Pin pre/post-step samples, activity maximum, wake ownership, grace/collapse timers, Critical whitelist and Clock mode arbitration against both GDDs; coordinate C4 terminal ordering. |
 | 9 / C6 — Core | Item/action data validation, inventory transfers and tool-use transactions | All Item Database/Inventory TRs. Immutable definitions, IDs/stack identity, conservation, partial fit/overflow, wetness merge/drying, durability/loss versus consumption and atomic owner commits. |
 
-Foundation/Core records above must be written and Accepted before implementation, not deferred until after a first sprint. The workflow catalog requires at least three Foundation ADRs; F1–F3 meet that denominator only after they are authored and Accepted. F1–F3 must implement the owner-decided non-pausing backpack/inventory exception; QQ-08 is resolved. Owner budget decisions may remain pending only while profiling against explicitly proposed values; do not label min-spec compliance achieved.
+Foundation/Core records above are written and Proposed; they must be Accepted before implementation, not deferred until after a first sprint. The workflow catalog requires at least three Foundation ADRs; F1–F3 are authored but meet the accepted denominator only after acceptance. F1–F3 must implement the owner-decided non-pausing backpack/inventory exception; QQ-08 is resolved. Owner budget decisions may remain pending only while profiling against explicitly proposed values; do not label min-spec compliance achieved.
 
 ### Should have before relevant system is built
 
@@ -941,7 +943,7 @@ Deviation: requester directed inline director/reviewer work instead of subagent 
 - Attempt to disprove layering: Core Thermal/Body might require concrete Fire; source registration/value ports avoid that import. Character/Camera mutual data reads use stable snapshots rather than construction cycles.
 - Attempt to disprove cancellation safety: animation callbacks and buffered inputs could double-commit at immersion/completion. Token validation plus forced-cancel/terminal arbitration before commit is required C4 behavior; tests must exercise the exact boundary.
 - QQ-08 resolved by owner decision 2026-11-18: backpack/inventory does not pause time or ongoing actions; Time Rule 8 now matches Interaction's Edge Case.
-- Remaining concerns: Foundation/Core ADRs are missing; snow/IK/runtime APIs and min-spec budgets are unmeasured. Thus this is a blueprint ready for ADR work, **not ready for implementation or the pre-production gate**.
+- Remaining concerns: Foundation/Core ADRs are Proposed, not Accepted; snow/IK/runtime APIs and min-spec budgets are unmeasured. Thus this is a blueprint ready for ADR validation/acceptance work, **not ready for implementation or the pre-production gate**.
 
 ### Supplemental inline feasibility review — CONCERNS
 
@@ -984,15 +986,15 @@ docs/architecture/architecture.md v2 — TD-ARCHITECTURE: skipped — lean mode.
 
 ---
 
-## Run These ADRs Next
+## Validate These Proposed ADRs Next
 
-**1. /architecture-decision "Run scene composition and service lifecycle" → ADR-[allocate via registry; F1]**
+**1. ADR-0001 — Run scene composition and service lifecycle (F1)**
 Defines Foundation initialization, ownership, dependency injection and teardown; prevents run state/listeners surviving restart.
 
-**2. /architecture-decision "Input routing, contexts and UI pause requests" → ADR-[allocate via registry; F2]**
+**2. ADR-0002 — Input routing, contexts and UI pause requests (F2)**
 Defines Foundation input-context and pause ports, including decided QQ-08 behavior: backpack/inventory does not pause time or ongoing actions; explicit pause menu pauses all.
 
-**3. /architecture-decision "Ordered clock dispatch, typed events and run randomness" → ADR-[allocate via registry; F3]**
+**3. ADR-0003 — Ordered clock dispatch, typed events and run randomness (F3)**
 Defines Foundation game-time/event/RNG ownership, unblocking C4/C5 transactions; terrain C1 and Character C2 follow with spike evidence and owner clip sourcing.
 
 **Then:** /architecture-review, and /create-control-manifest once it passes and those ADRs are Accepted — it turns them into the layer rules manifest.
@@ -1002,17 +1004,28 @@ Defines Foundation game-time/event/RNG ownership, unblocking C4/C5 transactions;
 ## Gate-Check Readiness
 
 > **Required before /gate-check pre-production:**
-> - [ ] Accept ADRs: none currently Proposed; acceptance still required after authoring.
-> - [ ] Write ADRs: F1–F3, C1–C6, S1–S3 and P1–P4 (allocate real ADR IDs when authored).
+> - [ ] Accept ADRs: all 16 remain Proposed; none Accepted.
+> - [x] Write ADRs: F1–F3, C1–C6, S1–S3 and P1–P4 now map to ADR-0001–0016.
 > - [x] QQ-08 resolved by owner decision 2026-11-18; Time Rule 8 updated.
 > - [ ] Owner reviews remaining open questions before affected decisions/content spending.
-> - [ ] Run /architecture-review — writes review and requirements-traceability.md and registers permanent TR IDs.
+> - [x] Run /architecture-review — 2026-11-18 CONCERNS; index and 521 permanent TR IDs written.
 > - [ ] Run /test-setup — scaffolds tests/unit, tests/integration, CI workflow and example test.
 > - [ ] Run /ux-design — creates design/ux/interaction-patterns.md and design/accessibility-requirements.md.
 >
 > Run /gate-check pre-production when all boxes are checked. This run does not claim gate readiness.
 
 ---
+
+## Owner Decisions O1–O4 — Resolved 2026-11-19
+
+Scott approved these answers; this does not accept any ADR or settle QQ-01–07/09/10.
+
+| Item | Owner decision | Follow-up |
+|---|---|---|
+| O1 | Preserve Critical whitelist. Snow is edible in Hypothermic, not Critical. | Test allowed/refused boundary; no new cooling cost. |
+| O2 | Floor each output separately on failed gathering; one bonus grass becomes 0. | Test bonus reserve unchanged on failure. |
+| O3 | >0.1 heat/radius threshold is visual-only; publish exact authoritative values to Thermal and Body every minute. | Test sub-threshold updates and extinguish before Body sampling. |
+| O4 | Keep Body ≤0.02 ms inclusive of Thermal; profile the full path. | Pending profiling: tighten Thermal per-query budget afterward; no new number approved. |
 
 ## Open Questions to Watch
 

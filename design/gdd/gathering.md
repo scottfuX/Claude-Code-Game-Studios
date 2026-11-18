@@ -3,7 +3,7 @@
 > **Status**: Designed (pending review)
 > **Creative Director Review (CD-GDD-ALIGN)**: skipped — Lean mode
 > **Author**: owner + Devin (game-designer / economy-designer / systems-designer lenses)
-> **Last Updated**: 2026-11-17
+> **Last Updated**: 2026-11-19
 > **Last Verified**: 2026-11-17
 > **Implements Pillar**: 冷是真的 · 越活越懂 · 亲手做
 
@@ -35,7 +35,7 @@ For the player Gathering is most of the day: the walk to wood, the work at the n
    | gather_stones | stone pile | none | 1 | heavy | 1 stone | none (cannot fail) |
 
    `gather_grass` and `gather_stones` are added to Interaction's catalogue (Map listed stones as `pick_up`; digging a frozen stone out of the snow is work, so it becomes a timed heavy action — Interaction and Map should adopt the new id).
-2. **Yield.** Each completion takes `take` units (or what is left) from the node's remaining yield (G1). On a Mishaps failure the player gets half, rounded down (chop: nothing — a glancing blow). The node's remaining yield falls by what was *attempted*, not what was kept, only on success; a failure leaves the node's yield untouched (the wood is still there; you fumbled it).
+2. **Yield.** Each completion takes `take` units (or what is left) from the node's remaining yield (G1). On a Mishaps failure the player gets half of each output separately, rounded down (one bonus grass becomes 0; chop: nothing — a glancing blow). The node's remaining yield falls by what was *attempted*, not what was kept, only on success; a failure leaves the node's yield untouched (the wood is still there; you fumbled it).
 3. **Dampness of produce** (G2, data table — the bushcraft lesson):
 
    | Source | Produce | Wetness at gathering | Why |
@@ -61,7 +61,7 @@ For the player Gathering is most of the day: the walk to wood, the work at the n
 | Entity | States | Transitions |
 |---|---|---|
 | Node (via Map) | full · partly used · emptied | each successful completion lowers remaining yield (G1); 0 → emptied |
-| Bush grass bonus | available · used up | while the bush has grass, each stick completion also gives 1 grass; after its 0–2 grass are taken, sticks only |
+| Bush grass bonus | available · used up | while the bush has grass, each successful stick completion also gives 1 grass; failed completions give 0 bonus grass and leave its reserve unchanged; after its 0–2 grass are taken, sticks only |
 
 ### Interactions with Other Systems
 
@@ -83,6 +83,8 @@ For the player Gathering is most of the day: the walk to wood, the work at the n
 `attempted = min(take[action, node], remaining)`
 `kept = success ? attempted : (action == chop_log ? 0 : floor(attempted / 2))`
 `remaining' = success ? remaining − attempted : remaining`
+
+Apply G1 independently to every output, including bonus grass (O2 resolved by Scott, 2026-11-19). A failed bush attempt at 3 sticks + 1 bonus grass keeps 1 stick + 0 grass and leaves both reserves unchanged.
 
 **Variables:**
 | Variable | Type | Range | Source | Description |
@@ -111,7 +113,7 @@ For the player Gathering is most of the day: the walk to wood, the work at the n
 
 **Example:** 8 logs (20 kg) with the 6.9 kg kit and a 25 kg pack → 18.1 kg free → **2 trips**, and the first is a hauling trip (load > 70 % → heavy work, slower: Inventory I2). From a near-ring deadfall (~30 m: 0.37 game h each way, MR3) the night's wood costs ≈ 0.6 h chopping + ≈ 1.5 h walking ≈ **2 game hours ≈ 3 real minutes** — a quarter of day 1's remaining light.
 
-*economy-designer + systems-designer lenses applied (Section D, high-risk in Lean mode): every variable at min, max and 0. Findings folded in: a node at 0 still offered work — emptied state removes it; failure consuming the node would double-punish — failures leave yield untouched; half of 1 = 0 lost silently — `floor` documented (1-unit takes keep 0 on failure, only stones and chop, which have 0 or own rules); produce lost to a full pack — overflow to ground. Faucet/sink: Gathering is the only fuel/tinder faucet (Map's finite nodes); Fire is the sink. No dominant strategy: dead bushes give the driest kindling but no logs; deadfall gives logs but damp; birch is the best tinder but needs the knife and is finite (6–8 trees within 100 m). The depletion loop (nearest first → longer trips) is intended.*
+*economy-designer + systems-designer lenses applied (Section D, high-risk in Lean mode): every variable at min, max and 0. Findings folded in: a node at 0 still offered work — emptied state removes it; failure consuming the node would double-punish — failures leave yield untouched; half of 1 = 0 lost silently — `floor` documented (1-unit takes keep 0 on failure, including bonus grass; stones cannot fail and chop has its own zero-output rule); produce lost to a full pack — overflow to ground. Faucet/sink: Gathering is the only fuel/tinder faucet (Map's finite nodes); Fire is the sink. No dominant strategy: dead bushes give the driest kindling but no logs; deadfall gives logs but damp; birch is the best tinder but needs the knife and is finite (6–8 trees within 100 m). The depletion loop (nearest first → longer trips) is intended.*
 
 ## Edge Cases
 
