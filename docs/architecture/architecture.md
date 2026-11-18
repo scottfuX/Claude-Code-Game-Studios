@@ -2,7 +2,7 @@
 
 ## Document Status
 
-- Version: 1
+- Version: 2
 - Last Updated: 2026-11-18
 - Engine: Godot 4.7.2.stable.official.ed1daf0bf; GDScript; Jolt; Forward+ desktop.
 - Scope: all 18 approved MVP systems, full architecture; no implementation or design revision.
@@ -12,6 +12,7 @@
 - LP-FEASIBILITY: 2026-11-18 — skipped — lean mode (formal independent gate).
 - Supplemental inline review: technical CONCERNS; feasibility CONCERNS. Not independent sign-off or owner acceptance.
 - Configuration: autonomous / standard / balanced / lean. Explicit full-mode request expands standard's simplified minimum to all phases.
+- QQ-08: resolved by owner decision 2026-11-18 — backpack/inventory does not pause time or ongoing actions; Time Rule 8 updated.
 
 ### Decision and evidence log
 
@@ -367,7 +368,7 @@ Rows extract each numbered rule, named formula and explicit edge case; their cit
 | TR-time-and-day-cycle-005 | [time-and-day-cycle.md](../../design/gdd/time-and-day-cycle.md), Detailed Design / Core Rules | Time & Day Cycle | Daylight shrinks. Each day has a daylight length D (Formula T1) that shrinks from 8.0 h on day 1 toward a 5.0 h floor — the run goes from late autumn into deep winter. Sunrise and sunset sit symmetrically around a fixed solar noon (T2). | Core | M2 / F1 |
 | TR-time-and-day-cycle-006 | [time-and-day-cycle.md](../../design/gdd/time-and-day-cycle.md), Detailed Design / Core Rules | Time & Day Cycle | Phases. Every minute belongs to exactly one phase: | Core | M2 / F1 |
 | TR-time-and-day-cycle-007 | [time-and-day-cycle.md](../../design/gdd/time-and-day-cycle.md), Detailed Design / Core Rules | Time & Day Cycle | Rate modes. How many real seconds a game minute lasts (T3): | Core | M2 / F1 |
-| TR-time-and-day-cycle-008 | [time-and-day-cycle.md](../../design/gdd/time-and-day-cycle.md), Detailed Design / Core Rules | Time & Day Cycle | Pause. While the game is paused, in a menu, loading, or in a full-screen UI, game time does not advance and no ticks are emitted. Whether the Diary's recording screen (VS) pauses time is the Diary GDD's call; the default is *paused*. | Core | M2 / F1 |
+| TR-time-and-day-cycle-008 | [time-and-day-cycle.md](../../design/gdd/time-and-day-cycle.md), Detailed Design / Core Rules | Time & Day Cycle | Pause. While the game is paused, loading, or in a menu or full-screen UI other than the backpack/inventory screen, game time does not advance and no ticks are emitted. Opening the backpack/inventory screen does not pause time or ongoing actions; ticks continue unless another pause is active (owner decision, 2026-11-18: "背包不暂停"). Whether the Diary's recording screen (VS) pauses time is the Diary GDD's call; the default is *paused*. | Core | M2 / F1 |
 | TR-time-and-day-cycle-009 | [time-and-day-cycle.md](../../design/gdd/time-and-day-cycle.md), Detailed Design / Core Rules | Time & Day Cycle | Catch-up on hitches. Real elapsed time is accumulated; each frame emits one minute_tick per whole game minute owed, up to max_ticks_per_frame (default 120). Any remainder carries to the next frame, so a hitch never drops or reorders minutes. | Core | M2 / F1 |
 | TR-time-and-day-cycle-010 | [time-and-day-cycle.md](../../design/gdd/time-and-day-cycle.md), Detailed Design / Core Rules | Time & Day Cycle | Published values (read any time): day, hour, minute_of_day, phase, is_night, sunrise_window, daylight_hours (today's D), sunrise_hour, sunset_hour, sun_progress (T5), rate_mode. | Core | M2 / F1 |
 | TR-time-and-day-cycle-011 | [time-and-day-cycle.md](../../design/gdd/time-and-day-cycle.md), Detailed Design / Core Rules | Time & Day Cycle | Events (signals): minute_tick, hour_changed(hour), day_changed(day), phase_changed(phase), nightfall, sunrise, rate_mode_changed(mode). | Core | M2 / F1 |
@@ -712,7 +713,7 @@ Rows extract each numbered rule, named formula and explicit edge case; their cit
 | TR-needs-and-weight-033 | [needs-and-weight.md](../../design/gdd/needs-and-weight.md), Dependencies / Acceptance Criteria | Needs & Weight | Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning. | Core | M13 / C5 |
 | TR-morale-and-mental-state-001 | [morale-and-mental-state.md](../../design/gdd/morale-and-mental-state.md), Detailed Design / Core Rules | Morale & Mental State | §1 Feeling map (owns the project-wide contract). Each feeling the owner named has one mechanical home, the show features that feed it, what relieves it, and how it is shown. Systems marked VS arrive in the Vertical Slice; their inputs are absent (zero) in the MVP. | Core | M14 / S3 |
 | TR-morale-and-mental-state-002 | [morale-and-mental-state.md](../../design/gdd/morale-and-mental-state.md), Detailed Design / Core Rules | Morale & Mental State | §2 Strain values. Each strain is a float 0–100 (0 = untouched, 100 = overwhelmed). L, F, G are stored and change by rate and by events (Formulas F1–F3). H and P are recomputed every tick from their source systems (F4–F5) and never stored. | Core | M14 / S3 |
-| TR-morale-and-mental-state-003 | [morale-and-mental-state.md](../../design/gdd/morale-and-mental-state.md), Detailed Design / Core Rules | Morale & Mental State | §3 Tick. Morale updates once per game minute while the game is unpaused, using the game-hour rates in Formulas scaled by elapsed game time. While sleeping, the sleep multipliers apply. Paused time, menus and loading accrue nothing. | Core | M14 / S3 |
+| TR-morale-and-mental-state-003 | [morale-and-mental-state.md](../../design/gdd/morale-and-mental-state.md), Detailed Design / Core Rules | Morale & Mental State | §3 Tick. Morale updates once per game minute while the game is unpaused, using the game-hour rates in Formulas scaled by elapsed game time. While sleeping, the sleep multipliers apply. Paused time, menus (excluding the non-pausing backpack/inventory per resolved QQ-08) and loading accrue nothing. | Core | M14 / S3 |
 | TR-morale-and-mental-state-004 | [morale-and-mental-state.md](../../design/gdd/morale-and-mental-state.md), Detailed Design / Core Rules | Morale & Mental State | §4 Resolve and state. After strains update, Resolve R (F6) is recomputed and the mental state is re-evaluated with hysteresis (States and Transitions). | Core | M14 / S3 |
 | TR-morale-and-mental-state-005 | [morale-and-mental-state.md](../../design/gdd/morale-and-mental-state.md), Detailed Design / Core Rules | Morale & Mental State | §5 Events in. Morale reacts to events, each applied once, in the fixed order Edge Cases defines (losses → failures → successes → comforts → rival/medical): | Core | M14 / S3 |
 | TR-morale-and-mental-state-006 | [morale-and-mental-state.md](../../design/gdd/morale-and-mental-state.md), Detailed Design / Core Rules | Morale & Mental State | §6 Ritual moments (detected by Morale). "Slow, ritual-like" beats are rewarded, never required: | Core | M14 / S3 |
@@ -890,7 +891,7 @@ All entries are missing, not Proposed/Accepted records. Backlog keys do not rese
 | Order / key | Required decision | Coverage / unblocks |
 |---|---|---|
 | 1 / F1 — Foundation | Run scene composition and service lifecycle | Cross-cutting lifecycle requirements of every system; co-covers all Input/Time TRs with F2/F3. Decide run-scoped versus autoload, dependency injection, immutable snapshots and subscription disposal/restart safety. |
-| 2 / F2 — Foundation | Input routing, contexts and UI pause requests | Co-covers all Input TRs with F1. Raw-event ownership, binding validation, buffers, disconnect recovery and Gameplay/UI/Locked transitions. Resolve QQ-08 before pause semantics are accepted. |
+| 2 / F2 — Foundation | Input routing, contexts and UI pause requests | Co-covers all Input TRs with F1. Raw-event ownership, binding validation, buffers, disconnect recovery and Gameplay/UI/Locked transitions. Implement decided QQ-08 semantics: backpack/inventory routes input to UI without pausing time or ongoing actions; explicit pause menu pauses all. |
 | 3 / F3 — Foundation | Ordered clock dispatch, typed events and run randomness | Co-covers all Time TRs with F1, and event/RNG requirements with C4/C5 and consumer ADRs. Pin real/game time boundaries, catch-up, minute order, rate arbitration, RNG state and terminal dispatch. |
 | 4 / C1 — Core | Authored map, Jolt terrain/snow grid and persistent trail representation | All Terrain and Map TRs. Terrain spike measures grid memory, query/mesh/collision costs, lifetime tracks, safe spawn/bounds and node depletion ownership. No new terrain addon approved without owner cost/license review. |
 | 5 / C2 — Core | Survivor locomotion, humanoid retargeting and animation/IK layers | All Character TRs. Leverage completed rig spike; verify C1 multiplier floor/grade, CharacterBody3D choice, footfall ordering, effort loops and TwoBoneIK. Final clip sourcing/cap remains owner question. |
@@ -899,7 +900,7 @@ All entries are missing, not Proposed/Accepted records. Backlog keys do not rese
 | 8 / C5 — Core | Body/Needs minute integration, sleep and terminal candidate ports | All Body and Needs TRs. Pin pre/post-step samples, activity maximum, wake ownership, grace/collapse timers, Critical whitelist and Clock mode arbitration against both GDDs; coordinate C4 terminal ordering. |
 | 9 / C6 — Core | Item/action data validation, inventory transfers and tool-use transactions | All Item Database/Inventory TRs. Immutable definitions, IDs/stack identity, conservation, partial fit/overflow, wetness merge/drying, durability/loss versus consumption and atomic owner commits. |
 
-Foundation/Core records above must be written and Accepted before implementation, not deferred until after a first sprint. The workflow catalog requires at least three Foundation ADRs; F1–F3 meet that denominator only after they are authored and Accepted. Resolve QQ-08 before committing backpack pause semantics in F1–F3. Owner budget decisions may remain pending only while profiling against explicitly proposed values; do not label min-spec compliance achieved.
+Foundation/Core records above must be written and Accepted before implementation, not deferred until after a first sprint. The workflow catalog requires at least three Foundation ADRs; F1–F3 meet that denominator only after they are authored and Accepted. F1–F3 must implement the owner-decided non-pausing backpack/inventory exception; QQ-08 is resolved. Owner budget decisions may remain pending only while profiling against explicitly proposed values; do not label min-spec compliance achieved.
 
 ### Should have before relevant system is built
 
@@ -911,7 +912,7 @@ Foundation/Core records above must be written and Accepted before implementation
 | P1 — Presentation | Camera framing arbitration, collision and projection ports | All Camera TRs; breakable tokens, stable yaw, occlusion/clearance, end-rise |
 | P2 — Presentation | Read-only emotional feedback layers and warm-hue-safe grade | All Emotional Feedback TRs; posture/beat priorities, cooldowns, Compositor resource pipeline, reduced-effects hooks and sparse score mix |
 | P3 — Presentation | Audio buses, survivor listener and prioritized voice pool | All Ambient/Foley TRs; <=24 voices, cause pre-roll, AF1–AF5, explicit area masks |
-| P4 — Presentation | Non-numeric HUD and MVP inventory facade contracts | All HUD TRs; glyphs/context, icon/band/arc hierarchy, safe-area/projection and pause semantics once QQ-08 is answered |
+| P4 — Presentation | Non-numeric HUD and MVP inventory facade contracts | All HUD TRs; glyphs/context, icon/band/arc hierarchy, safe-area/projection and decided QQ-08 semantics: backpack/inventory keeps time/actions running; pause menu pauses all |
 
 ### Can defer to implementation / later approved phase
 
@@ -939,7 +940,8 @@ Deviation: requester directed inline director/reviewer work instead of subagent 
 - All 18 MVP systems and all 521 provisional baseline rows have architecture support and named missing-ADR coverage. No existing ADR closes a gap.
 - Attempt to disprove layering: Core Thermal/Body might require concrete Fire; source registration/value ports avoid that import. Character/Camera mutual data reads use stable snapshots rather than construction cycles.
 - Attempt to disprove cancellation safety: animation callbacks and buffered inputs could double-commit at immersion/completion. Token validation plus forced-cancel/terminal arbitration before commit is required C4 behavior; tests must exercise the exact boundary.
-- Remaining concerns: QQ-08 is a real conflicting pause contract, not permission to choose; Foundation/Core ADRs are missing; snow/IK/runtime APIs and min-spec budgets are unmeasured. Thus this is a blueprint ready for ADR work, **not ready for implementation or the pre-production gate**.
+- QQ-08 resolved by owner decision 2026-11-18: backpack/inventory does not pause time or ongoing actions; Time Rule 8 now matches Interaction's Edge Case.
+- Remaining concerns: Foundation/Core ADRs are missing; snow/IK/runtime APIs and min-spec budgets are unmeasured. Thus this is a blueprint ready for ADR work, **not ready for implementation or the pre-production gate**.
 
 ### Supplemental inline feasibility review — CONCERNS
 
@@ -961,9 +963,9 @@ GDScript value models, a composed SceneTree, CharacterBody3D and explicit signal
 
 ## Open Questions for the Owner
 
-All entries remain **OPEN**. Recommended defaults are starting recommendations only; no design/budget/cost decision is settled here. Resolved hurry, 45° turns, tap-to-start and immersion rules are not reopened.
+All entries except QQ-08 remain **OPEN**. Recommended defaults for open entries are starting recommendations only; no other design/budget/cost decision is settled here. QQ-08 records the owner's 2026-11-18 decision. Resolved hurry, 45° turns, tap-to-start and immersion rules are not reopened.
 
-| ID | Question / owner call | Recommended default (not approved) | Priority / resolution path |
+| ID | Question / owner call | Recommended default (open) / recorded decision (resolved) | Priority / resolution path |
 |---|---|---|---|
 | QQ-01 | Minimum macOS/Windows hardware, target resolution, final fps/frame/draw/memory budgets and measurement policy? | Use 60 fps, 16.6 ms, 500 draws and 2048 MB as PROPOSED profiling targets; validate 720p readability and profile intended shipping resolution on nominated devices before adopting final numbers. | High; owner + terrain/performance spike, then separate config approval |
 | QQ-02 | Final animation sourcing/licensing/tool spend and survivor triangle cap? | Keep the working 3,222-triangle/23-bone mesh for evaluation; try compatible legally usable retargeted clips and hand-key gaps. Authorize no paid Cascadeur/asset/animator purchase; do not impose a new 3,000 or 4,500 cap without owner decision. | High; C2/clip-quality review |
@@ -972,13 +974,13 @@ All entries remain **OPEN**. Recommended defaults are starting recommendations o
 | QQ-05 | Are cold curve/fire-out-to-death harshness, fuel/night loads, gathering duration, strike reliability, frustration/Breaking recovery, loneliness accumulation, ember-window slack and 20 s feedback cooldown emotionally right? | Keep all approved data unchanged; collect day-1/night-1/day-3 and Breaking recovery evidence. Do not soften/extend/add relief just to make tests easier. | High; owner MVP playtest, revisions only after decision |
 | QQ-06 | MVP duration and later survival scope, session pacing and finite resources: should scope/timing change? | Keep harsh first-day/night plus day-3 hunger validation, existing 90/60 s game-hour rates, 240 m map and seeded placement. Food remains sink-only; defer longer-run support to its approved later design, without stacking more attention demands. | Medium; owner scope review before VS |
 | QQ-07 | Activate sleeping-bag bonus, snow-intake cooling, hunger-to-heat coupling, arm-carried logs, auto-chop/repeat swings, required stone ring, special “give up” behavior, or new late-curve relief? | Add none. Preserve insulation 1.0, no new cold_intake, backpack logs, one chosen gathering completion, current optional ring and no morale action refusal. These need explicit design revision, not an implementation shortcut. | High before any affected build; owner/design ADR input |
-| QQ-08 | Backpack pause conflict: Time Rule 8 pauses menus/full-screen UI, but Interaction Edge Cases says backpack does not pause and action continues. Which exception is intended? | Recommend the more specific Interaction exception: backpack routes Input to UI but simulation/action timer continue; explicit pause menu pauses all. **Do not settle or implement this recommendation until owner resolves the conflicting approved texts.** | High; owner clarification before F1/P4 pause semantics |
+| QQ-08 | **RESOLVED — owner decision 2026-11-18: 背包不暂停.** | Backpack/inventory routes Input to UI but does not pause time or ongoing actions; opening it does not cancel. Explicit pause menu pauses all. Time Rule 8 updated to match Interaction's backpack Edge Case. | Resolved; implement in F1–F3/P4 |
 | QQ-09 | HUD changes: hide body band entirely when calm, show dawn day-number card, richer MVP backpack, reduced-effects options now? | Keep approved 35% calm band, no gameplay numbers, minimal list, 100% scale and current MVP defaults/hooks; no additional screen/settings scope. | Medium; P4 / owner MVP usability playtest |
 | QQ-10 | Later keepsake indirect survival value, silhouette-thinning art cost, wildlife sounds, music/rumble and deferred systems' new scope? | No additions in MVP; keep existing future contracts dormant and revisit during their already-deferred design phases. No spending or scope approval implied. | Low; owner at relevant later phase |
 
 ## Architecture Complete
 
-docs/architecture/architecture.md v1 — TD-ARCHITECTURE: skipped — lean mode. All 18 MVP systems have layers, state ownership, data flow, interfaces and provisional traceability; inline self-reviews record concerns, not owner acceptance.
+docs/architecture/architecture.md v2 — TD-ARCHITECTURE: skipped — lean mode. All 18 MVP systems have layers, state ownership, data flow, interfaces and provisional traceability; inline self-reviews record concerns, not owner acceptance.
 
 ---
 
@@ -988,7 +990,7 @@ docs/architecture/architecture.md v1 — TD-ARCHITECTURE: skipped — lean mode.
 Defines Foundation initialization, ownership, dependency injection and teardown; prevents run state/listeners surviving restart.
 
 **2. /architecture-decision "Input routing, contexts and UI pause requests" → ADR-[allocate via registry; F2]**
-Defines Foundation input-context and pause ports; QQ-08 requires owner clarification before accepting backpack pause behavior.
+Defines Foundation input-context and pause ports, including decided QQ-08 behavior: backpack/inventory does not pause time or ongoing actions; explicit pause menu pauses all.
 
 **3. /architecture-decision "Ordered clock dispatch, typed events and run randomness" → ADR-[allocate via registry; F3]**
 Defines Foundation game-time/event/RNG ownership, unblocking C4/C5 transactions; terrain C1 and Character C2 follow with spike evidence and owner clip sourcing.
@@ -1002,7 +1004,8 @@ Defines Foundation game-time/event/RNG ownership, unblocking C4/C5 transactions;
 > **Required before /gate-check pre-production:**
 > - [ ] Accept ADRs: none currently Proposed; acceptance still required after authoring.
 > - [ ] Write ADRs: F1–F3, C1–C6, S1–S3 and P1–P4 (allocate real ADR IDs when authored).
-> - [ ] Resolve QQ-08 before accepting the pause contract; owner reviews other questions before affected decisions/content spending.
+> - [x] QQ-08 resolved by owner decision 2026-11-18; Time Rule 8 updated.
+> - [ ] Owner reviews remaining open questions before affected decisions/content spending.
 > - [ ] Run /architecture-review — writes review and requirements-traceability.md and registers permanent TR IDs.
 > - [ ] Run /test-setup — scaffolds tests/unit, tests/integration, CI workflow and example test.
 > - [ ] Run /ux-design — creates design/ux/interaction-patterns.md and design/accessibility-requirements.md.
@@ -1022,7 +1025,6 @@ Defines Foundation game-time/event/RNG ownership, unblocking C4/C5 transactions;
 | QQ-05 | Survival/emotional tuning | High | owner MVP playtest |
 | QQ-06 | Scope/session pacing/resources | Medium | owner before VS |
 | QQ-07 | Design additions needing explicit revision | High | owner/design decision |
-| QQ-08 | Conflicting backpack pause contracts | High | owner clarification / F1/P4 |
 | QQ-09 | HUD/settings scope changes | Medium | owner usability review / P4 |
 | QQ-10 | Deferred content/cost choices | Low | owner in relevant later phase |
 

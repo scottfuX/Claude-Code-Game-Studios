@@ -3,7 +3,7 @@
 > **Status**: Designed (pending review)
 > **Creative Director Review (CD-GDD-ALIGN)**: skipped — Lean mode
 > **Author**: owner + Devin (systems-designer / game-designer lenses)
-> **Last Updated**: 2026-11-16
+> **Last Updated**: 2026-11-18
 > **Last Verified**: 2026-11-16
 > **Implements Pillar**: 冷是真的 · 苦中有美
 
@@ -39,7 +39,7 @@ What Time does **not** own: air temperature and the day-over-day cold ramp (Ther
    - `wait` — the player chose to wait/rest (e.g. by the fire); faster.
    - `sleep` — the player is asleep; much faster, a skip.
    Other systems request a mode with `request_rate_mode(mode, reason)`; Time applies it at the next minute boundary. Needs & Weight requests `sleep` when `is_asleep` turns true and `normal` when it turns false; Interaction requests `wait`. Any system may request `normal` to interrupt (fire going out, dangerous cold) — `normal` always wins over `wait` and `sleep` in the same minute.
-8. **Pause.** While the game is paused, in a menu, loading, or in a full-screen UI, game time does not advance and no ticks are emitted. Whether the Diary's recording screen (VS) pauses time is the Diary GDD's call; the default is *paused*.
+8. **Pause.** While the game is paused, loading, or in a menu or full-screen UI other than the backpack/inventory screen, game time does not advance and no ticks are emitted. Opening the backpack/inventory screen does not pause time or ongoing actions; ticks continue unless another pause is active (owner decision, 2026-11-18: "背包不暂停"). Whether the Diary's recording screen (VS) pauses time is the Diary GDD's call; the default is *paused*.
 9. **Catch-up on hitches.** Real elapsed time is accumulated; each frame emits one `minute_tick` per whole game minute owed, up to `max_ticks_per_frame` (default 120). Any remainder carries to the next frame, so a hitch never drops or reorders minutes.
 10. **Published values** (read any time): `day`, `hour`, `minute_of_day`, `phase`, `is_night`, `sunrise_window`, `daylight_hours` (today's D), `sunrise_hour`, `sunset_hour`, `sun_progress` (T5), `rate_mode`.
 11. **Events** (signals): `minute_tick`, `hour_changed(hour)`, `day_changed(day)`, `phase_changed(phase)`, `nightfall`, `sunrise`, `rate_mode_changed(mode)`.
@@ -250,6 +250,7 @@ Optional for a Core system; written because Time drives the day/night look the a
 18. [A] **GIVEN** Morale's per-day fire-ritual cap used up, **WHEN** `day_changed` fires, **THEN** Morale's cap counter is 0 again (integration test).
 19. [P] **GIVEN** the MVP first day, **WHEN** the owner plays it, **THEN** they can say roughly how much daylight is left from the sky alone, and report the day did not feel slow (PIVOT check).
 20. [P] **GIVEN** a captured day-1 and day-31 dusk at the same game hour, **WHEN** compared, **THEN** the day-31 screenshot is visibly darker (evidence pair).
+21. [A] **GIVEN** an unpaused game with an action running, **WHEN** the backpack/inventory screen opens, **THEN** game time and minute ticks continue and the action keeps running; **WHEN** the pause menu opens, **THEN** time, ticks and the action pause.
 
 **Performance:** ≤ 0.02 ms per tick for Time itself; at sleep rate ≤ 20 ticks per real second, so the per-tick cost of all subscribers must stay ≤ 0.5 ms combined (budget passed to Architecture).
 
