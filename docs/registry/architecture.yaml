@@ -243,6 +243,16 @@ state_ownership:
     added: 2026-11-18
     revised: ""
 
+  - state: nonnumeric_hud_and_inventory_facade_presentation
+    status: active
+    owner_system: SurvivalHud
+    adr: docs/architecture/adr-0016-non-numeric-hud-and-mvp-inventory-facade-contracts.md
+    interface: "render_snapshot; set_visibility_context; stable-ID owner commands; InputRouter context/pause requests only"
+    referenced_by: []
+    notes: "Proposed source; no numbers/morale meter/model writes, <=3icons,18px/720p and5% safe area, final Camera projection40px survivor clearance; resolved QQ-08 backpack nonpause, explicit pause token."
+    added: 2026-11-18
+    revised: ""
+
 # Example:
 #
 # state_ownership:
