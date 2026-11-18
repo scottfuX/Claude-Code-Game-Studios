@@ -103,7 +103,7 @@ Foot contacts originate in animation method tracks at C5 cadence, alternating le
 
 ## Risks
 - Inline godot-specialist review: CharacterBody3D, AnimationTree, Skeleton3D and BoneAttachment3D fit references; use AnimationMixer.active and skeleton_updated. 4.6+ IK specifics and Jolt stair/floor behavior remain unverified. Prototype validates only its documented import/layer/track subset. TD-ADR skipped — Lean mode; no independent approval.
-- GDD sync checked Character, Terrain, Body, Needs, Inventory, Interaction and Time (7). Known API-name mismatch: Character calls Needs output `needs_move_speed_mult` while Needs GDD still says `move_speed_mult`; use an explicitly named adapter, retain owner output, report GDD amendment separately. Known Time Rule8 full-screen pause conflict remains pending QQ-08 correction; no GDD edited.
+- GDD sync checked Character, Terrain, Body, Needs, Inventory, Interaction and Time (7). Character and Needs both publish the distinct `needs_move_speed_mult` name; keep it separate from Body's `move_speed_mult` (no rename needed). The C5 audit corrected this author's initial mismatch note. Known Time Rule8 full-screen pause conflict remains pending QQ-08 correction; no GDD edited.
 - C7's rounded loops plus playback clamp need deadline blending for arbitrary durations/intro+outro overflow; do not reinterpret the formula as authority over action timing.
 - Autonomous calls: Proceed with problem/three technical choices and Foundation/C1 dependencies; separate design tabs chose CharacterBody3D, model-driven C1–C6 and retargeted AnimationTree/IK with C7 loops; ADR-only write; append registry; continue requested C3. QQ-02 cap/source and QQ-01/04 performance/framing remain undecided.
 

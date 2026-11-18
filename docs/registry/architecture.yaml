@@ -122,7 +122,7 @@ state_ownership:
     adr: docs/architecture/adr-0005-survivor-locomotion-humanoid-retargeting-and-animation-ik-layers.md
     interface: "read-only position/velocity/facing; movement activity; play_action(id,duration_s) with token; per-foot contacts"
     referenced_by: []
-    notes: "Proposed source; C1 product floor once, Critical crawl without Body0.40; pose callbacks never commit actions, pre-stamp contact sample shared; Needs name mismatch uses adapter."
+    notes: "Proposed source; C1 product floor once, Critical crawl without Body0.40; pose callbacks never commit actions, pre-stamp contact sample shared; distinct needs_move_speed_mult already matches Needs GDD."
     added: 2026-11-18
     revised: ""
 
@@ -152,6 +152,25 @@ state_ownership:
     interface: "resolve_attempt(attempt) -> Outcome; check_ice(footfall); export/restore guards plus injected run random-state view"
     referenced_by: []
     notes: "Proposed source; sole F3 run RNG, stable draw ledger; no-profile/cancelled work no roll, physical cause only, owner-requested once-only consequences."
+    added: 2026-11-18
+    revised: ""
+
+  - state: body_core_wetness_stage_and_critical_whitelist
+    status: active
+    owner_system: BodyThermoregulation
+    adr: docs/architecture/adr-0008-body-needs-minute-integration-sleep-and-terminal-candidate-ports.md
+    interface: "step_minute(context); apply_immersion(event_id); snapshot() -> BodySnapshot; cold wake and hypothermia candidate ports"
+    referenced_by: []
+    notes: "Proposed source; B1 pre-step wetness/stage/shiver, independent B2, post-step shiver/stage to Needs; Body alone owns allowed_actions."
+    added: 2026-11-18
+    revised: ""
+  - state: needs_stores_timers_stages_and_sleep
+    status: active
+    owner_system: NeedsModel
+    adr: docs/architecture/adr-0008-body-needs-minute-integration-sleep-and-terminal-candidate-ports.md
+    interface: "try_eat(stack_id); try_eat_snow(); request_sleep(); wake(causes); detached NeedsSnapshot and dehydration candidate"
+    referenced_by: []
+    notes: "Proposed source; sole is_asleep owner; per-table activity max, stomach-first burn, zero/grace timers, one coalesced wake; snow/Critical GDD contradiction flagged before acceptance."
     added: 2026-11-18
     revised: ""
 
@@ -240,6 +259,18 @@ interfaces:
     interface: "validate_plan; commit_plan with consequence_id; submit_terminal_candidate; forced cancel before completion checkpoint"
     referenced_by: []
     notes: "Proposed source; non-yielding owner commits, cause before result, exactly one terminal; hypothermia > dehydration, death > collapse/immersion; Rule7 immersion already resolved."
+    added: 2026-11-18
+    revised: ""
+
+  - contract: survival_pre_post_samples_and_wake_mode_barrier
+    status: active
+    pattern: direct_call
+    producer: RunCoordinator
+    consumers: [BodyThermoregulation, NeedsModel, Clock, ActionRunner]
+    adr: docs/architecture/adr-0008-body-needs-minute-integration-sleep-and-terminal-candidate-ports.md
+    interface: "MinuteStart -> BodyStepResult -> NeedsStepResult -> C4 terminal gate -> coalesced wake and Clock normal/sleep/wait arbitration"
+    referenced_by: []
+    notes: "Proposed source; captured sleep/fullness/stages, post-Body shiver/stage, per-minute integration even in skip; normal wins before next tick, no Fire low alarm; no duplicate public terminal."
     added: 2026-11-18
     revised: ""
 
