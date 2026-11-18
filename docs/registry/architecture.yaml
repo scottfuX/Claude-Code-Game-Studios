@@ -174,6 +174,25 @@ state_ownership:
     added: 2026-11-18
     revised: ""
 
+  - state: immutable_item_action_definitions
+    status: active
+    owner_system: ItemCatalog
+    adr: docs/architecture/adr-0009-item-action-data-validation-inventory-transfers-and-tool-use-transactions.md
+    interface: "definition(item_id) -> detached ItemDefinition; validated action/profile/tool/resolver references"
+    referenced_by: []
+    notes: "Proposed source; data rows/Resource import only, no mutable stack fields or cached Resource aliases; unknown/missing fields refuse, table defaults only where GDD permits."
+    added: 2026-11-18
+    revised: ""
+  - state: inventory_stacks_containers_wetness_durability_and_loss
+    status: active
+    owner_system: InventoryModel
+    adr: docs/architecture/adr-0009-item-action-data-validation-inventory-transfers-and-tool-use-transactions.md
+    interface: "add_or_pile; consume; use_tool; prepare_transfer; validate_plan; commit_plan with consequence_id; detached load/stack snapshots"
+    referenced_by: []
+    notes: "Proposed source; unique conserved stack IDs/containers, partial fit and overflow pile, mass-weighted wetness, I4 once/minute, I5 one use/completion; consumption/drop not loss, break/lost tool is loss."
+    added: 2026-11-18
+    revised: ""
+
 # Example:
 #
 # state_ownership:
@@ -271,6 +290,18 @@ interfaces:
     interface: "MinuteStart -> BodyStepResult -> NeedsStepResult -> C4 terminal gate -> coalesced wake and Clock normal/sleep/wait arbitration"
     referenced_by: []
     notes: "Proposed source; captured sleep/fullness/stages, post-Body shiver/stage, per-minute integration even in skip; normal wins before next tick, no Fire low alarm; no duplicate public terminal."
+    added: 2026-11-18
+    revised: ""
+
+  - contract: inventory_atomic_owner_plans
+    status: active
+    pattern: direct_call
+    producer: ActionRunner
+    consumers: [InventoryModel, NeedsModel, FireController, GatheringResolver, WorldMap]
+    adr: docs/architecture/adr-0009-item-action-data-validation-inventory-transfers-and-tool-use-transactions.md
+    interface: "prepare all success/failure branches -> validate owner revisions -> non-yielding commit -> queued notifications"
+    referenced_by: []
+    notes: "Proposed source; no mutation/RNG on preflight refusal; accepted use may break tool without cancelling own result; stale/duplicate plans inert, no foreign writes."
     added: 2026-11-18
     revised: ""
 
