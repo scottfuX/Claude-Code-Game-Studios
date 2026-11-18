@@ -583,7 +583,7 @@ func _player_step(delta: float) -> void:
 			_foot_acc = 0.0
 			_footprint()
 	else:
-		_bob_phase = lerp(_bob_phase, 0.0, delta * 6.0)
+		_bob_phase = lerp(_bob_phase, 0.0, minf(delta * 6.0, 1.0))
 	_anim_step(delta)
 	# world edge
 	_player.position.x = clampf(_player.position.x, -39.0, 39.0)
@@ -627,9 +627,9 @@ func _anim_step(delta: float) -> void:
 		_visual.rotation.x = 0.09
 		_visual.rotation.z = sin(_bob_phase * 0.5) * 0.05
 	else:
-		_visual.position.y = lerp(_visual.position.y, 0.0, delta * 8.0)
-		_visual.rotation.x = lerp(_visual.rotation.x, 0.0, delta * 8.0)
-		_visual.rotation.z = lerp(_visual.rotation.z, 0.0, delta * 8.0)
+		_visual.position.y = lerp(_visual.position.y, 0.0, minf(delta * 8.0, 1.0))
+		_visual.rotation.x = lerp(_visual.rotation.x, 0.0, minf(delta * 8.0, 1.0))
+		_visual.rotation.z = lerp(_visual.rotation.z, 0.0, minf(delta * 8.0, 1.0))
 	# fade footprints
 	for mi in get_children():
 		if mi is MeshInstance3D and mi.has_meta("t"):
