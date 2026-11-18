@@ -203,6 +203,16 @@ state_ownership:
     added: 2026-11-18
     revised: ""
 
+  - state: morale_stored_strains_streaks_relief_caps_and_offers
+    status: active
+    owner_system: MoraleModel
+    adr: docs/architecture/adr-0012-morale-event-ordering-strain-integration-and-relief-limits.md
+    interface: "enqueue_event; step_minute; snapshot; state_changed/strain_spike/tap_out_offer"
+    referenced_by: []
+    notes: "Proposed source; loss/failure/success/comfort/rival-medical order, timestamped120min streaks distinct from fumble guards, one state step, bounded rituals/wind/offers; H/P/R derived, no HUD or terminal authority."
+    added: 2026-11-18
+    revised: ""
+
 # Example:
 #
 # state_ownership:
