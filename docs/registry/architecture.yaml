@@ -97,6 +97,25 @@ state_ownership:
     added: 2026-11-18
     revised: ""
 
+  - state: terrain_surface_grid_and_persistent_marks
+    status: active
+    owner_system: TerrainSurface
+    adr: docs/architecture/adr-0004-authored-map-jolt-terrain-snow-grid-and-persistent-trail-representation.md
+    interface: "surface_at(p, grade_deg=0); stamp_footfall(event); break_ice(cell_id); detached surface samples"
+    referenced_by: []
+    notes: "Proposed source; packed authoritative cells, pre-stamp contact sample, per-cell real cooldown, whole-run marks; no Terrain movement or break RNG. Spike unmeasured."
+    added: 2026-11-18
+    revised: ""
+  - state: authored_map_and_remaining_node_yields
+    status: active
+    owner_system: WorldMap
+    adr: docs/architecture/adr-0004-authored-map-jolt-terrain-snow-grid-and-persistent-trail-representation.md
+    interface: "zone_at(p); node_snapshot(id); deplete_node(id, attempted_units); playable bounds/drop/safe shore ports"
+    referenced_by: []
+    notes: "Proposed source; stable seeded scatter/IDs and finite sole-owner yields, once-only success depletion, no MVP regrowth; guarantees safe drop/camp content."
+    added: 2026-11-18
+    revised: ""
+
 # Example:
 #
 # state_ownership:
@@ -235,6 +254,16 @@ api_decisions:
     not: global-or-per-consumer-gameplay-RNG
     adr: docs/architecture/adr-0003-ordered-clock-dispatch-typed-events-and-run-randomness.md
     reason: "Proposed ADR; deterministic same-pin draw order and seed/state/position restore; exact engine state APIs require runtime verification."
+    referenced_by: []
+    added: 2026-11-18
+    revised: ""
+
+  - purpose: terrain_and_persistent_trail_representation
+    status: active
+    api: built-in-heightmap-mesh-HeightMapShape3D-Jolt-and-dirty-chunk-trail-renderer
+    not: unapproved-terrain-addon-or-expiring-authoritative-marks
+    adr: docs/architecture/adr-0004-authored-map-jolt-terrain-snow-grid-and-persistent-trail-representation.md
+    reason: "Proposed source; no addon cost/license approval; exact collision/render adapters, full-run memory and frame costs require spike evidence."
     referenced_by: []
     added: 2026-11-18
     revised: ""
