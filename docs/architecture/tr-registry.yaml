@@ -37,33 +37,4176 @@
 #   its fields sit two columns past the dash. Quote a value that holds ": ". A
 #   line in any other shape is reported as unsupported layout, with its number.
 
-version: 1
-last_updated: ""
+version: 2
+last_updated: "2026-11-18"
 
-requirements: []
+requirements:
+- id: TR-input-and-action-map-001
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "Actions only. No gameplay or UI code reads a raw key, button or axis. All input is read through named actions in the project's InputMap (defined in project.godot, not created at runtime). Action names are a contract shared with consuming GDDs."
+  created: 2026-11-18
+  revised: ""
+  status: active
 
-# --- EXAMPLE ENTRIES (remove when first real entries are added) ---
-#
-# - id: TR-combat-001
-#   system: combat
-#   gdd: design/gdd/combat-system.md
-#   requirement: "Player takes damage from enemies based on attack power minus defence"
-#   created: 2026-03-10
-#   revised: ""
-#   status: active
-#
-# - id: TR-combat-002
-#   system: combat
-#   gdd: design/gdd/combat-system.md
-#   requirement: "Combo window timing is 0.4 seconds between hits"
-#   created: 2026-03-10
-#   revised: "2026-04-01"
-#   status: active
-#
-# - id: TR-combat-003
-#   system: combat
-#   gdd: design/gdd/combat-system.md
-#   requirement: "Old damage formula using raw stats"
-#   created: 2026-03-10
-#   revised: ""
-#   status: "superseded-by: TR-combat-001"
+- id: TR-input-and-action-map-002
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "Action set (MVP unless marked):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-003
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "Default bindings:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-004
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "Contexts. Exactly one is active:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-005
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "One meaning per key per context. At load, the binding table is validated: no input event may be bound to two actions in the same context (UI and Gameplay are checked separately; built-in ui_* events overlapping gameplay keys are allowed because the contexts never run together). A conflict rejects that binding and logs an error."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-006
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "Reading presses (IN2): every press/hold action reports pressed, released, held_seconds (real time) and a classification — tap (released before tap_max_s) or hold (held ≥ hold_min_s). Consumers choose which they use; Interaction decides whether a timed action needs E held or just started."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-007
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "Hold-to-confirm for irreversible choices. Actions that end the run or destroy something (VS: radio tap-out) require holding for hold_confirm_s (default 1.5 s real time) with a visible fill; releasing early does nothing. radio stays reachable in the UI context and in Body Temperature's Critical stage — tapping out is never blocked by input routing."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-008
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "Buffer. A press of interact, secondary or cancel_action made while the consumer cannot accept it (an action is finishing) is kept for buffer_s (default 0.15 s) and delivered when it can, then dropped (IN3)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-009
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "Active device and glyphs. The most recent meaningful input (a key, a button, or a stick past the deadzone) sets active_device to keyboard_mouse or gamepad; HUD prompts and screens show matching glyphs. Device identity is read from the event *type*, never from device == 0 (Godot 4.7 change)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-010
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "Disconnects. If the active gamepad disconnects during Gameplay, the game pauses and shows a reconnect prompt; keyboard input still works."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-011
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "Remapping. All bindings are data and remappable per action (accessibility floor). The MVP ships the defaults; the remap screen arrives with Save/Load & Settings (Alpha). Remaps are validated by Rule 5."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-012
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "Real time, not game time. All input timings are real seconds and are not affected by Time & Day Cycle's rate modes or pause."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-013
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "IN1 — Move vector with radial deadzone. The move_vector formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-014
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "IN2 — Press classification. The press_class rule is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-015
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "IN3 — Buffer. The buffered_press rule is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-016
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "If keyboard and gamepad move at the same time: use the larger-magnitude vector; active_device follows the newer meaningful input."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-017
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "If a stick drifts below the deadzone: no movement and no device switch."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-018
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "If a screen opens while E is held: the hold is cleared; closing the screen does not fire E."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-019
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "If the active gamepad disconnects during gameplay: pause and show the reconnect prompt; reconnecting does not auto-resume (the player unpauses)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-020
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "If a gamepad disconnects while the keyboard is the active device: nothing happens."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-021
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "If two actions share a key in the same context (bad data or a remap): reject the newer binding, keep the old, log an error; the remap screen (Alpha) shows the conflict."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-022
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "If radio is released at 99 % progress: nothing happens; the fill drains back."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-023
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "If the game is paused during a hold: the hold is cleared (context changes to UI)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-024
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "If a Time sleep skip is running: input still works in real time; cancel_action or any interrupt is handled by Interaction/Needs."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-025
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "If a press arrives during Locked: dropped (only pause_menu is live)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-026
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "If two buffered presses of different actions arrive: each action keeps its own buffer; consumers decide priority."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-027
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "If input focus differs between mouse and gamepad in menus (Godot 4.6 dual focus): keyboard/gamepad focus drives ui_*; mouse hover never moves gamepad focus."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-input-and-action-map-028
+  system: input-and-action-map
+  gdd: design/gdd/input-and-action-map.md
+  requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-001
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "One clock. Game time is a single value: day (int, ≥ 1) and minute_of_day (0–1439). hour = minute_of_day / 60 (float, 0–24). No other system keeps its own clock."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-002
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "The tick. Time emits minute_tick once per game minute, in order, never skipping a minute — including during waiting and sleep. Systems integrate their per-game-hour rates on this tick (Morale §3 relies on this)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-003
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "Day boundary. day increments when minute_of_day wraps from 1439 to 0 (midnight), emitting day_changed(day). \"Per day\" caps in other systems (e.g. Morale's 3 fire rituals per day) reset at this boundary."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-004
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "Run start. A run starts on day 1 at start_hour (default 13:00) — the drop happens in the early afternoon, so the first day is short and the brief's \"天黑前要有火\" is a real deadline."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-005
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "Daylight shrinks. Each day has a daylight length D (Formula T1) that shrinks from 8.0 h on day 1 toward a 5.0 h floor — the run goes from late autumn into deep winter. Sunrise and sunset sit symmetrically around a fixed solar noon (T2)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-006
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "Phases. Every minute belongs to exactly one phase:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-007
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "Rate modes. How many real seconds a game minute lasts (T3):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-008
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "Pause. While the game is paused, loading, or in a menu or full-screen UI other than the backpack/inventory screen, game time does not advance and no ticks are emitted. Opening the backpack/inventory screen does not pause time or ongoing actions; ticks continue unless another pause is active (owner decision, 2026-11-18: \"背包不暂停\"). Whether the Diary's recording screen (VS) pauses time is the Diary GDD's call; the default is *paused*."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-009
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "Catch-up on hitches. Real elapsed time is accumulated; each frame emits one minute_tick per whole game minute owed, up to max_ticks_per_frame (default 120). Any remainder carries to the next frame, so a hitch never drops or reorders minutes."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-010
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "Published values (read any time): day, hour, minute_of_day, phase, is_night, sunrise_window, daylight_hours (today's D), sunrise_hour, sunset_hour, sun_progress (T5), rate_mode."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-011
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "Events (signals): minute_tick, hour_changed(hour), day_changed(day), phase_changed(phase), nightfall, sunrise, rate_mode_changed(mode)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-012
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "Run end is not Time's. Time keeps counting until Tap-out & Run Results ends the run. day never exceeds run_max_days (default 60): at the midnight that would start day 61, Time emits run_day_cap_reached and holds at the last minute of day 60 until the run ends (normally Results ends it long before)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-013
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "T1 — Daylight length. The daylight_hours formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-014
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "T2 — Sunrise and sunset. The sunrise_hour / sunset_hour formulas are defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-015
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "T3 — Real time per game minute. The real_seconds_per_game_minute formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-016
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "T4 — Real length of a game day (derived check, not a runtime rule). The real_minutes_per_day formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-017
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "T5 — Sun progress. The sun_progress formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-018
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "If wait/sleep and normal are requested in the same minute: normal wins (an alarm always beats a skip)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-019
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "If sleep is requested during wait: switch to sleep (valid transition). If wait is requested during sleep: ignore it and log a warning."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-020
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "If the player sleeps across midnight or across sunrise: every minute tick still fires in order; day_changed, sunrise and any per-day resets happen inside the skip exactly as when awake. Morale's homesick milestone at the dawn tick and its \"tap-out offer at wake-up if nightfall was slept through\" rule rely on this."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-021
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "If a frame owes more than max_ticks_per_frame minutes (hitch, or a very fast sleep rate): emit 120 ticks and carry the remainder; game time may lag real time briefly but never skips or reorders minutes."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-022
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "If the run starts after sunset (a future start option): the first nightfall is not emitted that day (it already passed); the next one is."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-023
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "If the game is paused during Dusk: no ticks; nightfall fires on the first unpaused minute it is due."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-024
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "If daylight has reached d_min: it stays there; sunrise/sunset stop moving."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-025
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "If day 61 would begin: emit run_day_cap_reached, hold the clock at 23:59 of day 60 until Results ends the run."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-026
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "If bad data fails validation (zero rate, d_min > d_start, twilight out of 0–24): reject the whole time table, log an error, use defaults."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-027
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "If a save is loaded mid-sleep: restore rate_mode = sleep and the fractional accumulator; Needs & Weight re-asserts is_asleep on the first tick."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-028
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "If two systems request normal in the same minute: one change, one rate_mode_changed; both reasons are logged."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-time-and-day-cycle-029
+  system: time-and-day-cycle
+  gdd: design/gdd/time-and-day-cycle.md
+  requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-001
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "Terrain shape. The map's landform is defined by a heightmap (resolution set by Map & Resource Distribution; target ≤ 1 m per sample). It provides height, surface normal and slope_deg at any point, plus collision. Slopes the player can walk are ≤ slope_max_deg (default 35°); steeper ground is impassable (cliffs, rock faces)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-002
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "Readable landform. Terrain is rendered with flat per-face shading (art bible §1 大块面, §3 \"雪地是缓坡大平面\"): every slope of 5° or more must show a visible value step between faces facing the sun and faces away from it at the gameplay camera, so the land reads without texture. The lake basin is a flat plane; drifts are long, soft mounds on the lee side of trees and rocks."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-003
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "Surface grid. A grid of cell_size_m cells covers the playable map. Each cell stores type, snow_depth_m (0–1.5) and compaction (0–c_max). Map & Resource Distribution authors the initial values; Weather (VS) adds snowfall."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-004
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "Surface types (data-file table):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-005
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "Ice. Every lake-ice cell has ice_thickness_cm (authored by Map; default 25 cm, thin spots 5–10 cm near inflows and the shore). Terrain only reports it; Mishaps & Failure decides when ice breaks and emits fell_in_water."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-006
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "Effective depth and sinking. The foot sinks into the *loose* part of the snow: effective depth = depth × (1 − compaction) (TS1). The visible sink of the body (TS2) is capped at knee-to-thigh height (sink_max_m, 0.45 m); Character Controller lowers the figure and hides the legs in the snow by that amount."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-007
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "Movement. The terrain speed multiplier (TS5) combines depth (TS3), uphill grade (TS4) and type. Character Controller multiplies it with its base speed and with Body Temperature's, Needs & Weight's and Inventory's movement multipliers."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-008
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "Wading. When effective depth ≥ wade_depth_m (default 0.25 m), moving reports the wade activity (TS6) — the value Body Temperature (+0.45 °C/h heat) and Needs & Weight (+120 kcal/h, −3.5 energy/h) already use."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-009
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "Footprints and trails. Each footfall stamps the cells under the foot: their compaction rises (TS7) and a footprint mark is recorded with depth = the sink at that moment. Footprints persist for the whole run (until snowfall fills them, VS). Cells walked often become a trail: visibly trodden, shallower effective depth, faster to walk. Trails are never authored — they are the player's history."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-010
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "Snowfall (VS contract). Weather adds snow_depth_m to cells (fresh snow on top: compaction is reduced in proportion — new loose snow over an old trail) and fills footprint marks by the same depth."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-011
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "Queries. surface_at(p) returns {type, snow_depth_m, compaction, effective_depth_m, sink_m, slope_deg, normal, terrain_speed_mult, is_wading, ice_thickness_cm, footstep_sound}. Results are deterministic for the same grid state."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-012
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "What Terrain never does. It never moves the character, never decides that ice breaks, never changes the heightmap at runtime (no digging in the MVP), and never shows numbers to the player."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-013
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "TS1 — Effective depth. The effective_depth_m formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-014
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "TS2 — Visible sink. The sink_m formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-015
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "TS3 — Depth slow-down. The depth_speed_mult formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-016
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "TS4 — Uphill slow-down. The slope_speed_mult formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-017
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "TS5 — Terrain speed. The terrain_speed_mult formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-018
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "TS6 — Wading. The is_wading rule is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-019
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "TS7 — Compaction per footfall. The compaction update is defined as (per footfall on a cell, at most once per cell per pass_cooldown_s):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-020
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "If a foot lands on a cell boundary: stamp every cell under the foot's footprint radius (≈ 0.15 m); each counts once per cooldown."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-021
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "If the player stands still or shuffles in place: no extra compaction (pass_cooldown_s); footprints are not re-stamped."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-022
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "If the slope along travel exceeds slope_max_deg: the move is blocked in that direction (Character slides along the contour); across the slope remains walkable."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-023
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "If the player walks out onto a thin-ice cell: Terrain reports thickness only; Mishaps decides; after a break the cell becomes open water (impassable except wading out at the shore edge — Character handles the climb-out)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-024
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "If a cell has snow_depth_m 0 on a snow type (scoured by wind): effective depth 0, no sink, no footprint, rock sound."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-025
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "If snowfall (VS) lands on a trail: new depth adds to the cell and compaction falls to compaction × old_depth / new_depth — the trail softens but does not vanish at once."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-026
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "If a query is outside the grid: return rock, slope from the heightmap, speed 1.0, and log a warning (map bounds should prevent it)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-027
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "If the grid would exceed its memory budget (very large map): Map must reduce the playable area or Terrain coarsens cells away from paths (ADR)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-028
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "If two systems query the same point in a tick: identical results (deterministic)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-029
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "If a save is loaded: cell state and footprint marks restore exactly; footprints render from saved marks, not from replay."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-030
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "If the player is crawling (Body Critical): footfalls are replaced by drag marks; compaction still applies."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-terrain-and-snow-surface-031
+  system: terrain-and-snow-surface
+  gdd: design/gdd/terrain-and-snow-surface.md
+  requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-001
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "One authored map. The MVP has one map, authored by hand (concept: \"地图手工制作\"). Its playable area is 240 × 240 m inside a soft natural boundary (steep ridges > 35°, dense young forest, open ice beyond the lake's far shore) wider than the Camera's view so the edge is never visible as a wall."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-002
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "Landform (heightmap at 1 m resolution, 241 × 241 samples; Terrain's format):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-003
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "Prevailing wind blows from the north-west (world fact for authoring): drifts lie on the south-east (lee) side of trees, rocks and the hill; the lee of the outcrop and of the pine belts has the lowest wind exposure. Thermal Environment's wind *speed* is direction-free; this rule only shapes where Map paints drifts and lee zones."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-004
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "Zones (polygons authored on the map; Thermal and Terrain read them):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-005
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "Resource nodes. A node is an interactable placed in the world with a kind, a finite yield and an availability (Interaction's actions are defined per kind):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-006
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "Rings. Resource counts are set per distance ring from the drop point and scattered inside allowed zones (MR1–MR2):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-007
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "No regrowth in the MVP. Nothing respawns. (VS: storms knock down 1–2 new deadfalls in the far ring per storm — Weather.)"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-008
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "The drop. The run starts at the drop point in the clearing, facing the nearest deadfall placed 20–30 m away (seeded within that band), so the brief's first minute holds: \"玩家走向枯树捡枯枝\"."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-009
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "Good camp sites. Fire can be built on any flat (≤ 8°), non-ice, non-drift spot (Fire GDD), but Map marks 3 authored \"good\" sites in lee zones (exposure ≤ 0.3) within 60 m of the drop — the outcrop's lee is one. They are not labelled; they read as sheltered nooks (rocks, low trees) — the first lesson of 越活越懂."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-010
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "Bounds and spawn safety. Map publishes the playable polygon (Camera clamps; Character cannot leave). No node or good site is placed on ice, in drifts deeper than 0.6 m, or on slopes > 20°."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-011
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "Reserved VS content (positions authored now, systems later): hare and grouse ranges (forest edges, birch stand), fish spots and ice-hole sites (lake centre, ice ≥ 20 cm), a water hole site at the inlet (open water in thaw, VS), shelter-friendly sites (lee, near poles of young trees)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-012
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "MR1 — Node count per ring. The ring_count formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-013
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "MR2 — Placement. The node_placement rule is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-014
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "MR3 — Travel cost (derived check, for layout). The travel_cost formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-015
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "MR4 — Wood within reach (derived check). The fuel_by_ring estimate is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-016
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "If a seed would place fewer than 2 deadfalls within 40 m: the guaranteed drop-facing deadfall plus one forced near-ring deadfall are placed first, then the rest scatter."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-017
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "If placement fails 30 times for a node: skip it and log; the run continues with one fewer node."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-018
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "If a node is emptied: it stays as an emptied prop; Interaction no longer offers its action."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-019
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "If the player stands at the bounds: Character slides along the edge; Camera clamps; no invisible wall is shown (natural boundary)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-020
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "If the drop point is in shadow at 13:00 (authoring error): validation fails at load in dev builds — the clearing must be sunlit on day 1 (beauty first)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-021
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "If two zones overlap: priority lake > drift field > lee > forest > open snow > scoured ridge."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-022
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "If a save is loaded: the seed rebuilds node positions; per-node remaining yields are restored from the save (nodes do not reroll)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-023
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "If Weather (VS) adds new deadfalls: they appear only in the far ring, out of the camera's view at the moment of spawn."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-024
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "If the player chops near the drop for days: nothing regrows — trips lengthen by design."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-map-and-resource-distribution-025
+  system: map-and-resource-distribution
+  gdd: design/gdd/map-and-resource-distribution.md
+  requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-001
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "Body. The survivor is a capsule (radius 0.3 m, height 1.75 m) on the terrain's collision, with a step height of 0.3 m (snow lips, stones). Gravity applies; there is no jumping in the MVP."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-002
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "Base speeds. Walking base_walk 1.4 m/s; crawling base_crawl 0.35 m/s (used only in Body Temperature's Critical stage, replacing walking). Hurrying multiplies by hurry_mult 1.3."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-003
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "One speed. Target speed = base × max(floor, product of every multiplier) (C1). The multipliers are:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-004
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "Grade along travel. Character computes grade_deg from Terrain's surface normal and the direction of travel (C2) and passes it to Terrain's terrain_speed_mult query; moves with grade_deg > slope_max_deg (35°) are blocked and the character slides along the contour."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-005
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "Hurry (move_hurry held). Allowed only when Body stage is Cold or better, Needs energy is not Exhausted, and the hauling flag is off. It multiplies speed by 1.3 and reports heavy work activity (Body +0.6 °C/h, Needs +200 kcal/h and −5 energy/h). In deep snow it is a lunge, not a run: speed still obeys the floor and depth rules."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-006
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "Weight through motion. Acceleration and turning are slow and get slower in deeper snow and under load (C3). Starting a walk is never delayed beyond one frame of input (Input's Game Feel target); reaching full speed takes 0.35–0.9 s."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-007
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "Activity report (C4). Every physics frame, Character reports one movement activity to Body Temperature and Needs & Weight: idle, walk, wade, or heavy (hurrying or hauling while moving). Interaction reports *work* activity separately; Body and Needs use the highest (their own rules)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-008
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "Footfalls. Each foot contact (an animation event on the walk/wade cycles) emits footfall{position, foot, sink_m} to Terrain, which compacts the snow and records the footprint. Crawling emits drag marks instead."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-009
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "Sinking. The figure is lowered by Terrain's sink_m under it, smoothed over 0.15 s (C6), with foot IK keeping the feet on the compacted surface; the snow surface line hides the lower legs."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-010
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "Animation layers (priority, highest first):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-011
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "Action timing. Interaction calls play_action(action_id, duration_s). The clip's effort segment loops so the action fills duration_s; playback speed is clamped to 0.85–1.15 so cold, tired work looks *longer and heavier*, never slow-motion (C7)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-012
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "MVP animation set (Tier A must ship in the MVP; Tier B may be placeholder):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-013
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "Rig standard. One humanoid skeleton (Godot's humanoid skeleton profile, so clips can be retargeted from libraries such as Mixamo if hand-authoring is too slow), ≤ 30 bones, one LOD (art bible §5), mesh within the survivor's triangle budget (art bible §8: 3,222 today; cap ≤ 4,500 pending the owner's decision)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-014
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "Readability bar. Every Tier A animation must read as its verb in a gameplay-camera clip where the survivor is ≈ 30 px tall (C8 check). Limbs move big; no facial animation."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-015
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "C1 — Target speed. The target_speed formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-016
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "C2 — Grade along travel. The grade_deg formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-017
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "C3 — Acceleration and turning. The velocity update is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-018
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "C4 — Movement activity. The movement_activity rule is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-019
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "C5 — Cadence. The cadence formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-020
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "C6 — Visible sink. The root_offset update is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-021
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "C7 — Action playback. The action_playback rule is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-022
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "C8 — Readability check (QA rule, not runtime). figure_height_px = screen_h × 1.75 × cos(pitch) / (2 × cam_dist × tan(fov/2)) must be ≥ 20 px at the default Camera; cos(pitch) is the foreshortening term from Camera CA3. Every Tier A clip passes a 5-tester verb test at that size."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-023
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "If move input arrives during an action: cancel the action (Interaction decides whether it can be cancelled and what is lost); the outro plays at 2× speed."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-024
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "If the character is on a slope steeper than 35° (pushed by collision): slide down along the fall line to walkable ground, no damage."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-025
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "If Body enters Critical while walking: drop to the crawl override within 0.8 s; movement continues at crawl speed."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-026
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "If Needs collapses the survivor mid-action: cancel the action, play collapse."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-027
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "If hurry is held while not allowed: no effect and no activity change; the Exhausted / cold / hauling posture shows why."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-028
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "If move_vector is tiny (< 0.1 m/s target): stay idle; no footfalls."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-029
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "If the floor applies (product < 0.15): the walk cycle still plays at the floored speed with a struggling overlay, so slow is visible, not frozen."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-030
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "If two terrain cells under the feet differ (edge of a trail): use the cell under the leading foot for speed and each foot's own cell for its footfall."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-031
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "If an animation clip is missing (Tier B placeholder): fall back to the nearest Tier A clip (eat → kneel-work) and log a warning."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-032
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "If the survivor falls through ice (MVP: Mishaps M4): switch to In water; control limited to moving toward the nearest shore edge."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-033
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "If time is in a sleep skip: no physics movement; the sleeping pose holds; footfalls never fire."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-034
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "If a save is loaded: restore position, facing and state; sink offset is set directly (no 0.45 s settle)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-character-controller-and-animation-035
+  system: character-controller-and-animation
+  gdd: design/gdd/character-controller-and-animation.md
+  requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-001
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "Rig. A pivot follows the survivor; the camera sits at distance from the pivot along a fixed pitch (default 50° down) and the current yaw, looking at the pivot (CA1). Vertical field of view fov 30°. Orthographic projection is not used."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-002
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "Follow. The pivot moves toward the survivor's ground position plus a look-ahead in the direction of travel, with exponential smoothing (CA2). Vertical follow is smoothed separately and more slowly, so stepping into a drift (Character's sink) does not bob the camera."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-003
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "Turning. camera_turn_left/right rotates the yaw by 45°, eased over 0.4 s; holding repeats every 0.4 s. There is no free mouse-look (Input: mouse is not used in gameplay). Movement input stays relative to the camera's current yaw."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-004
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "Zoom. camera_zoom_in/out changes the distance by 3 m per step between d_min 14 m and d_max 40 m, eased over 0.25 s. The chosen distance persists through the run and is saved with settings (Alpha)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-005
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "Framing requests. Any system may call request_framing(id, distance_mult, pitch_offset_deg, blend_in_s, blend_out_s, priority, cinematic) and later release_framing(id). The highest-priority active request applies; ties go to the newest. Requests marked cinematic are released automatically by any move or action input, with blend_out_s capped at 1.0 s."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-006
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "Standard framings (data table; requester in brackets):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-007
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "Occlusion. Scenery between the camera and the survivor (trees, rocks, the shelter) fades to occluder_alpha (30 %) using a dithered fade, never popping (CA5). The survivor itself is never faded. Terrain cannot occlude at these pitches; if a ridge would (steep slope below the camera), the pivot height is raised until the line of sight is clear."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-008
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "Ground clearance. The camera stays at least clearance_m (3 m) above the terrain under it."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-009
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "Bounds. The pivot is clamped to the map's playable area (Map & Resource Distribution) so the camera never looks past the world's edge."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-010
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "Readability. At the default framing the survivor must be at least min_figure_px (20 px) tall at 1280 × 720 — the art bible §5 lower bound — and at d_max it must stay above that bound too (CA3)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-011
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "Never takes control. Camera never moves the survivor, never locks input, and never cuts away during play; cuts happen only on screens (diary, results) owned by other systems."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-012
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "Pause. While paused, the camera freezes; menus overlay the frozen frame."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-013
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "CA1 — Camera placement. The camera_position formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-014
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "CA2 — Follow. The pivot update is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-015
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "CA3 — Figure height on screen (readability check). The figure_px formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-016
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "CA4 — Framing blend. The framing formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-017
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "CA5 — Occluder fade. The occluder_alpha rule is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-018
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "If two framing requests have the same priority: the newest wins; releasing it falls back to the older one, blending from current values."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-019
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "If a cinematic framing is active and the player turns or zooms: release the framing, then apply the turn/zoom."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-020
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "If a non-cinematic framing (sleep_wide) is active and the player zooms: zoom applies to d_user; the framing multiplier stays."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-021
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "If the survivor stands right next to a tall tree between them and the camera: the tree fades; if many objects fade at once (dense forest), the cap is 12 faded objects, nearest to the line first."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-022
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "If terrain under the camera rises above pivot + clearance (camera over a hill behind the player): raise the camera height along the pitch line until clearance holds; do not change pitch."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-023
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "If the pivot would leave the map bounds: clamp the pivot; the survivor may move off-centre near the edge."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-024
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "If the survivor falls through ice (VS): Follow continues; the pivot's vertical lag prevents a sudden drop."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-025
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "If the game is paused mid-blend: blends freeze and resume on unpause."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-026
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "If the window resolution changes: nothing changes in world space; CA3 is re-checked only by QA."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-027
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "If a framing request names an unknown id: ignore it and log a warning."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-028
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "If end_rise starts while a cinematic framing is active: end_rise (priority 5) wins and blends from the current shot."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-camera-029
+  system: camera
+  gdd: design/gdd/camera.md
+  requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-001
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "One question, one answer. effective_temp_c(p) = air temperature + zone offset − wind chill + heat from sources at p (Formula TH5). It is a felt temperature in °C, not a physical simulation."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-002
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "Cold ramp. The daily mean air temperature falls by a fixed amount each day from t_start to a floor t_floor (TH1). Thermal owns this ramp."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-003
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "Day and night swing. Around the daily mean, air temperature follows a 24-hour cosine peaking peak_lag hours after solar noon (mid-afternoon) and lowest 12 hours later (TH2). Solar noon is read from Time ((sunrise_hour + sunset_hour) / 2)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-004
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "Zones. Every point belongs to a zone supplied by Map & Resource Distribution, each with a zone_offset_c and a wind_exposure (0–1):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-005
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "Wind. wind_speed (m/s) is a world value. In the MVP Thermal supplies it as a data constant (wind_base, default 3 m/s); from the VS, Weather & Cold Snaps registers as the wind source and overrides it. Wind chill scales with wind speed × exposure and is capped (TH3)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-006
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "Heat sources. A system registers a heat source with {id, position, heat_c, radius_m, enabled} and updates it when it changes. Each contributes heat that falls off to zero at its radius (TH4). All sources at a point are summed, then capped at heat_cap_c. Fire is the only MVP source; Fire owns heat_c and radius_m and publishes that same radius as warm_radius (the value Morale reads)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-007
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "Insulation volumes (VS contract). A shelter registers a volume {id, bounds, wind_exposure_override, bonus_c, heat_reflect_mult}. Inside it, wind exposure is replaced by the override, bonus_c is added, and heat from sources inside or at the opening is multiplied by heat_reflect_mult. Shelter owns the values; Thermal applies them."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-008
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "Chill offsets (VS contract). Weather registers {air_offset_c, wind_speed} (cold snaps lower air temperature; storms raise wind). Offsets are added to TH2's result."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-009
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "Evaluation. Thermal holds no per-point state. Consumers query on demand; Body Temperature queries the player's position once per game minute (minute_tick). Results are deterministic for the same inputs."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-010
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "Published values: effective_temp_c(p), components(p) → {air, zone, wind_chill, heat, shelter_bonus}, air_temp_c (world), wind_speed, wind_eff(p), is_sheltered(p)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-011
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "TH1 — Daily mean air temperature (the cold ramp). The daily_mean_temp_c formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-012
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "TH2 — Air temperature now. The air_temp_c formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-013
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "TH3 — Wind chill. The wind_chill_c formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-014
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "TH4 — Heat from one source. The heat_c formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-015
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "TH5 — Effective (felt) temperature. The effective_temp_c formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-016
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "If a heat source registers with radius_m ≤ 0 or heat_c_source < 0: reject the registration and log an error; the source contributes nothing."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-017
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "If a source reports heat_c_source = 0 (fire out): it becomes disabled and contributes 0, without being removed, so relighting re-enables it."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-018
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "If several sources overlap: sum, then cap at heat_cap_c — two fires side by side warm a wider area, not a hotter one beyond the cap."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-019
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "If p is exactly at radius_m: heat is 0 (strict <)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-020
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "If p has no zone data: use open snow."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-021
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "If p is near two or more zones: blend all within zone_blend_m by distance weight."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-022
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "If a point is inside two insulation volumes (VS): use the volume with the lowest wind_exposure_override and the highest bonus_c (best shelter wins); no stacking."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-023
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "If Weather unregisters mid-storm (VS): wind returns to wind_base over 10 game minutes, not instantly."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-024
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "If data gives t_floor > t_start, t_swing < 0, or chill_cap ≤ 0: reject the thermal table at load, log, use defaults."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-025
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "If the player is on the lake during the day with no wind source: still colder than open snow (−3 °C offset, exposure 1.0) — the lake is never a safe shortcut."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-026
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "If a fire sits inside a forest zone: the zone's lower exposure also reduces the fire's wind_eff — sheltered fires burn steadier (Fire applies it)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-027
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "If time is skipped (sleep): Body Temperature still queries every game minute; Thermal answers each query with that minute's air temperature, so the night's coldest hours are felt during the skip."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-028
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "If a save is loaded: Thermal restores nothing; Fire, Shelter and Weather re-register their current values on load before the first minute_tick."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-thermal-environment-029
+  system: thermal-environment
+  gdd: design/gdd/thermal-environment.md
+  requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-001
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "Interactables. Any world object or ground cell that can be acted on registers as an interactable with a kind (deadfall, dead_bush, birch, fire_site, fire, pile, item, snow_ground, bedroll …) and the action ids it offers, in priority order. The owning system (Gathering, Fire, Inventory, Terrain) decides which actions are currently available on it (e.g. \"light\" only when tinder is arranged)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-002
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "Targeting. The target is the best interactable within reach_m (1.5 m) inside a ±50° cone in front of the survivor (IA2). snow_ground is the fallback target when nothing else is in reach and the survivor stands on snow. The HUD prompt shows the target's first available action on interact and its second on secondary."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-003
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "Action definition (data file, one row per action):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-004
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "MVP action catalogue (base values provisional for the owning GDDs to confirm):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-005
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "Starting. Pressing interact/secondary (a tap — Input IN2) on an available action starts it if: the tool is in the backpack, Body allows it (critical_allowed in Critical), Needs allows it (no heavy actions when Exhausted), and no other action is running. Otherwise the action is refused with a short diegetic reason (\"没有斧头\", \"手抬不起来了\", \"太累了\")."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-006
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "Running."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-007
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "Cancelling. Movement input or cancel_action stops a cancellable action. If progress_kept, progress fraction stays on the target (a half-chopped log resumes where it stopped); otherwise it is lost (an interrupted meal eats nothing). Collapse (Needs), entering Critical (unless critical_allowed), falling into water (Mishaps fell_in_water), the target disappearing, or the tool breaking/being lost cancel at once. On fell_in_water the cancel applies even to non-cancellable actions: no result, tool use or Mishaps roll is sent for the interrupted work or attempt, progress follows progress_kept, and control passes to Character's In-water state."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-008
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "Effort reporting. While an action runs, Interaction reports its intensity as the work activity (light / heavy) to Body Temperature and Needs & Weight; they take the highest of work and Character's movement activity."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-009
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "Idle and resting. is_idle = no movement for ≥ 2 real seconds and (no action running, or the running action has counts_as_idle). resting_at_fire = the rest action is running and the survivor is inside a burning fire's warm_radius — the input Needs & Weight's e_rest uses."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-010
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "Duration multipliers. All slow-downs multiply and are capped at max_duration_mult (2.0) (IA1). Real duration uses the Time rate at the action's start."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-011
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "One action at a time. No queueing beyond Input's 0.15 s buffer; the survivor's hands do one thing."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-012
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "IA1 — Action duration. The action_duration formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-013
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "IA2 — Target score. The target_score formula is defined as (lower is better):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-014
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "IA3 — Kept progress. The progress update is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-015
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "IA4 — Attempt rhythm (repeat mode). Minimum time between attempts = base_game_min × dur_mult × real_seconds_per_game_minute; strike by day, healthy → 0.75 s per strike; Hypothermic (1.25) + Tired (1.10) → 1.03 s. The 3-second idle timeout returns to Free."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-016
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "If the target disappears mid-action (a pile emptied by another action, a fire going out during add_fuel): cancel; progress is discarded."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-017
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "If the tool breaks on the use that completes an action: the result still applies; the next start is refused (\"没有斧头\")."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-018
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "If the player moves during a non-cancellable action (none in the MVP): movement is ignored until it ends."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-019
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "If Body enters Critical during a non-critical action: cancel immediately; only critical_allowed actions remain."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-020
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "If Needs collapses the survivor: cancel and hand to the collapse override (Character)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-021
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "If the survivor falls through ice mid-action (fell_in_water): cancel immediately, the same way Critical entry does, including non-cancellable and critical_allowed actions; the interrupted work or attempt sends no result, tool use or Mishaps roll; kept progress stays on the target; Character takes over with In-water. If fell_in_water and a death event arrive in the same tick, the death event wins."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-022
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "If two interactables tie on score: keep the current target; else the nearer."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-023
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "If day turns to night during an action: the start rate is kept until the action ends."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-024
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "If the player taps interact on a repeat action faster than the attempt rhythm: one press is buffered; extra presses are dropped."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-025
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "If the backpack is full when an action produces items (chop_log): the resolver drops the produce on the ground at the survivor's feet as a pile (Inventory); no item is lost."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-026
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "If rest is running and the fire goes out: stop and request Time normal."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-027
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "If the game is saved during an action: the action is not saved; on load the survivor is Free and any kept progress is on the target."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-028
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "If eating is cancelled: nothing is consumed and no calories are added."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-029
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "If the backpack opens during an action: the backpack does not pause time, so the action keeps running; opening it does not cancel. The pause menu pauses everything, including the action."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-interaction-and-timed-actions-030
+  system: interaction-and-timed-actions
+  gdd: design/gdd/interaction-and-timed-actions.md
+  requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-001
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "Profiles. Each action that can fail names a mishap_profile (Interaction's action table). A profile defines: base_fail, its situational cause terms (which apply and their weights), severity on failure (minor / moderate / major — Morale's F2 values 4 / 8 / 15), tag (helplessness / disappointment), and on_fail consequences."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-002
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "MVP profiles (provisional values; Fire and Gathering may refine their own):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-003
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "One roll per attempt. Interaction sends one attempt per timed completion or per repeat attempt; Mishaps rolls once and returns outcome{success, cause, severity, tag, p_fail} to Interaction (which tells the resolver) and emits action_outcome to Morale (Morale §5): {action_type, success, cause, severity, tag, base_fail_chance = base_fail}. Morale computes streaks and decides which successes are meaningful (its constant 0.10)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-004
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "Failure chance (M1) = base + situational causes + state penalties, clamped to [0, p_cap] with p_cap = 0.90 — the clamp Morale, Body Temperature and Needs & Weight already rely on. No action is ever impossible."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-005
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "Visible cause (M2). The named cause is the largest contributor among the *physical* terms — damp, wind, tinder, cold_hands, fatigue — if it is ≥ cause_min (0.05); otherwise fumble. Morale's penalty is never named; it tips the odds silently (\"Unfair never\", Morale Game Feel). The cause is shown before the outcome lands (Emotional Feedback / Character): smoke and hiss for damp, sparks blown sideways for wind, a rod slipping from shaking hands for cold, a weak swing for fatigue, sparks dying on poor tinder, a plain fumble otherwise."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-006
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "Learnable causes. Every situational term is something the player can change: dry the tinder at the fire (Inventory I4), build the fire in the lee of rocks or trees (Thermal zones), use birch bark over sticks (Item table quality), warm up before striking (Body), rest (Needs). This is where the player's knowledge across runs lives."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-007
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "Bad-luck protection (M3). If the last streak_guard (4) attempts of the same action all failed with cause fumble, the next attempt's chance is halved. It never applies when the dominant cause is damp, wind, tinder, cold hands or fatigue — those are the player's to fix."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-008
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "Thin ice (M4). On every footfall on a lake-ice cell thinner than t_safe_cm (15 cm), roll a break. On a break: the cell becomes broken (Terrain), emit fell_in_water (Body sets wetness 1.0; Inventory soaks backpack fuel and tinder), Character enters In-water and climbs out at the nearest edge, Morale receives a major helplessness failure, and with p_tool_loss (0.10) one carried tool (hatchet, knife or ferro rod, weighted 2 : 1 : 1) is lost → Inventory loss{item_lost, tool}. The darker, thinner ice is visible before it breaks (Terrain Visual)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-009
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "Consequences go to their owners. Mishaps only *requests*: durability damage → Inventory; wasted items → Inventory; embers dying → Fire; ice break → Terrain; soak → Body and Inventory. It never changes another system's state directly."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-010
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "Randomness. All rolls use one seeded random stream per run (seed saved), so a reloaded run repeats the same luck and QA can reproduce sequences."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-011
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "M1 — Failure chance. The p_fail formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-012
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "M2 — Named cause. The cause rule is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-013
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "M3 — Fumble guard. The guarded_p_fail rule is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-014
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "M4 — Ice break per footfall. The p_break formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-015
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "If the material has no wetness (a non-wettable item): c_damp = 0."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-016
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "If the attempt's position has no Thermal data: c_wind = 0 and log a warning."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-017
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "If all penalties are 0 and base is 0: success guaranteed; no outcome is sent to Morale unless the profile exists (it does — profiles with base 0 still report, as trivial successes Morale ignores)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-018
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "If p_fail hits the 0.90 cap: the roll still happens — one in ten wet strikes may catch; the UI never says \"impossible\"."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-019
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "If a tool breaks from failure damage: Inventory removes it and emits item_lost(tool); the current outcome still stands."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-020
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "If the survivor falls through ice while carrying no tools: no tool loss roll."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-021
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "If a broken ice cell is walked into again: it is open water (Terrain) — Character treats it as impassable except at the edge; no new break roll."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-022
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "If two attempts arrive in the same frame (should not happen — one action at a time): process in arrival order with separate rolls."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-023
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "If a save is loaded: restore seed, stream position and fumble guards; the next roll matches the pre-save sequence."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-024
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "If a profile id is unknown: treat as cannot-fail, return success, log an error (never invent a chance)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-025
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "If the player keeps striking with soaked tinder: each strike fails at 0.90 with cause damp shown every time — the game tells them what to fix, it does not stop them."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-mishaps-and-failure-026
+  system: mishaps-and-failure
+  gdd: design/gdd/mishaps-and-failure.md
+  requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-gathering-001
+  system: gathering
+  gdd: design/gdd/gathering.md
+  requirement: "Gather actions (Interaction's catalogue; durations confirmed here):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-gathering-002
+  system: gathering
+  gdd: design/gdd/gathering.md
+  requirement: "Yield. Each completion takes take units (or what is left) from the node's remaining yield (G1). On a Mishaps failure the player gets half, rounded down (chop: nothing — a glancing blow). The node's remaining yield falls by what was *attempted*, not what was kept, only on success; a failure leaves the node's yield untouched (the wood is still there; you fumbled it)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-gathering-003
+  system: gathering
+  gdd: design/gdd/gathering.md
+  requirement: "Dampness of produce (G2, data table — the bushcraft lesson):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-gathering-004
+  system: gathering
+  gdd: design/gdd/gathering.md
+  requirement: "Where produce goes. To the backpack through Inventory's pick-up rule; anything that does not fit is dropped as a pile at the survivor's feet (Interaction's overflow rule). Nothing is ever lost."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-gathering-005
+  system: gathering
+  gdd: design/gdd/gathering.md
+  requirement: "Without the tool. Without the hatchet, deadfall gives only sticks; without the knife, birch gives nothing (bark refused: \"没有刀\"). The fixed MVP kit has both; losing one (ice, Mishaps) is a real setback."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-gathering-006
+  system: gathering
+  gdd: design/gdd/gathering.md
+  requirement: "Emptied nodes. When remaining yield reaches 0 the node becomes emptied (Map keeps it visible: a stripped bush, a cut-up trunk, a bare birch, a dug-out hollow) and offers no action."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-gathering-007
+  system: gathering
+  gdd: design/gdd/gathering.md
+  requirement: "Wear. Each chop completion is one hatchet use; each strip one knife use (Interaction → Inventory); failures add Mishaps' damage (hatchet −10)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-gathering-008
+  system: gathering
+  gdd: design/gdd/gathering.md
+  requirement: "Effort. Intensity is reported by Interaction (light / heavy) to Body Temperature and Needs & Weight; chopping and stone-digging are heavy work (+0.6 °C/h heat, +200 kcal/h, −5 energy/h)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-gathering-009
+  system: gathering
+  gdd: design/gdd/gathering.md
+  requirement: "No auto-gathering. One completion per action; the player chooses each piece of work. (A \"keep chopping\" convenience — repeat until the pack is full — is an open question for playtest.)"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-gathering-010
+  system: gathering
+  gdd: design/gdd/gathering.md
+  requirement: "G1 — Yield per completion. The gather_yield formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-gathering-011
+  system: gathering
+  gdd: design/gdd/gathering.md
+  requirement: "G2 — Produce wetness. The produce_wetness rule is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-gathering-012
+  system: gathering
+  gdd: design/gdd/gathering.md
+  requirement: "G3 — Gathering rate (derived check). The units_per_game_hour estimate is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-gathering-013
+  system: gathering
+  gdd: design/gdd/gathering.md
+  requirement: "G4 — Haul trips (derived check). The trips estimate is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-gathering-014
+  system: gathering
+  gdd: design/gdd/gathering.md
+  requirement: "If the node empties mid-action (a second action on the same node is impossible — one action at a time): not possible in the MVP; if it happens (VS), the completion yields what remains."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-gathering-015
+  system: gathering
+  gdd: design/gdd/gathering.md
+  requirement: "If the pack is full: produce drops at the feet as a pile; the player sees it."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-gathering-016
+  system: gathering
+  gdd: design/gdd/gathering.md
+  requirement: "If the hatchet breaks on the completing chop: the log is kept; the next chop is refused."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-gathering-017
+  system: gathering
+  gdd: design/gdd/gathering.md
+  requirement: "If the survivor fails five chops in a row: each failure costs hatchet −10 and time; Mishaps' fumble guard applies only if the cause is a fumble."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-gathering-018
+  system: gathering
+  gdd: design/gdd/gathering.md
+  requirement: "If a bush has grass left but no sticks (impossible by data: grass bonus only with sticks): data validation rejects bushes with grass > sticks / 3."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-gathering-019
+  system: gathering
+  gdd: design/gdd/gathering.md
+  requirement: "If produce is gathered in a forest-zone deadfall: wetness 0.2 instead of 0.3."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-gathering-020
+  system: gathering
+  gdd: design/gdd/gathering.md
+  requirement: "If an unknown node kind is targeted: refuse, log."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-gathering-021
+  system: gathering
+  gdd: design/gdd/gathering.md
+  requirement: "If the player gathers at night by firelight: allowed; no darkness penalty in the MVP (VS question)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-gathering-022
+  system: gathering
+  gdd: design/gdd/gathering.md
+  requirement: "If a save is loaded: node yields come from Map's save; produce in the pack from Inventory's."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-gathering-023
+  system: gathering
+  gdd: design/gdd/gathering.md
+  requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-001
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "Fire sites. A fire can be built on ground that is flat (≤ 8°), not ice, not drift deeper than 0.6 m, and inside the map (Terrain, Map). Bare rock needs no clearing. Up to 2 fires may exist at once (Thermal sums them under its heat cap). Map's three unlabelled lee sites are simply good places."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-002
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "The build sequence (each step is an Interaction action; the site's first available action changes as the stage advances):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-003
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "Stages by fuel (after lighting):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-004
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "Burning. Each game minute the fire burns burn_rate units (FI4). Wind at the fire (Thermal wind_eff at its position, ×0.6 if Ringed) makes it burn faster."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-005
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "Fuel and wetness. Adding an item adds its effective fuel (FI5: damp wood gives less) and mixes its wetness into the fire's burning wetness, which dries at 0.05 per game minute while burning. Burning wetness lowers heat (FI2) and makes the fire smoke."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-006
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "Smothering. Adding a log with wetness > 0.6 to a fire in Kindling flame (F < 30) smothers it to Embers (hiss, white smoke) — the cause is visible; dry the log at the fire first (Inventory camp piles) or build the flame up with sticks."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-007
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "Too big. Adding fuel that would push F above F_max is refused (\"火已经够大了\")."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-008
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "Heat and light (FI1–FI3, FI6) update each game minute and are pushed to Thermal (register/update heat source {position, heat_c, radius_m, enabled}; enabled false at Out) and to rendering. warm_radius = the registered radius_m (Morale's contract). Inventory piles within warm_radius are camp piles and dry."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-009
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "Unattended death. When a fire goes Out while the survivor is asleep or more than 15 m away, emit loss{kind: fire_died_unattended} (Morale: G +10, F +8). Watching it die while awake and near is not a loss event."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-010
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "No wake-up from Fire. Fire does not wake the sleeping survivor; the body does (Body Temperature wakes them when Cold). The dying fire and the cold that follows are the night's story."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-011
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "Fire tending in Critical. add_fuel and blow_embers are critical_allowed (Interaction): a crawling survivor can still save the fire."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-012
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "Rest and ritual. sit_warm and rest target a Burning fire (Interaction); Morale's fire ritual uses fire_burning (stage Kindling flame or Burning) and warm_radius."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-013
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "FI1 — Size factor. The fire_size formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-014
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "FI2 — Heat at the centre. The heat_c formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-015
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "FI3 — Warm radius. The radius_m formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-016
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "FI4 — Burn rate. The burn_rate formula is defined as (fuel units per game minute):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-017
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "FI5 — Adding fuel. The add_fuel update is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-018
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "FI6 — Light radius. The light_radius_m formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-019
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "If the survivor tries to build on ice, a drift or a slope > 8°: refused (\"这里不能生火\")."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-020
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "If arrange_tinder lacks tinder or 4 sticks: refused with what is missing (\"缺引火物\" / \"缺细柴\")."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-021
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "If the ember window expires while the player is moving or cancels: the ember dies, tinder consumed."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-022
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "If a damp log is added to a Kindling flame: smothered to Embers (Rule 6), log kept as fuel in the embers."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-023
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "If fuel would exceed 300: refused, item kept."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-024
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "If two fires overlap: each registers its own source; Thermal sums under its 30 °C cap."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-025
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "If the fire goes Out while the survivor is asleep 2 m away: fire_died_unattended (asleep counts as unattended)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-026
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "If strong wind (VS storms, wind_eff 15) hits an unringed small fire: burn rate rises ×2.2; a Kindling flame burns through in minutes — protect it first."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-027
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "If the survivor is in Critical: add_fuel and blow_embers still work; striking and laying tinder do not."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-028
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "If a save is loaded: stage, F, burning wetness and ember timer restore; Thermal source re-registers before the first tick (Thermal load rule)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-029
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "If the fire's site is snowed over (VS) while Out: the site reverts to uncleared."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-030
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "If the player relights from Embers with a damp log and fails the blow: still Embers (no tinder at stake); try again until ember_life runs out."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-fire-031
+  system: fire
+  gdd: design/gdd/fire.md
+  requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-001
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "State. The body has core_temp_c (float, starts 37.0) and wetness (float 0–1, starts 0). Clothing insulation comes from the kit (MVP: fixed 1.0)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-002
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "Tick. On every minute_tick from Time, Body Temperature queries effective_temp_c(player_position) from Thermal Environment, computes the rate in °C per game hour (B1) and applies rate / 60. Ticks fire during sleep and waiting, so the body keeps cooling during skips."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-003
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "Cooling and warming are asymmetric. Below t_neutral (5 °C felt) the body loses heat in proportion to the gap, multiplied by wetness and divided by insulation. Above it, the body regains heat at a faster rate per degree, so a good fire rewarms within one to two game hours. The core never rises above 37.0 °C (no overheating in the MVP)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-004
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "Activity heat. The body adds heat by activity, reported by Character Controller (movement) and Interaction (work): idle 0 · walking +0.3 · wading deep snow +0.45 · light work +0.3 · heavy work (chopping, hauling) +0.6 °C per hour. The highest applicable value is used, not the sum. Sleep counts as idle."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-005
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "Shivering. In Chilled and Cold the body shivers: +0.3 °C per hour and is_shivering = true (Needs & Weight charges energy for it). In Hypothermic and Critical shivering stops — the body has given up — so cooling speeds up. This is the quiet danger the player must learn."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-006
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "Wetness. Wetness rises from events (fell_in_water from Mishaps → 1.0; wading deep snow +0.03 per hour; snowfall from Weather in the VS) and dries by warmth (B2). Wet doubles heat loss at wetness 1.0."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-007
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "Stages. Core temperature maps to a stage (B3). Falling uses the threshold; rising needs threshold + 0.2 °C (hysteresis), so the stage does not flicker."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-008
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "Effects out. Body publishes core_temp_c, stage, wetness, is_shivering, cold_hands_penalty (Mishaps adds it to failure chance, alongside Morale's penalty, and clamps the total), move_speed_mult (Character Controller), body_action_mult (Interaction multiplies it with Morale's action_duration_mult), allowed_actions in Critical (Interaction), stage_changed, and rate_c_per_hour (debug, HUD trend)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-009
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "Waking and interrupting. If the player is asleep or waiting and the stage worsens by one step — or reaches Cold while asleep — Body requests Time's normal mode and emits wake_request(cause = cold); Needs & Weight clears is_asleep. The player wakes shivering with time to act."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-010
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "Tap-out is never blocked. Calling extraction (Tap-out & Run Results, VS) stays available in every stage including Critical. In the MVP, which has no tap-out yet, Critical allows only crawl, fire tending (add_fuel, blow_embers, sit_warm), and dropping items."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-011
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "Death. At core_temp_c ≤ 30.0 emit body_died(cause = hypothermia) once. In the MVP the run ends and restarts; from the VS, Tap-out & Run Results applies the death penalty. Medical evacuation (VS) is a separate system and may end a run before death."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-012
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "B1 — Core temperature rate. The core_temp_rate formula is defined as (°C per game hour):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-013
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "B2 — Wetness change. The wetness_rate formula is defined as (per game hour):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-014
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "B3 — Stage. The body_stage lookup is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-015
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "B4 — Stage effects (lookup, the table in Core Rule 7): cold_hands_penalty 0–0.20, move_speed_mult 0.40–1.00, body_action_mult 1.00–1.50 — all data file values."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-016
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "If the player is asleep when the stage reaches Cold: request normal, emit wake_request(cold) — one wake per stage step, not every tick."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-017
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "If the player is already awake in Cold and keeps sleeping attempts: Needs & Weight decides whether sleep is allowed; Body still wakes them on the next worsening step."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-018
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "If core is at 37.0 and the felt temperature is warm: rate is 0; no overheating."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-019
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "If effective_temp_c is exactly t_neutral: exchange 0; only activity and shivering apply."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-020
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "If the player stands at a fire while soaked: drying and warming happen together; the wetness term only applies while gap < 0."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-021
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "If the player falls into water while already wet: wetness is set to 1.0 (no stacking above 1)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-022
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "If several activities apply at once (walking while carrying): use the highest heat value."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-023
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "If core would drop past 30.0 in one tick (clamped rate makes this ≤ 0.067 °C per tick): set exactly to 30.0, emit body_died once, stop ticking."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-024
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "If the player is in Critical with no fire within reach: crawling and dropping items are the only actions; fire tending is impossible until they reach one. In the VS, tap-out stays available."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-025
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "If Thermal returns an invalid value (NaN, missing): reuse last minute's value and log an error; never kill on bad data."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-026
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "If insulation data is ≤ 0 or thresholds do not strictly decrease: reject at load, use defaults."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-027
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "If a save is loaded: restore core_temp_c, wetness, stage exactly; no stage_changed is emitted for the restored stage."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-028
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "If the player is in a shelter (VS) and asleep with the fire out: they cool at the sheltered felt temperature; the wake rule still applies."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-body-temperature-029
+  system: body-temperature
+  gdd: design/gdd/body-temperature.md
+  requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-001
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "State. stomach_kcal (0–1,500; fullness = stomach_kcal / 15, 0–100), weight_kg (start = start_weight_kg, default 72.0), hydration (0–100, start 100), energy (0–energy_cap, start 90), is_asleep (bool, start false). The run starts with stomach_kcal 1,200 (fullness 80 — the survivor ate before the drop)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-002
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "Tick. On every minute_tick from Time, apply N1–N4 for one game minute, including during sleep and waiting."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-003
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "Burn. Calories burnt per hour = base (awake 110 / asleep 65) + the highest activity extra (walking 60 · wading deep snow 120 · light work 80 · heavy work 200) + shivering 80 when Body Temperature reports is_shivering. Activity comes from Character Controller and Interaction (the same reports Body Temperature uses)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-004
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "Stomach first, then the body. Each minute's burn is taken from stomach_kcal; any shortfall is taken from body reserve and lowers weight_kg (N2). Weight never rises above start_weight_kg; in the MVP it never rises at all (open question)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-005
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "Eating. Eating a food item (Interaction) adds its food_kcal (Item Database) to the stomach. If it would exceed 1,500 kcal, eating is refused (\"吃不下\") and the item is kept. Eating takes the item's eat_minutes (default 5 game minutes)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-006
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "Drinking. Drinking adds the item's drink_hydration. MVP stand-in — eating snow: an action available anywhere on snow: +3 hydration, 3 game minutes, −1 energy per handful. It is slow and tiring on purpose; melting and boiling water (Water, VS) is the good way."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-007
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "Hydration drain (N3): −1.4 per hour awake, −0.7 asleep, ×1.5 while wading or doing heavy work."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-008
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "Energy (N4): drains by activity (idle 1.0 · walking 2.0 · light work 2.5 · wading 3.5 · heavy work 5.0 per hour, highest applies) + 1.5 while shivering; resting by a burning fire in wait mode restores +1.5 per hour instead of draining; sleep restores 8 per hour × warmth quality × food quality. Energy cannot exceed energy_cap, which falls as weight is lost (N5)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-009
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "Sleep."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-010
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "Stages and effects (N6): energy, hydration and fullness each map to a stage whose effects feed other systems:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-011
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "Dehydration death. If hydration stays at 0 for dehydration_grace_h (6 game hours), emit needs_died(cause = dehydration) once. Any drink resets the grace timer."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-012
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "Weight is the long clock. Needs publishes weight_kg, start_weight_kg and weight_lost_frac; Medical Check-ins (VS) decides evacuation thresholds, Morale turns loss into 饥饿感 (F4), Emotional Feedback (VS option) may thin the silhouette."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-013
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "N1 — Calorie burn. The burn_kcal_per_hour formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-014
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "N2 — Stomach and weight. The stomach_and_weight update is defined as (per game minute):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-015
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "N3 — Hydration. The hydration_rate formula is defined as (per game hour):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-016
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "N4 — Energy. The energy_rate formula is defined as (per game hour):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-017
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "N5 — Energy cap. The energy_cap formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-018
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "N6 — Stages (lookup, Core Rule 10): thresholds and effects are data-file values; thresholds strictly decreasing per need, hysteresis +2."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-019
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "If the player tries to eat with the stomach nearly full: refuse if stomach_kcal + food_kcal > stomach_capacity; the item is kept, and the refusal is shown (\"吃不下\")."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-020
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "If the player tries to sleep with energy ≥ 90 at night or ≥ 50 by day: refuse (\"还不困\")."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-021
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "If energy hits 0 in deep cold: collapse anyway; Body Temperature's wake rule will wake them at Cold, energy is floored at 5, and they have minutes to act — collapse in the cold is a real danger by design."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-022
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "If several wake causes arrive in the same minute: one wake, causes logged."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-023
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "If Time reports normal while the player is awake: nothing changes."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-024
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "If the player is asleep and energy reaches the cap: natural wake, request_rate_mode(normal)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-025
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "If hydration reaches 0 and the player drinks within the grace: timer resets; no damage carries over."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-026
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "If hydration is 0 for exactly 6.0 game hours: needs_died(dehydration) fires once on that tick; Body's hypothermia death takes precedence if both happen in the same tick (one death, cold cause)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-027
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "If weight reaches weight_floor_kg: hold there; burn shortfall is ignored (Medical should have evacuated — log a warning)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-028
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "If the player eats while Empty or Starving: the stage returns to Hungry or Fed at once and the 24-hour starving timer resets."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-029
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "If an item has no food_kcal/drink_hydration: it cannot be eaten/drunk; no default value is assumed."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-030
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "If start_weight_kg ≤ 0 or stomach_capacity ≤ 0 in data: reject at load, use defaults."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-031
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "If the player eats snow while Hypothermic or worse: allowed (no Body input yet); see Open Questions about a core-temperature cost."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-032
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "If a save is loaded mid-sleep: restore is_asleep and request Time sleep on the first tick (matches Time's load rule)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-needs-and-weight-033
+  system: needs-and-weight
+  gdd: design/gdd/needs-and-weight.md
+  requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-001
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "§1 Feeling map (owns the project-wide contract). Each feeling the owner named has one mechanical home, the show features that feed it, what relieves it, and how it is shown. Systems marked VS arrive in the Vertical Slice; their inputs are absent (zero) in the MVP."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-002
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "§2 Strain values. Each strain is a float 0–100 (0 = untouched, 100 = overwhelmed). L, F, G are stored and change by rate and by events (Formulas F1–F3). H and P are recomputed every tick from their source systems (F4–F5) and never stored."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-003
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "§3 Tick. Morale updates once per game minute while the game is unpaused, using the game-hour rates in Formulas scaled by elapsed game time. While sleeping, the sleep multipliers apply. Paused time, menus (excluding the non-pausing backpack/inventory per resolved QQ-08) and loading accrue nothing."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-004
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "§4 Resolve and state. After strains update, Resolve R (F6) is recomputed and the mental state is re-evaluated with hysteresis (States and Transitions)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-005
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "§5 Events in. Morale reacts to events, each applied once, in the fixed order Edge Cases defines (losses → failures → successes → comforts → rival/medical):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-006
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "§6 Ritual moments (detected by Morale). \"Slow, ritual-like\" beats are rewarded, never required:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-007
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "§7 Second wind. The first time per day the state is Breaking and a meaningful success or a ritual moment occurs, apply an extra F −20 and L −10 on top of its normal effect. This is the show's \"one small win saves you\" and the damper on the despair spiral."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-008
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "§8 Effects out. Morale publishes, every tick:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-009
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "§9 The tap-out offer. At every nightfall (Time is_night turns true) on which the state is Fraying or Breaking, emit one tap_out_offer: strength = \"quiet\" normally, \"plea\" (the survivor says it: \"我想回家\") when this is at least the second consecutive nightfall in Breaking. The consecutive-Breaking count resets to zero at any nightfall spent below Breaking, including a Fraying one. At most one offer per night. Morale never ends a run and never forces the choice; Tap-out & Run Results (VS) owns the prompt and the decision. In the MVP, the offer only triggers its Feedback beat."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-010
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "§10 Keepsakes (VS/Alpha contract). A carried keepsake multiplies the gain of one stored strain by k_keepsake (default 0.85). Multiple keepsakes on the same strain multiply but the product is floored at 0.70. Keepsakes affect Morale only — no direct survival effect (owner decision, 2026-11-16); their survival value is the indirect, bounded one of F7."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-011
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "§11 What Morale never does. It never shows a number or bar in play, never kills, never triggers medical evacuation, never blocks an action outright, and never takes control from the player (ritual moments happen only because the player chose to stop)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-012
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "F1 — Loneliness gain. The loneliness_gain formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-013
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "F2 — Frustration from an outcome. The frustration_delta formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-014
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "F3 — Grief from a loss. The grief_delta formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-015
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "F4 — Hunger distress (derived). The hunger_distress formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-016
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "F5 — Pain (derived). The pain formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-017
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "F6 — Resolve. The resolve formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-018
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "F7 — Effects of state. The reliability_penalty and action_duration_mult formulas are lookups:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-019
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "If several events arrive in the same tick: apply in this order — losses, failures, successes, comforts, rival/medical events — then rate changes, then recompute H, P, R and state once. Rationale: bad news first, so a success in the same tick visibly softens it."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-020
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "If a strain would exceed 100 or drop below 0: clamp; the excess is discarded, not banked."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-021
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "If R crosses several thresholds in one tick: move one state per tick (States and Transitions), emitting each state_changed."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-022
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "If R sits exactly on a threshold: falling uses strict < (R = 65.0 does not leave Steady), rising uses ≥ the +5 value (R = 70.0 returns to Steady)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-023
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "If start_weight_kg ≤ 0 or missing: treat weight loss as 0 and log an error; H falls back to the fullness term only."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-024
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "If t_comfort ≤ t_max_pain from bad data: reject the data at load and use the defaults (36.5 / 33.0)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-025
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "If the player gains weight above start weight: wl is 0, never negative — weight gain does not create a happiness bonus."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-026
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "If the player repeats a trivially easy action to farm successes: no F relief — only meaningful successes lift F (Core Rules §5). A trivial success still clears that action's failure streak (F2), but a trivial action rarely fails, so this cannot be exploited."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-027
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "If the player stands idle at the fire for hours: fire rituals cap at one per game hour and three per day; the fire still burns fuel and the day still passes."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-028
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "If the player records more than one diary entry a night (VS): only the first diary_recorded per night counts."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-029
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "If second wind's conditions are met more than once a day: only the first applies."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-030
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "If the state is Breaking at nightfall for two consecutive nights, and the player refuses the plea: no further penalty; the plea repeats at most once per night while Breaking continues."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-031
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "If a Fraying (or lower) night falls between two Breaking nights: the consecutive-Breaking count resets, so the next Breaking nightfall offers \"quiet\" again (Core Rules §9)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-032
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "If the player dies or is evacuated while Fraying or Breaking: no extra effect; final values are frozen for Results and Diary."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-033
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "If the player sleeps through nightfall: the tap-out offer for that night fires at wake-up if the state still qualifies; at most one per night."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-034
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "If a game is loaded (Alpha): L, F, G, state, nights-in-Breaking and the per-day caps are restored exactly; H and P recompute from their sources on the first tick without emitting spikes."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-035
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "If an event names an unknown action_type, kind or severity: ignore it and log a warning — no default severity is guessed."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-036
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "If time is skipped (sleep, waiting): accrual integrates over the skipped game minutes with the sleeping multipliers; ritual moments cannot occur during a skip."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-037
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "If no Diary, Wildlife, Rivals or keepsakes exist (MVP): their comforts are simply absent; the MVP's reliefs are successes, fire rituals, sunrise, rest and sleep."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-morale-and-mental-state-038
+  system: morale-and-mental-state
+  gdd: design/gdd/morale-and-mental-state.md
+  requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-001
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "Items are data. Every item is a row in a data file. Systems refer to items by id only; no system hard-codes item values."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-002
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "Item fields:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-003
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "Containers."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-004
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "Picking up and dropping. Picking up adds to the backpack only if the new total mass ≤ carry_capacity_kg; otherwise the pick-up takes as many units as fit and refuses the rest (\"背不动了\"). Dropping is always allowed. Both are Interaction actions; this GDD defines the result."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-005
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "Stacks and wetness. Each stack of a can_get_wet item has one wetness (0–1). Merging two stacks gives the mass-weighted average wetness. Wetness rises from events (fell_in_water → backpack fuel and tinder set to 1.0; snowfall on uncovered world piles, VS) and dries by I4. Fire and Mishaps read wetness (damp tinder fails; wet wood smokes)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-006
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "Durability. Each tool stack (always stack_max 1) has durability from durability_max. Interaction reports a *use* (one swing, one strike); durability falls by 1. Mishaps may report a *damage* event (e.g. −50 for a bad swing into frozen wood). At 0 the tool breaks: it is removed and emits loss{kind: item_lost, item_class: tool}."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-007
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "Losses. Any removal not by use, eating or burning — a tool through the ice, a dropped item lost in deep snow (Mishaps decides when) — emits loss{kind: item_lost, item_class: tool | other} with the item id. Morale & Mental State turns it into grief (F3)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-008
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "Consumption. Eating, drinking and burning remove units at the request of the consuming system (Needs & Weight, Fire); they never emit loss."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-009
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "Load and speed. Inventory publishes carry_load_frac (I1) and carry_speed_mult (I2). Character Controller multiplies it with Body Temperature's and Needs & Weight's movement multipliers. A full pack also adds the \"hauling\" activity flag, which Body Temperature and Needs & Weight treat as heavy work while walking (heat +0.6, energy −5 per hour, burn +200 kcal per hour)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-010
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "Insulation. Inventory publishes insulation (I3) to Body Temperature: the worn clothing's value; the sleeping bag's bonus is defined but inactive in the MVP (Body Temperature, approved, fixes MVP insulation at 1.0)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-011
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "The MVP kit (fixed; Kit Selection replaces it in the VS):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-012
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "MVP item table (data-file defaults; register in design/registry/entities.yaml):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-013
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "I1 — Load. The carry_load_frac formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-014
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "I2 — Carry speed. The carry_speed_mult formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-015
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "I3 — Insulation. The insulation formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-016
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "I4 — Stack drying. The stack_wetness_rate formula is defined as (per game hour):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-017
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "I5 — Durability. The durability update is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-018
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "If a pick-up would exceed capacity: take as many units as fit; refuse the rest with \"背不动了\"; the rest stays in the pile."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-019
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "If an item's single unit is heavier than the free capacity (a log with 1 kg free): refuse entirely."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-020
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "If two stacks of the same item merge with different wetness: mass-weighted average wetness."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-021
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "If a stack would exceed stack_max: overflow opens a new stack."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-022
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "If the player falls into water: backpack fuel and tinder stacks → wetness 1.0; food and tools unaffected; worn clothing wetness is Body Temperature's (B2)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-023
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "If the last ferro rod is lost or breaks: no special rule here — Fire decides whether another ignition source exists; Morale receives item_lost(tool)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-024
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "If a camp pile's fire goes out: the pile stops being a camp pile; drying falls to the ambient rate."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-025
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "If a dropped item lands within 1.5 m of two piles: it joins the nearest."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-026
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "If an item id is unknown or a field is missing: refuse the operation and log an error; never invent values."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-027
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "If data gives carry_capacity_kg ≤ 0, l_free ≥ 1 or negative masses: reject at load, use defaults."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-028
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "If the inventory is loaded from a save: restore every stack, its container, count, wetness and durability exactly; camp-pile status recomputes from Fire on the first tick."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-029
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "If the player tries to drop a worn item, the radio or the camera: refused in the MVP (they are part of the show's kit)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-item-database-and-inventory-030
+  system: item-database-and-inventory
+  gdd: design/gdd/item-database-and-inventory.md
+  requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-001
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "Read-only. Emotional Feedback only reads other systems and drives presentation. It never writes gameplay state."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-002
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "Posture set (EF4) — chosen every second, highest-priority source wins:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-003
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "Beats (EF3) — short reactions on events, layered over control, cancelled by the next input:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-004
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "Framings — requests to the Camera's standard table: ritual_wide on Morale's fire ritual and sunrise; lonely_hold while dominant strain is L and state ≥ Strained and the survivor is idle outdoors; relief_ease on relief; sleep_wide when Needs is_asleep; end_rise on death; extraction_aerial on tap-out (VS)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-005
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "Screen grade (EF1): cold colours (hues outside the warm band 15°–55°) lose saturation by Morale state; Grief dominant adds a little more. Warm colours — fire, tarp, collar, skin — are never desaturated. Blends over ≥ 3 s."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-006
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "Freezing vignette (EF2): from Body Hypothermic, the screen edge darkens toward trunk_navy and desaturates (art bible §2 失温危险); Critical narrows it further. Morale's Breaking never adds a vignette (cold and despair stay distinguishable)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-007
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "Music (EF5): the score is sparse and mostly silent (the show is ambience). Three layers: warm (a single acoustic instrument), pad (low, cold), thin (a high sustained line). Layer gains follow mental state and whether the survivor is at a burning fire; ritual moments do *not* start music — crackle and silence are foregrounded (Morale's table)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-008
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "Ambience emphasis (EF6): wind gain rises one step per worsening state; when loneliness dominates, other ambience (birds, distant creaks) is ducked so the wind is alone."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-009
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "Cooldowns. The same beat cannot repeat within 20 real seconds; at most one beat plays at a time (priority: death > loss > failure > second wind > relief > fire lit > tap-out offer); state-change posture blends are never cooldown-limited."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-010
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "Accessibility. \"Reduce camera motion\" suppresses ritual_wide, lonely_hold and relief_ease (end shots remain); \"Reduce screen effects\" scales grade and vignette by 0.5; nothing is shown by colour alone (posture always carries the meaning). Settings arrive with Save/Load & Settings (Alpha); MVP uses defaults."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-011
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "Diary text (VS). The nightly diary's mood words come from Morale's dominant_strain; Emotional Feedback supplies the word pools (localisation keys), Diary owns the page."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-012
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "EF1 — Cold-colour saturation. The grade_cold_saturation formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-013
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "EF2 — Freezing vignette. The vignette_strength formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-014
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "EF3 — Beat gating. The beat_allowed rule is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-015
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "EF4 — Posture set. The posture_set lookup is defined as: the first matching row of Rule 2 (Body → Needs → Morale-if-Strained+ → steady). Output: one set id. Example: Cold + Tired + Fraying/L → hunched (Body wins); Warm + Rested + Fraying/L → horizon-gazing; Warm + Rested + Steady/L → steady (morale postures need Strained or worse)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-016
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "EF5 — Music layer gains. The music_gains table is defined as (targets, eased over 4 s):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-017
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "EF6 — Wind emphasis. The wind_gain_db formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-018
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "If Body is Cold and Morale is Breaking at once: posture shows Body (hunched); grade shows Morale (desaturation); vignette absent (not Hypothermic) — both readable, neither hides the other."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-019
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "If a beat event arrives during an Interaction action: the beat plays as an overlay at the action's end (failure beats follow the Mishaps outcome), never mid-swing."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-020
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "If the player presses a move key during a beat: the beat is cancelled at once."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-021
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "If the survivor is asleep: no beats; posture is the sleep override; music fades to silence; grade holds."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-022
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "If death occurs: all beats stop; end_rise framing; music to silence; grade fades to snow white over 8 s (art bible §2)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-023
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "If \"reduce camera motion\" is on: ritual moments still trigger their posture and audio, without the pull-back."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-024
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "If Morale's state flickers across a threshold (prevented by its hysteresis): easing hides any residual flicker."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-025
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "If an event names an unknown beat: ignore, log."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-026
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "If a save is loaded: blend weights start at their targets (no 3 s fade-in from neutral)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-emotional-feedback-027
+  system: emotional-feedback
+  gdd: design/gdd/emotional-feedback.md
+  requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-001
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "Buses. Master → Ambience, Foley, Music (Emotional Feedback), UI. Ducking and wind emphasis from Emotional Feedback apply on Ambience."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-002
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "Listener at the survivor. The 3D listener is placed at the survivor's head with the camera's orientation; Foley is mixed slightly louder when the camera is closer (AF5)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-003
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "Ambience beds by zone (Map) and phase (Time), crossfaded over 5 s when the zone changes and over Dusk/Dawn when the phase changes:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-004
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "Wind is its own layer above the bed: gain from wind_eff at the survivor (AF2) plus Emotional Feedback's +2 dB per worsening state; gusts are random swells (±3 dB over 2–6 s) whose rate rises with wind."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-005
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "Footsteps (one per Character footfall) by Terrain surface type: fresh snow (deep crunch), forest snow (soft crunch), drift (muffled plunge), trail (short packed squeak), lake ice (hollow squeak), rock (scrape); volume and low-frequency weight scale with sink depth (AF1); ±5 % pitch and 3 variants per type to avoid repetition. Crawling plays drag sounds."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-006
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "Work sounds play on each effort beat of Interaction actions (Character's effort loop): hatchet thock, stick snap (dry: sharp crack; damp: dull crack — Gathering's wetness), bark tear, stone scrape, snow scrape (clear_snow), ferro-rod scrape with sparks, blowing breath, logs set down."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-007
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "Mishaps cause sounds play before the outcome: damp → hiss; wind → gust swell and spark scatter; cold hands → rod clatter; fatigue → heavy exhale; poor tinder → fizzle; fumble → dull miss; ice → sharp crack then plunge (the sharpest sound in the game)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-008
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "Fire is a continuous 3D source: crackle and roar scale with Fire's size factor s (AF3); damp burning adds pops and a steam hiss (Fire's w_burn); smother is a hiss burst; embers are a faint tick; out is silence."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-009
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "Body sounds (AF4): breathing rate and weight from Needs' energy and the work intensity; teeth chatter and shaky breath in Body Chilled/Cold; the absence of chatter in Hypothermic (silence is the warning, Body Temperature); stomach growl about once per game hour while Hungry."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-010
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "No alert sounds. No stingers for danger, no UI beeps in play; confirmations are soft paper/ink UI sounds only in menus."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-011
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "Voice budget. ≤ 24 simultaneous voices; priority: Mishaps cause > footsteps > work > fire > body > ambience details."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-012
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "AF1 — Footstep loudness. The footstep_db formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-013
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "AF2 — Wind gain. The wind_db formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-014
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "AF3 — Fire loudness. The fire_db formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-015
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "AF4 — Breath rate. The breaths_per_min formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-016
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "AF5 — Foley distance mix. The foley_mix_db formula is defined as:"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-017
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "If the survivor is asleep: footsteps and work silent; body layer = slow sleep breathing; ambience continues (night bed); fire continues."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-018
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "If time skips during sleep: ambience does not accelerate; one-shot details are throttled to real time (no burst of 10 ice booms)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-019
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "If two zones blend: crossfade the beds by the same weights Thermal uses for the zone blend."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-020
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "If the voice cap is reached: drop the lowest-priority voice (an ambience detail), never a Mishaps cause sound."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-021
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "If the game is paused: all buses duck −12 dB; menu UI sounds play."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-022
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "If a footfall happens on an unknown surface: use fresh snow and log."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-023
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "If death occurs: Foley fades out over 3 s; the wind remains alone, then fades with the image (Emotional Feedback end shot)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-ambient-and-foley-audio-024
+  system: ambient-and-foley-audio
+  gdd: design/gdd/ambient-and-foley-audio.md
+  requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-001
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "Elements (MVP):"
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-002
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "Never shown: morale, numbers of any kind (temperature, hunger, weight, day count, time), a thermometer, a minimap, quest markers, damage numbers."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-003
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "Calm fade. The band and arc sit at 35 % opacity while the body is Warm and the trend is steady; any trend, stage change, need warning or prompt brings them to 100 % over 0.5 s; they fade back after 8 real seconds of calm (H3)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-004
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "Body band (H1): a hand-drawn bar that fills from left (cold) to right (warm) between 30 °C and 37 °C; its ink runs blue at the cold end and orange at the warm end with a snowflake icon at the left and a flame at the right (art bible §4 colourblind rules: colour plus icon plus fill direction). Stage boundaries are faint tick marks; there is no number."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-005
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "Trend arrow (H2): ◀ cooling, ▶ warming, hidden when steady; double arrow when |rate| ≥ 1.0 °C/h."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-006
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "Need icons (H4): a small sketch per need (an axe-arm for energy, a cup for water, a bowl for food); one ink weight at the first warning stage, bolder and pulsing slowly (1 Hz, 10 % scale) at the second; never more than three icons."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-007
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "Sun/moon arc (H5): a half-circle; a sun dot travels along it by sun_progress by day, a moon dot by night progress; Dawn and Dusk tint the arc; no hour numbers. The player reads \"how much light is left\"."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-008
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "Prompts follow Interaction (one or two verbs) with Input's device glyphs; world-anchored, kept 40 px clear of the survivor's silhouette."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-009
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "Style (art bible §4, §7): warm off-white paper and ink, hand-drawn strokes, no low-poly elements; all text through localisation keys; minimum text height 18 px at 720p (accessibility floor); safe area 5 % from screen edges."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-010
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "Context-aware hiding. During ritual framings and sleep the HUD fades to 0 except the body band at 35 %; during end shots everything fades."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-011
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "Scaling. HUD scale setting 80–140 % (Alpha); MVP 100 %."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-012
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "H1 — Band fill. fill = clamp((core_temp_c − 30) / (37 − 30), 0, 1). Variables: core_temp_c (Body, 30–37). Output Range: 0–1. Examples: 37 → 1.0; 35.5 (Cold boundary) → 0.79; 32 (Critical) → 0.29."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-013
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "H2 — Trend. trend = rate ≥ +1.0 ? ▶▶ : rate ≥ +0.1 ? ▶ : rate ≤ −1.0 ? ◀◀ : rate ≤ −0.1 ? ◀ : none. Variables: rate (Body B1, °C per game hour). Examples: standing idle on day 1 (−0.81) → ◀; night with no fire (−1.49) → ◀◀; 1 m from a fire (+1.6) → ▶▶."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-014
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "H3 — Calm fade. opacity = calm_for ≥ calm_s ? calm_alpha : 1.0, eased 0.5 s up / 1.5 s down. Variables: calm_alpha 0.35, calm_s 8 real s (data file); calm = Warm, no trend, no need warning, no prompt. Output Range: 0.35–1.0."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-015
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "H4 — Need icon level. level = stage ∈ {Tired, Thirsty, Hungry} ? warn : stage ∈ {Exhausted, Parched, Empty, Starving} ? urgent : hidden. Output: hidden · warn · urgent (one per need)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-016
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "H5 — Arc position. angle = 180° × (phase in Dawn/Day/Dusk ? sun_progress : night_progress), night_progress = (minutes since nightfall) / (night length). Output Range: 0–180°. Example: day 1 at 12:30 → 90° (top of the arc)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-017
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "If the body is Critical: band at 100 %, ◀◀ or ▶▶, need icons stay; prompts show only Critical-allowed actions (Interaction)."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-018
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "If several refusals happen quickly: the newest line replaces the old one."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-019
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "If the gamepad disconnects mid-prompt: the reconnect prompt overlays; glyphs switch to keyboard on the next key press."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-020
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "If the hint's 10 game minutes pass with no fire: the hint goes; it never returns this run."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-021
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "If a ritual framing ends: elements return over 0.5 s, not instantly."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-022
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "If the window is ultrawide: elements anchor to the 16:9 safe area centred on screen."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-023
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "If text keys are missing: show the key name in dev builds, an empty string in release, and log."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+- id: TR-hud-024
+  system: hud
+  gdd: design/gdd/hud.md
+  requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
+  created: 2026-11-18
+  revised: ""
+  status: active
+
+# End of requirements.
