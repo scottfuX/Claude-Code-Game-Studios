@@ -259,5 +259,5 @@ Target switches only when another candidate beats the current one by `hysteresis
 | Durations are in game minutes (contract with Needs/Inventory), so work takes ⅓ less real time at night (1.0 vs 1.5 s per game minute). Acceptable, or should night actions author their real time? | game-designer | MVP playtest | if it feels wrong, add a per-action real-time floor |
 | Should chopping be tap-per-swing (more physical) instead of timed? | owner | MVP playtest | data change: `mode` = repeat |
 | Base durations and the catalogue are placeholders. | Gathering / Fire GDDs | next GDDs | confirm or change |
-| Does the backpack screen pause actions? Default: no (time keeps running). | ux-designer | Screens & Menus GDD (VS) | — |
+| ~~Does the backpack screen pause actions?~~ **Resolved 2026-11-18 by owner decision**: no — the backpack/inventory screen does not pause time or ongoing actions ("背包不暂停"); opening it does not cancel. | owner | done | Time Rule 8 and this GDD's backpack Edge Case |
 | Optional progress arc for accessibility. | accessibility-specialist | Alpha | — |
