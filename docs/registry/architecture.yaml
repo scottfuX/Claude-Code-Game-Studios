@@ -116,6 +116,16 @@ state_ownership:
     added: 2026-11-18
     revised: ""
 
+  - state: survivor_locomotion_and_pose
+    status: active
+    owner_system: SurvivorController
+    adr: docs/architecture/adr-0005-survivor-locomotion-humanoid-retargeting-and-animation-ik-layers.md
+    interface: "read-only position/velocity/facing; movement activity; play_action(id,duration_s) with token; per-foot contacts"
+    referenced_by: []
+    notes: "Proposed source; C1 product floor once, Critical crawl without Body0.40; pose callbacks never commit actions, pre-stamp contact sample shared; Needs name mismatch uses adapter."
+    added: 2026-11-18
+    revised: ""
+
 # Example:
 #
 # state_ownership:
@@ -264,6 +274,16 @@ api_decisions:
     not: unapproved-terrain-addon-or-expiring-authoritative-marks
     adr: docs/architecture/adr-0004-authored-map-jolt-terrain-snow-grid-and-persistent-trail-representation.md
     reason: "Proposed source; no addon cost/license approval; exact collision/render adapters, full-run memory and frame costs require spike evidence."
+    referenced_by: []
+    added: 2026-11-18
+    revised: ""
+
+  - purpose: survivor_physics_and_layered_humanoid_animation
+    status: active
+    api: CharacterBody3D-AnimationTree-AnimationMixer-SkeletonModifier3D-TwoBoneIK-adapter
+    not: custom-contact-solver-or-root-motion-gameplay-authority
+    adr: docs/architecture/adr-0005-survivor-locomotion-humanoid-retargeting-and-animation-ik-layers.md
+    reason: "Proposed source; C7 effort loops at0.85-1.15 with authoritative deadline; exact step/IK setup unverified; QQ-02 clip sourcing/cap remains owner-only."
     referenced_by: []
     added: 2026-11-18
     revised: ""
