@@ -1,6 +1,6 @@
 # rig-spike
 
-**PROTOTYPE — NOT FOR PRODUCTION.** Technical spike for
+**PROTOTYPE - NOT FOR PRODUCTION.** Technical spike for
 `design/gdd/character-controller-and-animation.md`: can the existing
 look-dev survivor (`prototypes/firebeforedark-concept/assets/survivor_flat.glb`)
 be rigged and animated automatically, and does it read in Godot 4.7?
@@ -26,7 +26,7 @@ should come from Mixamo/Cascadeur retargeted onto this skeleton, or a person.
 ## Rebuild the rig
 
 ```bash
-blender -b -P tools/assets/rig_survivor.py -- \
+blender -b -P prototypes/rig-spike/rig_survivor.py -- \
   --in prototypes/firebeforedark-concept/assets/survivor_flat.glb \
   --out prototypes/rig-spike/godot/assets/survivor_rigged.glb
 ```

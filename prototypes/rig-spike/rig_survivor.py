@@ -1,5 +1,6 @@
+# PROTOTYPE - NOT FOR PRODUCTION
 # Blender background script: rig a flattened survivor GLB and author clips.
-#   Blender --background --python tools/assets/rig_survivor.py -- \
+#   Blender --background --python prototypes/rig-spike/rig_survivor.py -- \
 #     --in survivor_flat.glb --out survivor_rigged.glb [--preview DIR]
 #
 # Rig spike (design/gdd/character-controller-and-animation.md, Open Questions):

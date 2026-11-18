@@ -1,9 +1,10 @@
-extends Node3D
-# PROTOTYPE — NOT FOR PRODUCTION. Rig/animation spike viewer.
+# PROTOTYPE - NOT FOR PRODUCTION
+# Rig/animation spike viewer.
 # Six copies of the auto-rigged survivor, one per test case, seen from a
 # close camera or the gameplay camera (pitch 50°, fov 30°, distance 22 m or
 # 50 m). Args after `--`: --view close|game|far   --capture (quit after
 # CAPTURE_FRAMES; use with --write-movie for a PNG sequence).
+extends Node3D
 
 const FLAT_MAT: Material = preload("res://materials/flat_palette.tres")
 const SNOW_MAT: Material = preload("res://materials/snow_ground.tres")
