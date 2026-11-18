@@ -213,6 +213,16 @@ state_ownership:
     added: 2026-11-18
     revised: ""
 
+  - state: camera_rig_yaw_framing_tokens_and_occluder_fades
+    status: active
+    owner_system: SurvivalCamera
+    adr: docs/architecture/adr-0013-camera-framing-arbitration-collision-and-projection-ports.md
+    interface: "request_framing/release_framing; early yaw_snapshot; final project_world and orientation snapshots"
+    referenced_by: []
+    notes: "Proposed source; highest/newest token, cinematic input break, chosen zoom preserved, <=12 visual occluders and fixed-pitch clearance; never moves survivor/locks input; QQ-04 remains open."
+    added: 2026-11-18
+    revised: ""
+
 # Example:
 #
 # state_ownership:
