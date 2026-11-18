@@ -32,7 +32,7 @@ Lonefire needs every survival minute, action outcome and random draw to be repro
 | Field | Value |
 |-------|-------|
 | **Depends On** | ADR-0001 (Proposed; must be Accepted before implementation) |
-| **Enables** | Backlog C3, C4, C5, S2, S3 and clock/event consumers; ADR IDs unallocated |
+| **Enables** | ADR-0006, ADR-0007, ADR-0008, ADR-0011, ADR-0012; other clock/event consumers |
 | **Blocks** | Ordered Clock/event/RNG implementation until Accepted; no story files found under production |
 | **Ordering Note** | No ADR-0002 dependency cycle: Coordinator pause port is consumed abstractly. Integrated input/pause needs both records; C4/C5 must pin action/Body/Needs transaction boundaries before those consumers are implemented. |
 

@@ -32,7 +32,7 @@ Inventory must preserve item identity/counts across partial transfers, overflow,
 | Field | Value |
 |-------|-------|
 | **Depends On** | ADR-0001, ADR-0003, ADR-0006, ADR-0007, ADR-0008 (all Proposed; must be Accepted before implementation) |
-| **Enables** | Backlog S1 Gathering, S2 Fire, S3 Morale, P4 HUD and deferred save/kit adapters |
+| **Enables** | ADR-0010, ADR-0011, ADR-0012, ADR-0016; deferred save/kit adapters |
 | **Blocks** | ItemCatalog/InventoryModel implementation pending acceptance; no story files exist |
 | **Ordering Note** | Pure catalog can validate independently; runtime commits refine C4/C5 ports without making those ADRs depend back on this adapter. |
 

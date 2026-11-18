@@ -32,7 +32,7 @@ Propose CharacterBody3D locomotion over C1's static collision, a retargetable hu
 | Field | Value |
 |-------|-------|
 | **Depends On** | ADR-0001, ADR-0002, ADR-0003, ADR-0004 (all Proposed) |
-| **Enables** | ADR-0007 action pose adapter, backlog P1 camera and P2/P3 feedback/audio |
+| **Enables** | ADR-0007, ADR-0013, ADR-0014, ADR-0015 (action pose and presentation adapters) |
 | **Blocks** | SurvivorController production implementation until acceptance; no story files to unblock |
 | **Ordering Note** | Body/Needs/Inventory are consumer snapshot ports, not duplicated owners. Later C4/C5/C6 ratify transactions/integration without making animation the completion authority. |
 

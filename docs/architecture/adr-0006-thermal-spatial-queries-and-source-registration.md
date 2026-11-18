@@ -32,7 +32,7 @@ ThermalField must answer deterministic felt-temperature queries without a frame-
 | Field | Value |
 |-------|-------|
 | **Depends On** | ADR-0001, ADR-0003, ADR-0004 (all Proposed; acceptance required before implementation) |
-| **Enables** | ADR-0008 Body integration and backlog S2 Fire/P2 feedback/P3 audio |
+| **Enables** | ADR-0008, ADR-0011, ADR-0014, ADR-0015 (Body/Fire and feedback/audio adapters) |
 | **Blocks** | ThermalField implementation pending acceptance; no story files exist |
 | **Ordering Note** | Map is a value-data provider; Fire publishes source values after Thermal establishes this minute's air/wind inputs. No Core import of Feature FireController. |
 

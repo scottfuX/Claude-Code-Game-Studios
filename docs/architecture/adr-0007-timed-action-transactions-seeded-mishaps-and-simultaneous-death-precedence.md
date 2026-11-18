@@ -31,8 +31,8 @@ ActionRunner needs one completion authority that cannot grant results after canc
 
 | Field | Value |
 |-------|-------|
-| **Depends On** | ADR-0001–0006 (Proposed); acceptance required before implementation |
-| **Enables** | ADR-0008 terminal candidate ports, ADR-0009 inventory commit details, backlog S1/S2/S3 and P2/P3 |
+| **Depends On** | ADR-0001, ADR-0002, ADR-0003, ADR-0004, ADR-0005, ADR-0006 (all Proposed); acceptance required before implementation |
+| **Enables** | ADR-0008, ADR-0009, ADR-0010, ADR-0011, ADR-0012, ADR-0014, ADR-0015 (terminal/owner plans and result presentation) |
 | **Blocks** | ActionRunner/MishapResolver transaction implementation until acceptance; no story files exist |
 | **Ordering Note** | Layer Core comes from ActionRunner/Interaction in the layer map; Feature MishapResolver is an injected collaborator, not a new layer value. C5/C6 refine owner ports, not a reverse dependency cycle. |
 

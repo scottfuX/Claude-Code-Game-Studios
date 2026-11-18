@@ -32,7 +32,7 @@ Lonefire needs a single input boundary that prevents gameplay leakage through UI
 | Field | Value |
 |-------|-------|
 | **Depends On** | ADR-0001 (Proposed; must be Accepted before implementation) |
-| **Enables** | Backlog C2, C4, P1, P4 and deferred screen/settings input adapters; ADR IDs unallocated |
+| **Enables** | ADR-0005, ADR-0007, ADR-0013, ADR-0016; deferred screen/settings input adapters |
 | **Blocks** | Input/context/pause adapter implementation until Accepted; no story files found under production |
 | **Ordering Note** | No dependency on ADR-0003: this defines abstract pause/context requests, not clock implementation. Integrated pause tests require ADR-0003; QQ-08 is resolved by Scott but GDD text sync is still pending. |
 

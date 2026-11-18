@@ -32,7 +32,7 @@ Body and Needs have coupled minute inputs and wake/death outcomes but must retai
 | Field | Value |
 |-------|-------|
 | **Depends On** | ADR-0001, ADR-0003, ADR-0005, ADR-0006, ADR-0007 (all Proposed; acceptance required before implementation) |
-| **Enables** | ADR-0009 consumable owner plans, backlog S3 Morale and P2/P4 presentation |
+| **Enables** | ADR-0009, ADR-0012, ADR-0014, ADR-0016 (consumable plans and Morale/presentation) |
 | **Blocks** | BodyThermoregulation/NeedsModel implementation until acceptance; no production story files exist |
 | **Ordering Note** | Refines F3's explicit pre-step audit obligation and C4 terminal ports. Body/Needs exchange snapshots, not mutable peer references; C6 consumption adapter must satisfy this port, not create a reverse ADR dependency. |
 

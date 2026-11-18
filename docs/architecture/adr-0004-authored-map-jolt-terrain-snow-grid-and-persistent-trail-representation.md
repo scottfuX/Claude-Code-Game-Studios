@@ -32,7 +32,7 @@ Lonefire needs deterministic surface queries, finite seeded resource placement a
 | Field | Value |
 |-------|-------|
 | **Depends On** | ADR-0001 and ADR-0003, both Proposed; must be Accepted before implementation |
-| **Enables** | ADR-0005, ADR-0006, ADR-0007; backlog S1/S2/P1/P3 |
+| **Enables** | ADR-0005, ADR-0006, ADR-0007, ADR-0010, ADR-0011, ADR-0013, ADR-0015 |
 | **Blocks** | Map/Terrain implementation until Accepted; no production story files exist |
 | **Ordering Note** | Terrain format and Map content are co-designed here, not mutually dependent ADRs. Consumer ports do not depend on future consumer ADR acceptance to define this data boundary. |
 

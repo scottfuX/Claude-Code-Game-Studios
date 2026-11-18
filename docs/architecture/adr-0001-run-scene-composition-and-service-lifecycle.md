@@ -32,7 +32,7 @@ Lonefire needs one restart-safe composition root so its eighteen MVP systems can
 | Field | Value |
 |-------|-------|
 | **Depends On** | None — registry and ADR filename scan found no prior ADRs; this establishes composition, not F2/F3 scheduling semantics |
-| **Enables** | ADR-0002; ADR-0003; backlog C1–C6, S1–S3 and P1–P4 (unallocated ADR IDs) |
+| **Enables** | ADR-0002, ADR-0003, ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0008, ADR-0009, ADR-0010, ADR-0011, ADR-0012, ADR-0013, ADR-0014, ADR-0015, ADR-0016 (allocated follow-ons) |
 | **Blocks** | Foundation composition implementation and downstream run integration until Accepted; no story files exist under production at authoring |
 | **Ordering Note** | Accept this before ADR-0002/0003 implementation; integrated run implementation also requires those and the affected Core ADRs Accepted. No story is unblocked by this document. |
 
