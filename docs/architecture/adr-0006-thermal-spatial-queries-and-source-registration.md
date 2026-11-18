@@ -102,7 +102,7 @@ Reserve typed Weather/Shelter registration ports without implementing deferred f
 
 ## Risks
 - Inline godot-specialist review: typed data and direct synchronous owner calls fit reference practice and avoid Jolt Area timing; no deprecated API required. Exact geometry adapter signatures and performance remain unverified; 4.7 packed-array in-place mutation needs explicit index/dirty invalidation if used. TD-ADR skipped — Lean mode; author self-review only.
-- GDD sync checked Thermal, Map, Fire, Body, Time and Audio (6). No API rename introduced. Thermal cross-reference prose still calls existing Map/Fire/Body documents unwritten; Time over-lists Thermal consumers. Those are documented stale/cosmetic references, not authority to change contracts. Known Time Rule8/QQ-08 pause warning persists; no GDD edit.
+- GDD sync checked Thermal, Map, Fire, Body, Time and Audio (6). No API rename introduced. Thermal cross-reference prose still calls existing Map/Fire/Body documents unwritten; Time over-lists Thermal consumers. Those are documented stale/cosmetic references, not authority to change contracts. Checked updated Time Rule 8 after merging origin/main: consistent with resolved QQ-08; no GDD edit.
 - Autonomous calls: Proceed on Thermal scope/TH constraints and Foundation/C1 dependencies; separate design tabs chose polygon+coarse index, stable exact sampling and source DTO/barrier; write ADR only, append registry, continue C4. Budgets/thermal harshness and deferred Weather/Shelter scope are not settled.
 
 ## GDD Requirements Addressed

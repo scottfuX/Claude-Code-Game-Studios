@@ -108,7 +108,7 @@ Enqueue a cause cue before the outcome/result cue for a failed profiled attempt;
 
 ## Risks
 - Inline godot-specialist review: typed direct calls/resources, explicit checkpoints and queued notifications avoid signal/animation callback ordering hazards. No deprecated API required. Reference alone does not prove pinned-engine RNG export/replay, callback timing or cause visual ordering; tests remain mandatory. TD-ADR skipped — Lean mode; no independent specialist approval.
-- GDD sync checked Interaction, Mishaps, Body, Needs, Inventory, Character, Time and Morale (8). Rule7 immersion already matches the required forced-cancel contract. Time Rule8 still conflicts with QQ-08; action/backpack wording agrees with Scott. No API rename proposed, no GDD edited.
+- GDD sync checked Interaction, Mishaps, Body, Needs, Inventory, Character, Time and Morale (8). Rule7 immersion already matches the required forced-cancel contract. Checked updated Time Rule 8 after merging origin/main: consistent with resolved QQ-08 and Interaction's backpack wording. No API rename proposed, no GDD edited.
 - Autonomous calls: Proceed with action/terminal problem, alternatives, full ranges and dependencies; separate tabs chose tokens/plans, seeded draw ledger and terminal/cancel checkpoint; picked Core from ActionRunner's layer-map value, not the backlog's mixed label; write ADR only; append registry; continue C5. No owner-only choice settled.
 
 ## GDD Requirements Addressed

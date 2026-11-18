@@ -242,7 +242,7 @@ interfaces:
     interface: "request_ui_context(source, open); request_pause(source) -> PauseToken; release_pause(token)"
     referenced_by:
       - docs/architecture/adr-0003-ordered-clock-dispatch-typed-events-and-run-randomness.md
-    notes: "Proposed ADR; Scott decided QQ-08 backpack UI does not pause simulation/actions; explicit pause menu does. Loading/disconnect safety gates remain. Time Rule 8 GDD fix pending separately."
+    notes: "Proposed ADR; Scott decided QQ-08 backpack UI does not pause simulation/actions; explicit pause menu does. Loading/disconnect safety gates remain. GDD sync checked: consistent with updated Time Rule 8 after origin/main merge."
     added: 2026-11-18
     revised: ""
   - contract: ordered_minute_dispatch

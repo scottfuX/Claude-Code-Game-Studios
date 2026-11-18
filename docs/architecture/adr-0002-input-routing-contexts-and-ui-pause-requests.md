@@ -34,7 +34,7 @@ Lonefire needs a single input boundary that prevents gameplay leakage through UI
 | **Depends On** | ADR-0001 (Proposed; must be Accepted before implementation) |
 | **Enables** | ADR-0005, ADR-0007, ADR-0013, ADR-0016; deferred screen/settings input adapters |
 | **Blocks** | Input/context/pause adapter implementation until Accepted; no story files found under production |
-| **Ordering Note** | No dependency on ADR-0003: this defines abstract pause/context requests, not clock implementation. Integrated pause tests require ADR-0003; QQ-08 is resolved by Scott but GDD text sync is still pending. |
+| **Ordering Note** | No dependency on ADR-0003: this defines abstract pause/context requests, not clock implementation. Integrated pause tests require ADR-0003; QQ-08 is resolved by Scott and checked consistent with updated Time Rule 8. |
 
 ## Context
 
@@ -108,8 +108,8 @@ Backpack open requests UI only. It must never acquire a pause token, cancel acti
 ## Risks
 - Inline godot-specialist review: InputMap/InputEvent typed dispatch and typed signals fit modules/input.md; avoid device-zero detection. UI dual-focus/SDL3 changes require platform tests. No deprecated API required. This is inline author review only, not runtime or independent approval. TD-ADR skipped — Lean mode.
 - The reference examples do not prove a centralized Control bridge, disconnect callback signature or exact process-mode setup; compile/test those adapters on 4.7.2 before implementation acceptance evidence is claimed.
-- **⚠️ GDD SYNC REQUIRED — pending separate PR:** `time-and-day-cycle.md` Rule 8 says menus/full-screen UI pause; Scott decided QQ-08 that backpack does not. Apply the explicit backpack exception described here; do not generalize to new UI. No GDD edited. Naming scan of Input, Interaction and Time found no renamed API/signal/type; this is a behavioral text conflict, not a clean sync result.
-- Autonomous calls: assumptions A (single router versus per-screen handling versus UI-implies-pause; Input linkage, ADR-0001 dependency, Proposed); separate design tabs chose validated action table/one-event meaning, exclusive clearing contexts, real-time IN1–IN3 and orthogonal tokenized pause. QQ-08 was supplied by Scott, not auto-decided. Write chose ADR only/pending GDD fix; registry chose append Proposed stances; closing chose requested F3.
+- GDD sync: checked Input, Interaction and updated Time Rule 8 after merging origin/main; consistent with QQ-08 (backpack does not pause time/actions; explicit pause does), with no renamed API/signal/type.
+- Autonomous calls: assumptions A (single router versus per-screen handling versus UI-implies-pause; Input linkage, ADR-0001 dependency, Proposed); separate design tabs chose validated action table/one-event meaning, exclusive clearing contexts, real-time IN1–IN3 and orthogonal tokenized pause. QQ-08 was supplied by Scott, not auto-decided. Write chose ADR only; registry chose append Proposed stances; closing chose requested F3.
 
 ## GDD Requirements Addressed
 
@@ -117,7 +117,7 @@ Backpack open requests UI only. It must never acquire a pause token, cancel acti
 |------------|-------------|--------------------------|
 | [input-and-action-map.md](../../design/gdd/input-and-action-map.md) | Full provisional TR-input-and-action-map-001 … TR-input-and-action-map-028, co-covered with F1; every Core Rule, IN1–IN3, edge case, dependency and AC/performance criterion | Sole input ownership; unchanged named action/default binding contract; validated remaps; Gameplay/UI/Locked; real-time timing/buffers; device glyphs and disconnect recovery. Deferred actions remain contracts, not new MVP features. |
 | [interaction-and-timed-actions.md](../../design/gdd/interaction-and-timed-actions.md) | Edge Cases: backpack opening does not cancel/pause work; pause menu pauses everything; Dependencies: taps/cancel routed from Input | Separate context and pause ports retain ongoing work under backpack; reject new gameplay input; explicit pause gates ActionRunner. C4 still owns the full Interaction TR range. |
-| [time-and-day-cycle.md](../../design/gdd/time-and-day-cycle.md) | Rule 8 pause / pending QQ-08 correction; AC6 pause freezes game time | Backpack is UI-only; explicit pause/menu and safety gates freeze simulation without disabling recovery input. ADR-0003 owns full Time co-coverage. |
+| [time-and-day-cycle.md](../../design/gdd/time-and-day-cycle.md) | Rule 8 pause / resolved QQ-08; AC6 pause freezes game time | Backpack is UI-only; explicit pause/menu and safety gates freeze simulation without disabling recovery input. ADR-0003 owns full Time co-coverage. |
 
 ## Performance Implications
 - **CPU**: Input ≤0.05 ms/frame and next-rendered-frame movement ≤16.6 ms are GDD obligations; measure, not claimed achieved. No repeated binding-table validation in hot path.

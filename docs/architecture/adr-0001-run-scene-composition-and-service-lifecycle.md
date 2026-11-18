@@ -106,7 +106,7 @@ Shutdown first gates input/time and invalidates the run generation, cancels in-f
 - Deferred deletion/queued callbacks can outlive a node: gate by run identity before dispatch, disconnect explicitly and test rapid restarts.
 - Shallow copies of Resources/collections can leak mutable state: construct per-run models and test nested snapshot mutation; do not assume a generic duplicate operation makes arbitrary data immutable.
 - Engine references do not establish the exact application process-mode wiring. Pause propagation and lifecycle signatures remain runtime verification obligations, not verified behavior.
-- GDD sync: checked Input and Time names against proposed interfaces; no renamed GDD signal/API/type. Time Rule 8 still conflicts with Scott's QQ-08 backpack exception; pending separate GDD fix, no GDD edited here.
+- GDD sync: checked Input and Time names against proposed interfaces; no renamed GDD signal/API/type. Checked updated Time Rule 8 after merging origin/main: consistent with QQ-08; backpack keeps simulation/actions running, other pauses still gate both.
 - Autonomous calls: assumptions A (problem, three composition alternatives, no upstream ADR, full Input/Time linkage, Proposed); separate design tabs chose run-owned subtree, explicit ports, detached snapshots and tracked teardown over globals/discovery/shared mutable state; write chose ADR-only because GDD edits are excluded; registry chose append Proposed stances. These are proposals, not approvals. Closing routing after F1 chose requested F2.
 
 ## GDD Requirements Addressed
@@ -114,7 +114,7 @@ Shutdown first gates input/time and invalidates the run generation, cancels in-f
 | GDD System | Requirement | How This ADR Addresses It |
 |------------|-------------|--------------------------|
 | [input-and-action-map.md](../../design/gdd/input-and-action-map.md) | Full provisional TR-input-and-action-map-001 … TR-input-and-action-map-028 (ADR Audit: M1/F1), including rules, IN1–IN3, edge cases, dependencies and acceptance/performance | Own and initialize one fresh InputRouter; clear state on lifecycle/context boundaries; inject consumers; preserve every action/binding/timing contract through ADR-0002 rather than claiming this composition record implements the formulas. |
-| [time-and-day-cycle.md](../../design/gdd/time-and-day-cycle.md) | Full provisional TR-time-and-day-cycle-001 … TR-time-and-day-cycle-029 (ADR Audit: M2/F1), including T1–T5, boundaries, pause, restoration and subscriber budgets | One run-owned Clock, gated startup/shutdown and explicit subscribers; ADR-0003 supplies complete timing/dispatch semantics. QQ-08 exception is owner-decided; Time Rule 8 text fix remains pending. |
+| [time-and-day-cycle.md](../../design/gdd/time-and-day-cycle.md) | Full provisional TR-time-and-day-cycle-001 … TR-time-and-day-cycle-029 (ADR Audit: M2/F1), including T1–T5, boundaries, pause, restoration and subscriber budgets | One run-owned Clock, gated startup/shutdown and explicit subscribers; ADR-0003 supplies complete timing/dispatch semantics. QQ-08 is owner-decided and checked consistent with updated Time Rule 8. |
 
 ## Performance Implications
 - **CPU**: No per-frame service discovery; measure composition and snapshot cost. Time's ≤0.02 ms/tick, combined subscribers ≤0.5 ms/tick and Input ≤0.05 ms/frame remain GDD obligations, not measured results.
