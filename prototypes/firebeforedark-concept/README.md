@@ -12,6 +12,16 @@ copied into the `DAY`/`DUSK` const tables.
 
 ## Run
 
+On a fresh clone, import the assets once first — `.godot/` is not committed,
+and running without it fails to preload the `.glb` files (grey window,
+`Parse Error: Could not preload resource file`):
+
+```bash
+/Applications/Godot.app/Contents/MacOS/Godot --headless --path prototypes/firebeforedark-concept --import
+```
+
+Then run:
+
 ```bash
 /Applications/Godot.app/Contents/MacOS/Godot --path prototypes/firebeforedark-concept
 ```
