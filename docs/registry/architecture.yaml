@@ -233,6 +233,16 @@ state_ownership:
     added: 2026-11-18
     revised: ""
 
+  - state: survival_audio_buses_listener_and_voice_pool
+    status: active
+    owner_system: SurvivalAudio
+    adr: docs/architecture/adr-0015-audio-buses-survivor-listener-and-prioritized-voice-pool.md
+    interface: "on_footfall(event,surface); on_cause(event); set_mix(request); presentation-only cause_started ack"
+    referenced_by: []
+    notes: "Proposed source; survivor-head listener/Camera orientation, <=24 total active streams incl loops/music/UI, protected cause pre-roll, real-time skip scheduling, explicit area_mask, no gameplay RNG; QQ-03 owner-only."
+    added: 2026-11-18
+    revised: ""
+
 # Example:
 #
 # state_ownership:
