@@ -1,6 +1,29 @@
 extends GdUnitTestSuite
 
 
+func test_add_fuel_chooses_largest_available_item_that_fits() -> void:
+	var fire := FireController.new(&"fire", Vector3.ZERO, ThermalField.new())
+	var inventory := InventoryModel.new()
+	fire.stage = &"Burning"
+	fire.fuel = 280.0
+	assert_bool(fire.can_act(&"add_fuel", inventory)).is_false()
+	inventory.add(&"log", 2)
+	inventory.add(&"stick", 2)
+	assert_bool(fire.can_act(&"add_fuel", inventory)).is_true()
+	assert_bool(fire.commit_action(&"add_fuel", inventory)).is_true()
+	assert_float(fire.fuel).is_equal(286.0)
+	assert_int(inventory.count(&"stick")).is_equal(1)
+	assert_int(inventory.count(&"log")).is_equal(2)
+	fire.fuel = 240.0
+	assert_bool(fire.commit_action(&"add_fuel", inventory)).is_true()
+	assert_float(fire.fuel).is_equal(300.0)
+	assert_int(inventory.count(&"log")).is_equal(1)
+	assert_bool(fire.can_act(&"add_fuel", inventory)).is_false()
+	assert_bool(fire.commit_action(&"add_fuel", inventory)).is_false()
+	assert_int(inventory.count(&"stick")).is_equal(1)
+	assert_int(inventory.count(&"log")).is_equal(1)
+
+
 func test_fire_fuel_heat_cap_and_expiry() -> void:
 	var t := ThermalField.new()
 	var f := FireController.new(&"fire", Vector3.ZERO, t)

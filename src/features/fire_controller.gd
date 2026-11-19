@@ -130,9 +130,14 @@ func snapshot() -> Dictionary[StringName, Variant]:
 	return {&"id": id, &"position": position, &"stage": stage, &"fuel": fuel, &"heat_c": heat_c(), &"warm_radius": warm_radius(), &"light_radius": light_radius()}
 
 func _preferred_fuel(inventory: InventoryModel) -> StringName:
-	if inventory.count(&"log") > 0:
-		return &"log"
-	return &"stick" if inventory.count(&"stick") > 0 else &""
+	var preferred: StringName = &""
+	var largest := 0.0
+	for item: StringName in [&"log", &"stick"]:
+		var value: float = tuning.fuel_values[item]
+		if inventory.count(item) > 0 and value > largest and fuel + value <= tuning.fuel_cap:
+			preferred = item
+			largest = value
+	return preferred
 
 func _expire_smolder() -> void:
 	tinder_ready = false
