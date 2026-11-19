@@ -1,7 +1,9 @@
 # ADR-0011: Fire stage machine, material consumption and heat/light publication
 
 ## Status
-Proposed
+Accepted
+
+Accepted by Scott (owner) on 2026-11-19: “Accept all 16” (ADR-0001–ADR-0016). Acceptance records the architecture decision, not runtime verification or resolution of open QQ items.
 
 ## Date
 2026-11-18
@@ -10,7 +12,7 @@ Proposed
 2026-11-18 — GDD/reference review; no engine, timing or visual test.
 
 ## Decision Makers
-Scott (owner), Devin (author/inline godot-specialist reviewer); no acceptance or independent approval.
+Scott (owner), Devin (author/inline godot-specialist reviewer); Owner acceptance: Scott, 2026-11-19. No independent review approval is claimed.
 
 ## Summary
 Fire needs coherent build materials, game-minute ember deadlines and same-minute heat/light without directly waking the survivor. Propose FireController-owned stage records, escrowed materials and C4/C6 atomic consumption, with exact authoritative Thermal publication separated from cosmetic render updates.
@@ -29,7 +31,7 @@ Fire needs coherent build materials, game-minute ember deadlines and same-minute
 ## ADR Dependencies
 | Field | Value |
 |-------|-------|
-| **Depends On** | ADR-0001, ADR-0003, ADR-0004, ADR-0006, ADR-0007, ADR-0009, ADR-0010 (all Proposed; acceptance required) |
+| **Depends On** | ADR-0001, ADR-0003, ADR-0004, ADR-0006, ADR-0007, ADR-0009, ADR-0010 (all Accepted; acceptance required) |
 | **Enables** | ADR-0012, ADR-0014, ADR-0015, ADR-0016 |
 | **Blocks** | FireController implementation; no story files exist |
 | **Ordering Note** | Feature publishes Core Thermal source values; no Core concrete Fire import or direct Body heat mutation. |

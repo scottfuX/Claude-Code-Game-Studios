@@ -1,7 +1,9 @@
 # ADR-0009: Item/action data validation, inventory transfers and tool-use transactions
 
 ## Status
-Proposed
+Accepted
+
+Accepted by Scott (owner) on 2026-11-19: “Accept all 16” (ADR-0001–ADR-0016). Acceptance records the architecture decision, not runtime verification or resolution of open QQ items.
 
 ## Date
 2026-11-18
@@ -10,7 +12,7 @@ Proposed
 2026-11-18 — GDD/reference/registry review; no runtime transfer, data-import or performance test.
 
 ## Decision Makers
-Scott (owner) and Devin (authoring agent, inline godot-specialist review); no acceptance or independent approval claimed.
+Scott (owner) and Devin (authoring agent, inline godot-specialist review); Owner acceptance: Scott, 2026-11-19. No independent review approval is claimed.
 
 ## Summary
 Inventory must preserve item identity/counts across partial transfers, overflow, wetness and action effects without exposing mutable definitions. Propose validated immutable catalog data, uniquely owned stack/container records and revision-checked atomic owner commits under C4's action gate.
@@ -31,7 +33,7 @@ Inventory must preserve item identity/counts across partial transfers, overflow,
 
 | Field | Value |
 |-------|-------|
-| **Depends On** | ADR-0001, ADR-0003, ADR-0006, ADR-0007, ADR-0008 (all Proposed; must be Accepted before implementation) |
+| **Depends On** | ADR-0001, ADR-0003, ADR-0006, ADR-0007, ADR-0008 (all Accepted; must be Accepted before implementation) |
 | **Enables** | ADR-0010, ADR-0011, ADR-0012, ADR-0016; deferred save/kit adapters |
 | **Blocks** | ItemCatalog/InventoryModel implementation pending acceptance; no story files exist |
 | **Ordering Note** | Pure catalog can validate independently; runtime commits refine C4/C5 ports without making those ADRs depend back on this adapter. |

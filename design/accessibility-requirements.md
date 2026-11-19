@@ -2,7 +2,7 @@
 
 > **Status**: In Design — provisional target, not owner-approved or audited
 > **Author**: Devin (ux-designer), for Scott's review
-> **Last Updated**: 2026-11-18
+> **Last Updated**: 2026-11-19
 > **Accessibility Tier Target**: Standard — Own Call A1, pending Scott's confirmation
 > **Platforms**: PC — macOS and Windows (Steam); keyboard/mouse primary, partial gamepad; no touch
 > **External Standards Targeted**: WCAG 2.1 AA principles for UI, not whole-game conformance; Game Accessibility Guidelines; XAG as reference only. No console certification or mobile standard claimed. CVAA applicability requires review if communication features are added.
@@ -79,7 +79,7 @@ No timed menu decisions, automatic destructive default or automatic selection on
 
 | Feature | Requirement | Status |
 |---|---|---|
-| Volume | Independent Master/Music/Ambience/Foley/UI per audio GDD and proposed ADR-0015; future voice separately controlled where content exists. Muting must not hide actionable UI state. | Settings deferred; audio implementation untested |
+| Volume | Independent Master/Music/Ambience/Foley/UI per audio GDD and Accepted ADR-0015; future voice separately controlled where content exists. Muting must not hide actionable UI state. | Settings deferred; audio implementation untested |
 | Critical cues | Identify cold breath, ice danger, failed work, tool loss and fire-state changes with existing visible cues; propose qualitative captions where those cues are insufficient (A2/A4). No extra fire meter or numeric warning. | Cue-equivalence audit required |
 | Mono | Optional mono mix, no information lost by channel collapse; caption direction only for a genuinely directional critical sound. | A2 proposal, pending scope |
 | Speech/subtitles | Future diary/dialogue speech gets speaker labels and readable background, text size controls, no music-only indication. | Deferred content; no current voice implementation claimed |
@@ -206,7 +206,7 @@ All values below are proposals, not owner approval or authorization to expand MV
 
 ### Architecture decisions explicitly preserved
 
-All 16 ADRs remain **Proposed**. This document neither accepts them nor resolves the following [architecture-review owner register](../docs/architecture/architecture-review-2026-11-18.md#owner-decision-register--recommendations-not-decisions). Recommendations below are inherited, not new decisions.
+All 16 ADRs were **Accepted** separately by Scott (owner) on 2026-11-19. That decision does not confirm this draft's accessibility tier/scope or resolve the following [architecture-review owner register](../docs/architecture/architecture-review-2026-11-18.md#owner-decision-register--recommendations-not-decisions). Recommendations below are inherited, not new decisions.
 
 | ID | Dependency / recommended default for Scott | Status |
 |---|---|---|

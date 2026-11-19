@@ -1,10 +1,10 @@
 # Control Manifest
 
 > **Engine**: Godot 4.7.2.stable.official.ed1daf0bf / GDScript / Jolt / Forward+ desktop
-> **Last Updated**: 2026-11-18
-> **Manifest Version**: 2026-11-18
+> **Last Updated**: 2026-11-19
+> **Manifest Version**: 2026-11-19
 > **ADRs Covered**: ADR-0001..ADR-0016 (all 16)
-> **Status**: Provisional — built from **Proposed ADRs (ADR-0001..0016), not Accepted ADRs**. Regenerate with `/create-control-manifest update` once they are Accepted, and whenever ADR rules change.
+> **Status**: Built from **Accepted ADRs ADR-0001..0016** — accepted by Scott (owner), 2026-11-19, “Accept all 16”. Regenerate with `/create-control-manifest update` whenever ADR rules change. Acceptance does not claim runtime validation or settle the open QQ defaults below.
 > **Review**: TD-MANIFEST skipped — Lean mode.
 
 **Companion nomenclature check:** compared against PR #9's changes to `architecture.md` and `tr-registry.yaml` without merging that branch. Camera uses ADR-0013's full `request_framing(...)`, `release_framing(id)`, `yaw_snapshot()`, `project_world(p) -> ProjectionResult{visible,viewport_point}` and `orientation_snapshot()`; Thermal uses ADR-0006's `ThermalComponents`, `register_heat_source`, `update_heat_source` and `unregister_heat_source`. The older architecture aliases are not the manifest's contracts. Sources: ADR-0006 and ADR-0013 §Decision (Key Interfaces).
@@ -16,25 +16,25 @@ Programmer rules compiled from the four prescribed ADR sections, project configu
 ## Source Index
 | ADR | Title | Primary layer | Recorded status at extraction |
 |---|---|---|---|
-| [ADR-0001](adr-0001-run-scene-composition-and-service-lifecycle.md) | Run scene composition and service lifecycle | Foundation | Proposed |
-| [ADR-0002](adr-0002-input-routing-contexts-and-ui-pause-requests.md) | Input routing, contexts and UI pause requests | Foundation | Proposed |
-| [ADR-0003](adr-0003-ordered-clock-dispatch-typed-events-and-run-randomness.md) | Ordered clock dispatch, typed events and run randomness | Foundation | Proposed |
-| [ADR-0004](adr-0004-authored-map-jolt-terrain-snow-grid-and-persistent-trail-representation.md) | Authored map, Jolt terrain/snow grid and persistent trail representation | Core | Proposed |
-| [ADR-0005](adr-0005-survivor-locomotion-humanoid-retargeting-and-animation-ik-layers.md) | Survivor locomotion, humanoid retargeting and animation/IK layers | Core | Proposed |
-| [ADR-0006](adr-0006-thermal-spatial-queries-and-source-registration.md) | Thermal spatial queries and source registration | Core | Proposed |
-| [ADR-0007](adr-0007-timed-action-transactions-seeded-mishaps-and-simultaneous-death-precedence.md) | Timed-action transactions, seeded mishaps and simultaneous-death precedence | Core | Proposed |
-| [ADR-0008](adr-0008-body-needs-minute-integration-sleep-and-terminal-candidate-ports.md) | Body/Needs minute integration, sleep and terminal candidate ports | Core | Proposed |
-| [ADR-0009](adr-0009-item-action-data-validation-inventory-transfers-and-tool-use-transactions.md) | Item/action data validation, inventory transfers and tool-use transactions | Core | Proposed |
-| [ADR-0010](adr-0010-gathering-resolver-depletion-and-overflow-transactions.md) | Gathering resolver/depletion and overflow transactions | Feature | Proposed |
-| [ADR-0011](adr-0011-fire-stage-machine-material-consumption-and-heat-light-publication.md) | Fire stage machine, material consumption and heat/light publication | Feature | Proposed |
-| [ADR-0012](adr-0012-morale-event-ordering-strain-integration-and-relief-limits.md) | Morale event ordering, strain integration and relief limits | Feature | Proposed |
-| [ADR-0013](adr-0013-camera-framing-arbitration-collision-and-projection-ports.md) | Camera framing arbitration, collision and projection ports | Presentation | Proposed |
-| [ADR-0014](adr-0014-read-only-emotional-feedback-layers-and-warm-hue-safe-grade.md) | Read-only emotional feedback layers and warm-hue-safe grade | Presentation | Proposed |
-| [ADR-0015](adr-0015-audio-buses-survivor-listener-and-prioritized-voice-pool.md) | Audio buses, survivor listener and prioritized voice pool | Presentation | Proposed |
-| [ADR-0016](adr-0016-non-numeric-hud-and-mvp-inventory-facade-contracts.md) | Non-numeric HUD and MVP inventory facade contracts | Presentation | Proposed |
+| [ADR-0001](adr-0001-run-scene-composition-and-service-lifecycle.md) | Run scene composition and service lifecycle | Foundation | Accepted |
+| [ADR-0002](adr-0002-input-routing-contexts-and-ui-pause-requests.md) | Input routing, contexts and UI pause requests | Foundation | Accepted |
+| [ADR-0003](adr-0003-ordered-clock-dispatch-typed-events-and-run-randomness.md) | Ordered clock dispatch, typed events and run randomness | Foundation | Accepted |
+| [ADR-0004](adr-0004-authored-map-jolt-terrain-snow-grid-and-persistent-trail-representation.md) | Authored map, Jolt terrain/snow grid and persistent trail representation | Core | Accepted |
+| [ADR-0005](adr-0005-survivor-locomotion-humanoid-retargeting-and-animation-ik-layers.md) | Survivor locomotion, humanoid retargeting and animation/IK layers | Core | Accepted |
+| [ADR-0006](adr-0006-thermal-spatial-queries-and-source-registration.md) | Thermal spatial queries and source registration | Core | Accepted |
+| [ADR-0007](adr-0007-timed-action-transactions-seeded-mishaps-and-simultaneous-death-precedence.md) | Timed-action transactions, seeded mishaps and simultaneous-death precedence | Core | Accepted |
+| [ADR-0008](adr-0008-body-needs-minute-integration-sleep-and-terminal-candidate-ports.md) | Body/Needs minute integration, sleep and terminal candidate ports | Core | Accepted |
+| [ADR-0009](adr-0009-item-action-data-validation-inventory-transfers-and-tool-use-transactions.md) | Item/action data validation, inventory transfers and tool-use transactions | Core | Accepted |
+| [ADR-0010](adr-0010-gathering-resolver-depletion-and-overflow-transactions.md) | Gathering resolver/depletion and overflow transactions | Feature | Accepted |
+| [ADR-0011](adr-0011-fire-stage-machine-material-consumption-and-heat-light-publication.md) | Fire stage machine, material consumption and heat/light publication | Feature | Accepted |
+| [ADR-0012](adr-0012-morale-event-ordering-strain-integration-and-relief-limits.md) | Morale event ordering, strain integration and relief limits | Feature | Accepted |
+| [ADR-0013](adr-0013-camera-framing-arbitration-collision-and-projection-ports.md) | Camera framing arbitration, collision and projection ports | Presentation | Accepted |
+| [ADR-0014](adr-0014-read-only-emotional-feedback-layers-and-warm-hue-safe-grade.md) | Read-only emotional feedback layers and warm-hue-safe grade | Presentation | Accepted |
+| [ADR-0015](adr-0015-audio-buses-survivor-listener-and-prioritized-voice-pool.md) | Audio buses, survivor listener and prioritized voice pool | Presentation | Accepted |
+| [ADR-0016](adr-0016-non-numeric-hud-and-mvp-inventory-facade-contracts.md) | Non-numeric HUD and MVP inventory facade contracts | Presentation | Accepted |
 
 ## Unresolved / Provisional Defaults
-These question references are tracking context, not new decisions. All ADR-derived designs remain Proposed; the four separately attributed owner decisions are settled.
+These question references are tracking context, not new decisions. All 16 ADR-derived designs are Accepted; the four separately attributed owner decisions are settled. The unresolved QQ defaults below remain provisional.
 - **QQ-01**: final hardware, shipping resolution, numeric budgets and measurement policy remain open. Keep the legacy 60 fps/16.6 ms fallback; no global draw/memory number is adopted. Profiling Body and tightening Thermal is now decided, but a replacement numeric allocation is not supplied — source: ADR-0001 §Performance Implications; ADR-0006 §Performance Implications; ADR-0008 §Performance Implications; .claude/docs/technical-preferences.md §Performance Budgets.
 - **QQ-02/03**: retain legally usable evaluation clips/audio and sparse silence-first mix; authorize no addon, purchase, composer or replacement triangle cap — source: ADR-0004 §Alternatives Considered; ADR-0005 §Decision; ADR-0014 §Decision; ADR-0015 §Performance Implications.
 - **QQ-04**: retain current camera table/framing and require owner visual/playtest verification, not silent reframing — source: ADR-0013 §Decision (CA1–CA5).
@@ -72,7 +72,7 @@ These question references are tracking context, not new decisions. All ADR-deriv
 
 - At each minute boundary, apply queued rate requests (including a Needs sleep request before the first new-run interval), advance/derive the clock, then deliver boundary notifications/reset hooks at that minute before model integration. Normal beats wait/sleep with all reasons logged and one change notification; sleep can replace wait; wait during sleep is ignored with warning. A normal request raised inside a minute is honored before another owed minute, so a long catch-up cannot sleep past an alarm. Needs is_asleep is never written by Clock. — source: ADR-0003 §Decision.
 
-- Coordinator alone invokes authoritative stages: capture pre-step movement/work and modifiers → Thermal inputs → Fire burn/source publication → Inventory drying → Body step → Needs step/wake → terminal arbitration → Morale ordered queue flush → complete snapshot/presentation publication. Each stage runs synchronously once; typed public signals notify observers but must never be a second simulation integration path. Day resets happen before the affected day's Morale integration; sunrise/nightfall reach consumers at their true boundaries even in sleep. The proposed Body/Needs pre-step read boundary is subject to C5's full formula audit; F3 establishes scheduling, not unreviewed physiology changes. — source: ADR-0003 §Decision.
+- Coordinator alone invokes authoritative stages: capture pre-step movement/work and modifiers → Thermal inputs → Fire burn/source publication → Inventory drying → Body step → Needs step/wake → terminal arbitration → Morale ordered queue flush → complete snapshot/presentation publication. Each stage runs synchronously once; typed public signals notify observers but must never be a second simulation integration path. Day resets happen before the affected day's Morale integration; sunrise/nightfall reach consumers at their true boundaries even in sleep. The Body/Needs pre-step read boundary is subject to C5's full formula audit; F3 establishes scheduling, not unreviewed physiology changes. — source: ADR-0003 §Decision.
 
 - ActionRunner uses unpaused real seconds with start-rate/start-modifier duration snapshots from Interaction IA1; it never uses the survival accumulator as an action timer. Coordinator processes same-update forced cancellation/terminal candidates before eligible completion commits: death wins over collapse/immersion; hypothermia wins dehydration ties; immersion cancels even non-cancellable work with no interrupted use/roll/result. C4 must specify the exact completion checkpoint and owning resolver transactions; do not assume this coarse frame description is enough to implement them. Once terminal is chosen, gate further simulation/completions, discard pending uncommitted work, publish one final snapshot/event and prohibit further RNG draws. Presentation may finish using real-time adapters without mutating the frozen simulation. — source: ADR-0003 §Decision.
 
@@ -130,7 +130,7 @@ These question references are tracking context, not new decisions. All ADR-deriv
 
 - `enqueue_event(event: RunEvent) -> Result`: typed envelope with run_id, sequence, minute, kind and domain-specific payload. Keep GDD payload fields such as action_outcome{action_type, success, cause, severity, tag, base_fail_chance} and fell_in_water; reject stale/duplicate envelopes, warn/ignore unknown IDs according to their owning GDD. — source: ADR-0003 §Decision (Key Interfaces).
 
-- `draw_unit(request: RandomDrawRequest) -> RandomDrawResult`, `export_random_state() -> RandomState`, `restore_random_state(state: RandomState) -> Result`: proposed adapter ports, not asserted Godot method signatures. DrawResult explicitly represents rejection for stale/terminal requests. RandomState includes seed/state/draw_count/engine pin; restore validates before changing live state. — source: ADR-0003 §Decision (Key Interfaces).
+- `draw_unit(request: RandomDrawRequest) -> RandomDrawResult`, `export_random_state() -> RandomState`, `restore_random_state(state: RandomState) -> Result`: application adapter ports, not asserted Godot method signatures. DrawResult explicitly represents rejection for stale/terminal requests. RandomState includes seed/state/draw_count/engine pin; restore validates before changing live state. — source: ADR-0003 §Decision (Key Interfaces).
 
 - Clock must be the only survival clock; owners must integrate exactly once per ordered minute, even during skips. Input/feedback real-time timers must never advance survival state. — source: ADR-0003 §Decision (Implementation Guidelines).
 
@@ -187,7 +187,7 @@ These question references are tracking context, not new decisions. All ADR-deriv
 
 - For an accepted foot contact, sample pre-stamp surface/sink once, collect every covered cell within the foot radius (~0.15 m), update eligible compaction with TS7 at most once/cell per 5 real seconds, and append a unique mark storing original position/foot/sink/time. Publish the contact sample to Audio/Mishaps and mark modified render regions explicitly. Duplicate run/sequence contacts and stationary shuffling must not restamp. Subsequent queries see new compaction; repeated read-only queries never mutate it. Crawling uses drag marks through the same boundary. Terrain reports thin ice; only a validated Mishaps command breaks a cell, after which it reports open water. Nearest shore escape comes from Map/Character, not Terrain movement code. — source: ADR-0004 §Decision.
 
-- Keep authoritative marks for the whole run; render them through chunked dirty-region world-space trail textures/mesh updates with near-camera snow displacement as the proposed adapter. Distant chunks may change rendering LOD/cull draw work but must never evict gameplay grid/mark history; re-entering restores the same marks. No decal-per-mark node population is authoritative. Precision, geometry, upload strategy and camera readability must be established by the spike before this adapter is treated as production-proven. — source: ADR-0004 §Decision.
+- Keep authoritative marks for the whole run; render them through chunked dirty-region world-space trail textures/mesh updates with near-camera snow displacement as the selected adapter. Distant chunks may change rendering LOD/cull draw work but must never evict gameplay grid/mark history; re-entering restores the same marks. No decal-per-mark node population is authoritative. Precision, geometry, upload strategy and camera readability must be established by the spike before this adapter is treated as production-proven. — source: ADR-0004 §Decision.
 
 - WorldMap resolves overlapping zones using lake > drift field > lee > forest > open snow > scoured ridge; cells use their centre's zone. Seeded scatter uses the injected run RNG in fixed ring/kind/node/retry order, MR1 count variation and MR2 at most 30 placement retries. Force the drop-facing 20–30 m deadfall and second near-ring deadfall first; guarantee three authored safe lee camp sites. Stable node IDs distinguish saved remaining yields from rerolled placement. Empty nodes remain visible but non-actionable; no MVP regrowth. Gathering commits an idempotent successful depletion request to WorldMap; failures never deplete. No nodes/sites on ice, >0.6 m drift or >20° slope. Authoring validation must report impossible guaranteed placement rather than silently start a run missing required safety content. — source: ADR-0004 §Decision.
 
@@ -207,11 +207,11 @@ These question references are tracking context, not new decisions. All ADR-deriv
 
 - **Pinned-engine constraints**: 4.6+ SkeletonModifier3D/TwoBoneIK architecture; AnimationTree via AnimationMixer.active; skeleton_updated rather than deprecated bone_pose_updated. Exact IK class/properties require pinned-engine verification. **Verify before treating the adapter as proven**: Jolt step/floor/slide behavior; TwoBoneIK modifier ordering, targets and masks; import/retarget profiles and loop method-track cadence; no engine run performed here — source: ADR-0005 §Engine Compatibility.
 
-- ThermalField owns the thermal table, minute air/wind inputs and source registries, not source heat/radius design. Compile authored Map zone polygons into a coarse uniform XZ index (proposed10 m cells) covering polygon bounds expanded by the5 m blend. At query, obtain candidates then evaluate exact containment and boundary distances; index cells never quantize felt temperature. Stable zone IDs break exact geometry ties, and Map's zone precedence remains authoritative for discrete terrain surfaces. — source: ADR-0006 §Decision.
+- ThermalField owns the thermal table, minute air/wind inputs and source registries, not source heat/radius design. Compile authored Map zone polygons into a coarse uniform XZ index (selected 10 m cells) covering polygon bounds expanded by the5 m blend. At query, obtain candidates then evaluate exact containment and boundary distances; index cells never quantize felt temperature. Stable zone IDs break exact geometry ties, and Map's zone precedence remains authoritative for discrete terrain surfaces. — source: ADR-0006 §Decision.
 
 - Represent the zone transition as a shared5 m linear boundary band: a point2.5 m through the specified forest/open blend gets equal weights. For a two-zone band use weights1−t,t; at multi-zone junctions use nonnegative distance-band weights for every participating zone then normalize once in stable ID order. Validate band endpoints/midpoint, corners and continuity against the GDD before production wiring; do not substitute nearest-zone selection or an inverse-distance curve. Export the same weights for audio beds. No-zone fallback is open snow offset0/exposure0.8; preserve all six zone values including drift0/0.6 and ridge0/1.0. Band geometry at junctions is an explicit authoring/adapter verification item, not a claim that the GDD specifies a unique triangulation. — source: ADR-0006 §Decision.
 
-- Sources are copied value records keyed by stable owner/run/source ID: position, heat_c, radius_m, enabled plus revision. Proposed coarse source bins cover the source radius AABB; exact Euclidean distance and strict d<radius decide TH4. Process candidate sources in stable ID order for reproducible float accumulation. Reject nonfinite position/heat/radius, radius≤0 and negative heat with error; an invalid update disables that ID until a valid update so bad source data contributes no heat. heat0 disables but retains the record; relight re-enables; unregister removes. Stale-run/revision commands cannot resurrect removed sources; teardown clears all registrations. — source: ADR-0006 §Decision.
+- Sources are copied value records keyed by stable owner/run/source ID: position, heat_c, radius_m, enabled plus revision. Selected coarse source bins cover the source radius AABB; exact Euclidean distance and strict d<radius decide TH4. Process candidate sources in stable ID order for reproducible float accumulation. Reject nonfinite position/heat/radius, radius≤0 and negative heat with error; an invalid update disables that ID until a valid update so bad source data contributes no heat. heat0 disables but retains the record; relight re-enables; unregister removes. Stale-run/revision commands cannot resurrect removed sources; teardown clears all registrations. — source: ADR-0006 §Decision.
 
 - Preserve formulas exactly: TH1 max(t_floor,t_start−t_ramp×(day−1)); TH2 daily mean+t_swing×cos(2π×(hour−(solar_noon+peak_lag))/24)+weather_offset, noon=(sunrise+sunset)/2; TH3 min(chill_cap,k_wind×wind_speed×exposure_eff); TH4 source_heat×(1−(d/radius)²)×reflect strictly inside radius; cap sum at heat_cap30; TH5 air+zone−wind_chill+heat+shelter_bonus. components must agree with that same query's total. Registry/model queries are pure, with no RNG, cache warming side effects or per-point history. — source: ADR-0006 §Decision.
 
@@ -247,7 +247,7 @@ These question references are tracking context, not new decisions. All ADR-deriv
 
 - Body B1 uses captured core, wetness and shiver from the captured stage: gap=felt−5; negative exchange0.088×gap×(1+wetness)/insulation, positive0.3×gap; add highest activity and0.3 shiver only Chilled/Cold; clamp[−4,+3]°C/h, positive rate0 when core≥37. Integrate rate/60 and clamp core≤37; a death crossing clamps exactly30. B2 integrates wetness from the SAME pre-step wetness independently: moving wade gain0.03/h, dry0.6/h at felt≥10 or0.1/h at felt≥0, otherwise0; clamp[0,1]. Immersion sets wetness1 immediately before the next captured boundary, idempotent by event ID; never double-soak. Thus minute drying does not retroactively change B1's rate. — source: ADR-0008 §Decision.
 
-- Derive post-step Body stage via B3/B4: ordinary changes at most one stage/minute, falling36.5/35.5/34/32 and rising threshold+0.2, one notification per transition; terminal core≤30 bypasses ordinary stage-step delay and submits hypothermia candidate immediately. Post-Body `is_shivering` and stage are the explicit inputs to Needs N1/N4 for THIS minute. A Warm→Chilled crossing uses no shiver heat in that completed B1 interval but starts its post-Body shiver charge in Needs; a Cold→Hypothermic crossing stops that charge. This is a proposed discrete integration convention to verify with cross-boundary fixtures, not a retuning of rates. — source: ADR-0008 §Decision.
+- Derive post-step Body stage via B3/B4: ordinary changes at most one stage/minute, falling36.5/35.5/34/32 and rising threshold+0.2, one notification per transition; terminal core≤30 bypasses ordinary stage-step delay and submits hypothermia candidate immediately. Post-Body `is_shivering` and stage are the explicit inputs to Needs N1/N4 for THIS minute. A Warm→Chilled crossing uses no shiver heat in that completed B1 interval but starts its post-Body shiver charge in Needs; a Cold→Hypothermic crossing stops that charge. This is an Accepted discrete integration convention to verify with cross-boundary fixtures, not a retuning of rates. — source: ADR-0008 §Decision.
 
 - Needs N1–N4 compute from captured sleep/rest/activity and captured fullness/stages, with post-Body shiver/stage: burn=(awake110/asleep65)+max(activity extra)+shiver80; consume pre-step stomach first and lower weight by shortfall/7700, floor40 kg with warning, never gain. N3 drain awake1.4/asleep0.7 ×1.5 for wade/heavy, integrate/60 and clamp hydration[0,100]. N4 sleep8×q_warm[post-Body stage]×q_food[captured fullness], q_warm1/0.7/0.4/0.2/0 and q_food0.5+0.5×min(1,fullness/50); awake fire-rest in wait+1.5, otherwise negative(max activity energy+shiver1.5)×thirst1.2×starve1.2 when applicable. Compute N5 from post-burn weight, cap=max(60,100×(1−2×lost_fraction)); integrate energy then clamp[0,new cap]. N6 derives endpoint need stages, at most one ordinary step per machine/minute, rising hysteresis+2, preserving exact0 hydration and24 h empty rules. Immediate eating leaves Empty/Starving as the GDD requires. — source: ADR-0008 §Decision.
 
@@ -309,7 +309,7 @@ These question references are tracking context, not new decisions. All ADR-deriv
 
 - Preserve GDD `effective_temp_c(p) -> float`, `components(p) -> ThermalComponents{air,zone,wind_chill,heat,shelter_bonus}`, `wind_eff(p)`, `is_sheltered(p)` and air_temp_c/wind_speed snapshots. — source: ADR-0006 §Decision (Key Interfaces).
 
-- Proposed `register_heat_source(source) -> Result`, `update_heat_source(source) -> Result`, `unregister_heat_source(id) -> Result` validate ownership/run/revision; supplied DTO includes all GDD fields. These are application ports, not asserted Godot methods. — source: ADR-0006 §Decision (Key Interfaces).
+- `register_heat_source(source) -> Result`, `update_heat_source(source) -> Result`, `unregister_heat_source(id) -> Result` validate ownership/run/revision; supplied DTO includes all GDD fields. These are application ports, not asserted Godot methods. — source: ADR-0006 §Decision (Key Interfaces).
 
 - `begin_minute(context)` and `seal_sources(minute_sequence)` are Coordinator-only barriers, not a second public minute_tick subscription; optional `zone_weights(p)` exports detached weights. — source: ADR-0006 §Decision (Key Interfaces).
 
@@ -321,7 +321,7 @@ These question references are tracking context, not new decisions. All ADR-deriv
 
 - Preserve architecture `try_start(action_id,target_id) -> StartResult`, `cancel(reason)`, `progress()`, `resolve_attempt(attempt) -> Outcome`, `check_ice(footfall)`, `action_outcome` and `fell_in_water` with their GDD payloads; internal token metadata adds no required args to public GDD signals. — source: ADR-0007 §Decision (Key Interfaces).
 
-- Proposed `prepare_completion(token, snapshots) -> PreparedCompletion`, owner `validate_plan(plan) -> Result` / `commit_plan(plan, consequence_id)`, and `submit_terminal_candidate(candidate)` are injected typed ports, not native Godot APIs. — source: ADR-0007 §Decision (Key Interfaces).
+- `prepare_completion(token, snapshots) -> PreparedCompletion`, owner `validate_plan(plan) -> Result` / `commit_plan(plan, consequence_id)`, and `submit_terminal_candidate(candidate)` are injected typed ports, not native Godot APIs. — source: ADR-0007 §Decision (Key Interfaces).
 
 - Cancellation and world-contact ports carry run/sequence; old callbacks and repeated commits are rejected without mutation. Prepared snapshots must not expose mutable owner state. — source: ADR-0007 §Decision (Key Interfaces).
 
@@ -345,7 +345,7 @@ These question references are tracking context, not new decisions. All ADR-deriv
 
 - Preserve architecture `definition(item_id) -> ItemDefinition`, `add_or_pile(stacks,position) -> TransferResult`, `consume(request) -> Result`, `use_tool(id) -> Result`; adapters carry stable stack/token/revision rather than mutable references. — source: ADR-0009 §Decision (Key Interfaces).
 
-- `prepare_transfer(request) -> InventoryPlan`, `validate_plan(plan) -> Result`, `commit_plan(plan,consequence_id)` are proposed application ports, not asserted Godot methods. TransferResult distinguishes accepted/remainder/refusal and new pile/stack IDs. — source: ADR-0009 §Decision (Key Interfaces).
+- `prepare_transfer(request) -> InventoryPlan`, `validate_plan(plan) -> Result`, `commit_plan(plan,consequence_id)` are application ports, not asserted Godot methods. TransferResult distinguishes accepted/remainder/refusal and new pile/stack IDs. — source: ADR-0009 §Decision (Key Interfaces).
 
 - GDD loss payload stays `kind:item_lost,item_class:tool|other` plus item ID; all internal envelopes include run/sequence and no duplicate public grief event. — source: ADR-0009 §Decision (Key Interfaces).
 
@@ -360,7 +360,7 @@ These question references are tracking context, not new decisions. All ADR-deriv
 
 - Never use **Decal-only transient footprints** as the implementation baseline — Violates whole-run trail persistence and deterministic surface queries. — source: ADR-0004 §Alternatives Considered.
 
-- Never use **Custom Jolt kinematic body from scratch** as the implementation baseline — CharacterBody3D is the proposed baseline; failed step/grade spike would require a revised ADR, not silently switching implementation. — source: ADR-0005 §Alternatives Considered.
+- Never use **Custom Jolt kinematic body from scratch** as the implementation baseline — CharacterBody3D is the Accepted baseline; failed step/grade spike would require a revised ADR, not silently switching implementation. — source: ADR-0005 §Alternatives Considered.
 
 - Never use **Root-motion and globally stretched action clips** as the implementation baseline — C1–C7 require model-driven movement/activity and repeated effort, not slow motion. — source: ADR-0005 §Alternatives Considered.
 
@@ -393,7 +393,7 @@ These question references are tracking context, not new decisions. All ADR-deriv
 
 - **Load Time**: Validate skeleton mappings, clip segments/events/masks and fallbacks before run activation. — source: ADR-0005 §Performance Implications.
 
-- **CPU**: GDD≤0.05 ms/effective_temp_c query with8 sources/4 nearby zones; profile index lookup+exact weights/distances, not just arithmetic. Proposed10 m bin size is not measured optimal. — source: ADR-0006 §Performance Implications.
+- **CPU**: GDD≤0.05 ms/effective_temp_c query with8 sources/4 nearby zones; profile index lookup+exact weights/distances, not just arithmetic. Selected 10 m bin size is not measured optimal. — source: ADR-0006 §Performance Implications.
 
 - **Memory**: World registries/indices only; no per-point temperature state or saved Thermal caches. — source: ADR-0006 §Performance Implications.
 
@@ -446,7 +446,7 @@ These question references are tracking context, not new decisions. All ADR-deriv
 
 - On transition Out emit one unattended loss iff captured Needs asleep OR distance>15m; awake near emits none. Token/run-stage sequence deduplicates losses. Never request wake/normal from Fire; only Body feels cooling and requests wake. Rest target availability may stop Interaction rest/return normal without inventing a sleeping alarm. Critical permits add_fuel/blow only through Body whitelist, not strike/lay. Restore deferred stage/F/w/deadlines exactly and re-register Thermal before first tick; no replayed loss event. Out-site snowfall reset is reserved VS scope. — source: ADR-0011 §Decision.
 
-- **Pinned-engine constraints**: None required; proposed OmniLight3D/GPUParticles3D adapters, not new AreaLight3D **Verify before treating the adapter as proven**: Light/particle signatures and radius/readability on pin, exact Thermal publication, ember deadlines and resource conservation — source: ADR-0011 §Engine Compatibility.
+- **Pinned-engine constraints**: None required; selected OmniLight3D/GPUParticles3D adapters, not new AreaLight3D **Verify before treating the adapter as proven**: Light/particle signatures and radius/readability on pin, exact Thermal publication, ember deadlines and resource conservation — source: ADR-0011 §Engine Compatibility.
 
 - MoraleModel owns stored L/F/G (start0), mental_state (start Steady), action failure timestamp deques, ritual/second-wind/day/night caps and pending offers. H/P/Resolve are recomputed, not independently mutable or saved truth. Accept typed run/sequence envelopes via enqueue_event; reject duplicate/stale events and warn/ignore unknown action/kind/severity, never invent severity. A minute flush groups losses→failures→successes→comforts→rival/medical, stable source sequence within each category; apply each once, then rates, then derive H/P/R/state once. Events arriving during publication wait for the next flush, never reenter integration. — source: ADR-0012 §Decision.
 
@@ -476,7 +476,7 @@ These question references are tracking context, not new decisions. All ADR-deriv
 
 - Preserve Fire source `{id,position,heat_c,radius_m,enabled}`, warm_radius/fire_burning, stage snapshots and `loss{kind:fire_died_unattended}`. — source: ADR-0011 §Decision (Key Interfaces).
 
-- Proposed `prepare_fire_action(token,inputs,outcome)`, `step_minute(context)`, `snapshot()` and C4 validate/commit ports; application contracts, not native Godot methods. — source: ADR-0011 §Decision (Key Interfaces).
+- `prepare_fire_action(token,inputs,outcome)`, `step_minute(context)`, `snapshot()` and C4 validate/commit ports; application contracts, not native Godot methods. — source: ADR-0011 §Decision (Key Interfaces).
 
 - Material transfer/consume and fire state must commit atomically; refusals must keep inputs. Cause cue must precede failure result. — source: ADR-0011 §Decision (Implementation Guidelines).
 
@@ -593,7 +593,7 @@ These question references are tracking context, not new decisions. All ADR-deriv
 
 - Preserve posture/beat, `request_framing/release_framing`, `strain_spike`, state/ritual/second-wind/offer consumers; `set_mix(request)` is an abstract Audio port. — source: ADR-0014 §Decision (Key Interfaces).
 
-- `render_parameters() -> GradeSnapshot`, `set_accessibility(flags)` and `on_cause_presented(sequence)` are proposed value/ack adapters, not asserted native methods. A presentation ack never blocks/commits simulation. — source: ADR-0014 §Decision (Key Interfaces).
+- `render_parameters() -> GradeSnapshot`, `set_accessibility(flags)` and `on_cause_presented(sequence)` are value/ack adapters, not asserted native methods. A presentation ack never blocks/commits simulation. — source: ADR-0014 §Decision (Key Interfaces).
 
 - Presenter must remain read-only to gameplay; never mutate source snapshots or award relief itself. — source: ADR-0014 §Decision (Implementation Guidelines).
 

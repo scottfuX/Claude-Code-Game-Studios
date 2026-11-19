@@ -1,7 +1,9 @@
 # ADR-0013: Camera framing arbitration, collision and projection ports
 
 ## Status
-Proposed
+Accepted
+
+Accepted by Scott (owner) on 2026-11-19: “Accept all 16” (ADR-0001–ADR-0016). Acceptance records the architecture decision, not runtime verification or resolution of open QQ items.
 
 ## Date
 2026-11-18
@@ -10,7 +12,7 @@ Proposed
 2026-11-18 — GDD/reference/registry review only; camera/occlusion/visuals not rendered.
 
 ## Decision Makers
-Scott (owner), Devin (author/inline godot-specialist reviewer); no acceptance or independent approval.
+Scott (owner), Devin (author/inline godot-specialist reviewer); Owner acceptance: Scott, 2026-11-19. No independent review approval is claimed.
 
 ## Summary
 Camera framing must remain breakable and stable for movement while keeping the survivor visible through scenery. Propose one SurvivalCamera rig with priority tokens, early-phase yaw snapshots, bounded physics-query occlusion/clearance and read-only HUD projection ports.
@@ -29,7 +31,7 @@ Camera framing must remain breakable and stable for movement while keeping the s
 ## ADR Dependencies
 | Field | Value |
 |-------|-------|
-| **Depends On** | ADR-0001, ADR-0002, ADR-0004, ADR-0005, ADR-0007 (all Proposed; acceptance required) |
+| **Depends On** | ADR-0001, ADR-0002, ADR-0004, ADR-0005, ADR-0007 (all Accepted; acceptance required) |
 | **Enables** | ADR-0014, ADR-0015, ADR-0016 |
 | **Blocks** | SurvivalCamera implementation; no story files exist |
 | **Ordering Note** | Framing callers use abstract tokens; Camera never imports concrete Feedback/Morale. Character reads an early immutable yaw snapshot, not a late camera transform. |
