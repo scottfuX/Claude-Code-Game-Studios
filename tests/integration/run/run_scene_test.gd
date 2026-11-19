@@ -37,7 +37,7 @@ func test_shell_restart_replaces_all_mutable_run_state() -> void:
 	var old_run := shell.get_child(0) as RunCoordinator
 	old_run.simulation.inventory.add(&"log", 2)
 	var fire := old_run.simulation.create_fire(Vector3(1, 0, 0))
-	old_run.world.add_fire(fire)
+	old_run.add_fire_site(fire)
 	assert_bool(old_run.simulation.start_action(&"clear_snow", fire)).is_true()
 	var old_id := old_run.get_instance_id()
 	shell.call("_mount_run")
@@ -95,21 +95,21 @@ func test_gather_verb_cache_reuses_storage_and_invalidates_on_reserves_and_tools
 	var entry: WorldInteractable = auto_free(WorldInteractable.new())
 	var resolver := GatheringResolver.new()
 	var inventory := InventoryModel.new()
-	assert_array(entry.gather_verbs(resolver, inventory)).is_empty()
+	assert_array(entry.gather_verbs(resolver.can_gather, inventory)).is_empty()
 	entry.gather_node = GatherNode.new(&"deadfall", 2, 0, 2)
-	var verbs := entry.gather_verbs(resolver, inventory)
+	var verbs := entry.gather_verbs(resolver.can_gather, inventory)
 	assert_int(verbs.size()).is_equal(2)
-	assert_bool(is_same(verbs, entry.gather_verbs(resolver, inventory))).is_true()
+	assert_bool(is_same(verbs, entry.gather_verbs(resolver.can_gather, inventory))).is_true()
 	inventory.tools.erase(&"hatchet")
-	assert_array(entry.gather_verbs(resolver, inventory)).contains_exactly([&"strip_bark"])
+	assert_array(entry.gather_verbs(resolver.can_gather, inventory)).contains_exactly([&"strip_bark"])
 	entry.gather_node.bark_remaining = 0
-	assert_array(entry.gather_verbs(resolver, inventory)).is_empty()
+	assert_array(entry.gather_verbs(resolver.can_gather, inventory)).is_empty()
 	inventory.tools.append(&"hatchet")
-	assert_array(entry.gather_verbs(resolver, inventory)).contains_exactly([&"chop_log"])
+	assert_array(entry.gather_verbs(resolver.can_gather, inventory)).contains_exactly([&"chop_log"])
 	entry.gather_node.remaining = 0
-	assert_array(entry.gather_verbs(resolver, inventory)).is_empty()
+	assert_array(entry.gather_verbs(resolver.can_gather, inventory)).is_empty()
 	entry.gather_node = GatherNode.new(&"bush", 1)
-	assert_array(entry.gather_verbs(resolver, inventory)).contains_exactly([&"gather_sticks"])
+	assert_array(entry.gather_verbs(resolver.can_gather, inventory)).contains_exactly([&"gather_sticks"])
 
 
 func test_open_ground_creates_only_two_sites_and_rejects_busy_or_critical_work() -> void:
@@ -157,11 +157,16 @@ func test_camera_projects_diagonal_input_to_unit_ground_vector() -> void:
 
 
 func test_fire_adapter_tracks_stage_and_exact_fi6_light_radius() -> void:
-	var world: WorldMap = auto_free(WorldMap.new())
-	add_child(world)
-	var run := RunSimulation.new()
-	var fire := run.create_fire(Vector3.ZERO)
-	var entry := world.add_fire(fire)
+	var shell: Node = auto_free(SHELL.instantiate())
+	shell.process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(shell)
+	var run := shell.get_child(0) as RunCoordinator
+	var fire := run.simulation.create_fire(Vector3.ZERO)
+	var entry := run.add_fire_site(fire)
+	assert_str(entry.site_id).is_equal(fire.id)
+	assert_bool(run.add_fire_site(fire) == entry).is_true()
+	assert_int(entry.get_child_count()).is_equal(1)
+	assert_object(run.add_fire_site(null)).is_null()
 	var visual := entry.get_child(0) as FireVisual
 	visual.call("_process", 0.0)
 	var light := visual.get_child(1) as OmniLight3D
@@ -181,6 +186,18 @@ func test_fire_adapter_tracks_stage_and_exact_fi6_light_radius() -> void:
 	fire.stage = &"Out"
 	visual.call("_process", 0.0)
 	assert_bool(light.visible).is_false()
+
+
+func test_world_registers_site_data_without_constructing_models_or_visuals() -> void:
+	var world: WorldMap = auto_free(WorldMap.new())
+	add_child(world)
+	assert_object(world.add_site(&"", Vector3.ZERO, "Camp")).is_null()
+	assert_object(world.add_site(&"bad", Vector3(INF, 0, 0), "Camp")).is_null()
+	var entry := world.add_site(&"camp", Vector3.ONE, "Camp")
+	assert_str(entry.site_id).is_equal("camp")
+	assert_vector(entry.position).is_equal(Vector3.ONE)
+	assert_int(entry.get_child_count()).is_zero()
+	assert_int(world.interactables.size()).is_equal(14)
 
 
 func test_fine_gather_meshes_do_not_cast_fire_shadow_rays_but_logs_do() -> void:
@@ -272,7 +289,7 @@ func test_lit_fire_without_an_available_verb_never_requests_tinder() -> void:
 	add_child(shell)
 	var run := shell.get_child(0) as RunCoordinator
 	var fire := run.simulation.create_fire(Vector3(0, 0, 1))
-	run.world.add_fire(fire)
+	run.add_fire_site(fire)
 	fire.stage = &"Burning"
 	fire.fuel = 300.0
 	run.simulation.inventory.add(&"log", 1)

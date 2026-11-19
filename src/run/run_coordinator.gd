@@ -13,6 +13,9 @@ var paused: bool = false
 var backpack_open: bool = false
 var _time_scale: float = 1.0
 var _target: WorldInteractable
+var _target_fire: FireController
+var _site_fires: Dictionary[StringName, FireController] = {}
+var _gather_query: Callable
 var _verbs: Array[StringName] = []
 var _pause_token: int = 0
 var _environment: Environment
@@ -31,6 +34,7 @@ var _demo_driver: FirstNightDemo
 
 func _ready() -> void:
 	simulation = RunSimulation.new(20261119)
+	_gather_query = simulation.gathering.can_gather
 	for argument: String in OS.get_cmdline_user_args():
 		if not OS.is_debug_build():
 			break
@@ -142,16 +146,33 @@ func _resume() -> void:
 		backpack_open = false
 	_sync_context()
 
+## Wires a run-owned fire to a model-free site; e.g. add_fire_site(simulation.create_fire(p)).
+func add_fire_site(fire: FireController) -> WorldInteractable:
+	if fire == null or not simulation.fires.has(fire):
+		return null
+	for existing: WorldInteractable in world.interactables:
+		if existing.site_id == fire.id:
+			return existing
+	var entry := world.add_site(fire.id, fire.position, "TARGET_CAMPFIRE")
+	if entry == null:
+		return null
+	_site_fires[fire.id] = fire
+	var visual := FireVisual.new()
+	visual.fire = fire
+	entry.add_child(visual)
+	return entry
+
 func _update_target() -> void:
 	_target = world.nearest(survivor.global_position, survivor.facing)
+	_target_fire = _site_fires.get(_target.site_id) if _target != null else null
 	_verbs.clear()
 	if _target == null:
 		return
-	if _target.fire == null:
-		_verbs.assign(_target.gather_verbs(simulation.gathering, simulation.inventory))
+	if _target_fire == null:
+		_verbs.assign(_target.gather_verbs(_gather_query, simulation.inventory))
 	else:
 		for action: StringName in [&"clear_snow", &"arrange_tinder", &"strike", &"blow_embers", &"add_fuel"]:
-			if _target.fire.can_act(action, simulation.inventory):
+			if _target_fire.can_act(action, simulation.inventory):
 				_verbs.append(action)
 
 func _try_action(index: int) -> void:
@@ -166,7 +187,7 @@ func _try_action(index: int) -> void:
 	if index >= _verbs.size():
 		return
 	var action := _verbs[index]
-	if not simulation.start_action(action, _target.fire, _target.gather_node):
+	if not simulation.start_action(action, _target_fire, _target.gather_node):
 		_refuse(tr(&"HUD_TOO_COLD_TIRED"))
 
 func _make_fire() -> void:
@@ -189,7 +210,7 @@ func _make_fire() -> void:
 	if fire == null:
 		_refuse(tr(&"HUD_FIRE_LIMIT"))
 		return
-	world.add_fire(fire)
+	add_fire_site(fire)
 	if not simulation.start_action(&"clear_snow", fire):
 		_refuse(tr(&"HUD_CLEAR_REFUSED"))
 
@@ -201,7 +222,7 @@ func _prompt() -> String:
 	if _target == null:
 		return tr(&"HUD_MAKE_FIRE") % input_router.glyph_for(&"secondary") if simulation.fires.size() < simulation.tuning.max_fire_sites else ""
 	if _verbs.is_empty():
-		return "" if _target.fire != null else tr(&"HUD_NEED_TINDER") % tr(_target.display_name)
+		return "" if _target_fire != null else tr(&"HUD_NEED_TINDER") % tr(_target.display_name)
 	var result: String = tr(&"HUD_VERB") % [input_router.glyph_for(&"interact"), tr(VERB_NAMES[_verbs[0]])]
 	if _verbs.size() > 1:
 		result += "     " + tr(&"HUD_VERB") % [input_router.glyph_for(&"secondary"), tr(VERB_NAMES[_verbs[1]])]

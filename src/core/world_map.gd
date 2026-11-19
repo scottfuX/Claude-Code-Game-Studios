@@ -58,17 +58,16 @@ func nearest(position: Vector3, facing: Vector3) -> WorldInteractable:
 			selected = entry
 	return selected
 
-## Registers a model-owned fire site with the map's interaction registry.
-func add_fire(fire: FireController) -> WorldInteractable:
+## Registers data without model or visual ownership; e.g. add_site(&"camp", Vector3.ZERO, "Camp").
+func add_site(site_id: StringName, position: Vector3, label: String) -> WorldInteractable:
+	if site_id == &"" or not position.is_finite():
+		return null
 	var entry := WorldInteractable.new()
-	entry.fire = fire
-	entry.display_name = "TARGET_CAMPFIRE"
-	entry.position = fire.position
+	entry.site_id = site_id
+	entry.display_name = label
+	entry.position = position
 	add_child(entry)
 	interactables.append(entry)
-	var visual := FireVisual.new()
-	visual.fire = fire
-	entry.add_child(visual)
 	return entry
 
 ## Rejects occupied ground while leaving authoritative site limits to the simulation.
