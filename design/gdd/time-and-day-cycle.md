@@ -3,7 +3,7 @@
 > **Status**: Designed (pending review)
 > **Creative Director Review (CD-GDD-ALIGN)**: skipped — Lean mode
 > **Author**: owner + Devin (systems-designer / game-designer lenses)
-> **Last Updated**: 2026-11-18
+> **Last Updated**: 2026-11-19
 > **Last Verified**: 2026-11-16
 > **Implements Pillar**: 冷是真的 · 苦中有美
 
@@ -38,7 +38,7 @@ What Time does **not** own: air temperature and the day-over-day cold ramp (Ther
    - `normal` — resolves to the *day rate* in Dawn, Day and Dusk and the *night rate* in Night.
    - `wait` — the player chose to wait/rest (e.g. by the fire); faster.
    - `sleep` — the player is asleep; much faster, a skip.
-   Other systems request a mode with `request_rate_mode(mode, reason)`; Time applies it at the next minute boundary. Needs & Weight requests `sleep` when `is_asleep` turns true and `normal` when it turns false; Interaction requests `wait`. Any system may request `normal` to interrupt (fire going out, dangerous cold) — `normal` always wins over `wait` and `sleep` in the same minute.
+   Other systems request a mode with `request_rate_mode(mode, reason)`; Time applies it at the next minute boundary, before processing another owed minute. Needs & Weight requests `sleep` when `is_asleep` turns true and `normal` when it turns false; Interaction requests `wait`. Body Temperature can interrupt a skip with a cold wake request; Needs reconciles `is_asleep`. Fire going Out changes the Thermal heat source, not the rate mode, and never requests wake or `normal` ([ADR-0011](../../docs/architecture/adr-0011-fire-stage-machine-material-consumption-and-heat-light-publication.md#decision)). `normal` always wins over `wait` and `sleep` in the same minute.
 8. **Pause.** While the game is paused, loading, or in a menu or full-screen UI other than the backpack/inventory screen, game time does not advance and no ticks are emitted. Opening the backpack/inventory screen does not pause time or ongoing actions; ticks continue unless another pause is active (owner decision, 2026-11-18: "背包不暂停"). Whether the Diary's recording screen (VS) pauses time is the Diary GDD's call; the default is *paused*.
 9. **Catch-up on hitches.** Real elapsed time is accumulated; each frame emits one `minute_tick` per whole game minute owed, up to `max_ticks_per_frame` (default 120). Any remainder carries to the next frame, so a hitch never drops or reorders minutes.
 10. **Published values** (read any time): `day`, `hour`, `minute_of_day`, `phase`, `is_night`, `sunrise_window`, `daylight_hours` (today's D), `sunrise_hour`, `sunset_hour`, `sun_progress` (T5), `rate_mode`.
@@ -75,7 +75,7 @@ Valid transitions: normal ↔ wait, normal ↔ sleep, wait → sleep (falling as
 | Interaction & Timed Actions | in/out | in: `request_rate_mode(wait / normal)`; out: `real_seconds_per_game_minute` so action durations (authored in game minutes) can be shown in real time | Time |
 | Thermal Environment | out | `hour`, `day`, `phase`, `sun_progress`, `daylight_hours` — Thermal owns the air-temperature curve and the cold ramp | Time (values) / Thermal (temperature) |
 | Body Temperature | out | tick | Time |
-| Fire | in/out | out: tick (fuel burn per game minute); in: may request `normal` to wake/interrupt when the fire is nearly out | Time |
+| Fire | out | tick (fuel burn per game minute); Fire publishes heat changes to Thermal, not wake or rate requests to Time | Time |
 | Emotional Feedback / lighting | out | `phase`, `sun_progress`, `hour` for sun angle and the day → dusk → night look blend | Time |
 | HUD | out | `phase`, `sun_progress` (sun/moon arc, no digital clock) | Time |
 | Weather & Cold Snaps (VS) | out | tick, `day` | Time |
@@ -182,7 +182,8 @@ All four must be > 0 (a zero rate would freeze time; rejected at load).
 **Upstream — soft (mode requests only):**
 - **Needs & Weight** — requests `sleep` / `normal` from `is_asleep` (owner of that flag).
 - **Interaction & Timed Actions** — requests `wait` / `normal`.
-- **Fire, Body Temperature, Weather (VS)** — may request `normal` to interrupt a skip.
+- **Body Temperature** — may request `normal` for a cold interruption and emits `wake_request(cold)` to Needs & Weight.
+- **Weather (VS)** — may request `normal` to interrupt a skip.
 - **Self-Filmed Diary (VS)** — may request a pause while recording.
 
 **Downstream (depend on Time):** Thermal Environment, Body Temperature, Needs & Weight, Fire, Morale & Mental State, Emotional Feedback (lighting), HUD, Interaction (time conversion), Weather & Cold Snaps, Medical Check-ins, Rival Simulation & Ranking, Self-Filmed Diary, Tap-out & Run Results, Save/Load & Settings.
@@ -215,7 +216,7 @@ Optional for a Core system; written because Time drives the day/night look the a
 | This GDD references | Target (GDD) | What | Status |
 |---|---|---|---|
 | Rules 2, 3, 6, 12 | Morale & Mental State (`design/gdd/morale-and-mental-state.md`) | tick, per-day caps, nightfall, sunrise window, day ≤ 60 | exists — matches |
-| Rule 7 | Needs & Weight (`design/gdd/needs-and-weight.md`) | `is_asleep` drives sleep mode | not yet written — provisional |
+| Rule 7 | Needs & Weight (`design/gdd/needs-and-weight.md`) | `is_asleep` drives sleep mode; Needs reconciles cold wake | exists — matches |
 | Rule 7, Interactions | Interaction & Timed Actions (`design/gdd/interaction-and-timed-actions.md`) | wait mode; durations in game minutes | not yet written — provisional |
 | Overview, Interactions | Thermal Environment (`design/gdd/thermal-environment.md`) | owns temperature and the cold ramp | not yet written |
 | Visual/Audio | `design/art/art-bible.md` §1, §2 | day and dusk presets | exists |
@@ -246,7 +247,7 @@ Optional for a Core system; written because Time drives the day/night look the a
 16. [A] T5: day 1 at 08:00 → 0; 12:30 → 0.5; 16:30 → 1; 20:00 → 1.
 
 **Cross-system & feel**
-17. [A] **GIVEN** Needs & Weight sets `is_asleep` true, **WHEN** the next minute starts, **THEN** rate mode = sleep; **WHEN** Fire requests `normal`, **THEN** mode = normal and `rate_mode_changed(normal)` is emitted once.
+17. [A] **GIVEN** Needs & Weight sets `is_asleep` true, **WHEN** the next minute starts, **THEN** rate mode = sleep. **WHEN** Fire goes Out without a cold wake or other valid interruption, **THEN** rate mode remains sleep. **WHEN** Body Temperature requests `normal` and emits `wake_request(cold)` and Needs clears `is_asleep` and requests `normal`, **THEN** Time returns to normal before the next owed minute and emits `rate_mode_changed(normal)` once.
 18. [A] **GIVEN** Morale's per-day fire-ritual cap used up, **WHEN** `day_changed` fires, **THEN** Morale's cap counter is 0 again (integration test).
 19. [P] **GIVEN** the MVP first day, **WHEN** the owner plays it, **THEN** they can say roughly how much daylight is left from the sky alone, and report the day did not feel slow (PIVOT check).
 20. [P] **GIVEN** a captured day-1 and day-31 dusk at the same game hour, **WHEN** compared, **THEN** the day-31 screenshot is visibly darker (evidence pair).
