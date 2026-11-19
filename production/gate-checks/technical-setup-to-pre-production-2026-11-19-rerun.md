@@ -4,7 +4,7 @@
 - **Checked by**: gate-check skill and independent Technical Director and Producer reviews
 - **Baseline**: [`1949a4f`](https://github.com/scottfuX/Claude-Code-Game-Studios/commit/1949a4fa408fc002d6bf56300805d4a6a71ecfd4), after [ADR acceptance](https://github.com/scottfuX/Claude-Code-Game-Studios/pull/11). The [previous run](technical-setup-to-pre-production-2026-11-19.md) is preserved as history.
 - **Resolved config**: Lean review, Standard workflow and QA, individual team, strict Logic/Integration defaults, performance `warn`, no system overrides.
-- **Stage written**: none; no risks accepted on Scott's behalf.
+- **Stage written at the rerun**: none. See the [subsequent owner decision](#accepted-risks) authorizing Pre-Production.
 
 ## Required Artifacts: 9/9 present
 
@@ -63,6 +63,18 @@ Panel: **2 of 4**, as required by Standard. Creative and Art were not consulted.
 ## Verdict: CONCERNS
 
 Both required directors returned CONCERNS; neither returned NOT READY or NOT ASSESSED. Required artifacts and the configured test passed their checks. The scope, UX, documentation and validation findings remain; neither the stage nor owner decisions changed.
+
+### Accepted Risks
+
+On **2026-11-19**, Scott chose **“Accept and move on”** for the remaining Technical Setup concerns, authorizing the stage change to **Pre-Production**. The rerun verdict remains **CONCERNS**; this is an acceptance of the remaining risks, not a new assessment or a PASS.
+
+| Rerun finding | Disposition at advancement |
+|---|---|
+| Fire wake contract before sleep integration | The [Time and Needs documentation now matches ADR-0011](https://github.com/scottfuX/Claude-Code-Game-Studios/pull/14): Body cold triggers wake; Fire does not. Sleep integration and its runtime verification are deferred beyond the first night. |
+| First-playable scope | Resolved in the [first playable night milestone](../milestones/first-playable-night.md). The [integrated first-night build](https://github.com/scottfuX/Claude-Code-Game-Studios/pull/15) is available for validation; it is not sign-off on the broader MVP or Vertical Slice. |
+| Accessibility and screen UX | Scott separately confirmed **Standard**. The [core screen specs landed](https://github.com/scottfuX/Claude-Code-Game-Studios/pull/13); Scott accepted advancing before UX review and combined-state validation are complete. Re-run UX review against the recorded tier. |
+| Body/Thermal and performance | Scott accepted advancing before measurements. Still profile Body and Thermal separately on nominated hardware, close the two Partial traceability rows with evidence, and measure clock catch-up against the frame budget. |
+| Runtime, visual and platform validation | Scott accepted advancing before this evidence is complete. Carry forward lifecycle/minute ordering, terrain and trails, Jolt/IK, input/focus/disconnect, camera occlusion, rendering/colour, audio, HUD readability, and a refreshed full architecture review. |
 
 ## Chain-of-Verification
 
