@@ -22,6 +22,7 @@ var last_felt_temp_c: float = NAN
 var minute_sequence: int = 0
 var _fire_target: FireController
 var _gather_target: GatherNode
+var _action_delta_s: float = 0.0
 
 func _init(seed_value: int = 1, data: SliceTuning = null) -> void:
 	tuning = data if data != null else preload("res://assets/data/slice_defaults.tres")
@@ -66,6 +67,7 @@ func cancel_action() -> void:
 	actions.cancel()
 	_fire_target = null
 	_gather_target = null
+	_action_delta_s = 0.0
 
 ## Advances unpaused time, arbitrates all owed minutes before committing completion.
 func update(delta_s: float, paused: bool = false) -> void:
@@ -73,13 +75,16 @@ func update(delta_s: float, paused: bool = false) -> void:
 		return
 	if movement != &"idle":
 		cancel_action()
+	if actions.action != &"":
+		_action_delta_s += delta_s
 	clock.accumulate(delta_s)
 	var ticks := 0
 	while ticks < tuning.max_ticks and terminal == &"" and clock.consume_minute():
 		_integrate_minute()
 		ticks += 1
-	if terminal == &"":
-		var completed := actions.advance(delta_s)
+	if terminal == &"" and clock.debt < clock.seconds_per_minute():
+		var completed := actions.advance(_action_delta_s)
+		_action_delta_s = 0.0
 		if completed != &"":
 			_commit_completion(completed)
 	snapshot_published.emit(snapshot())

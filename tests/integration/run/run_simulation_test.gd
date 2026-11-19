@@ -1,6 +1,60 @@
 extends GdUnitTestSuite
 
 
+func test_capped_minute_debt_defers_completion_and_preserves_elapsed_work() -> void:
+	var tuning := SliceTuning.new()
+	tuning.max_ticks = 1
+	var sim := RunSimulation.new(1, tuning)
+	var node := GatherNode.new(&"bush", 12)
+	sim.start_action(&"gather_sticks", null, node)
+	sim.update(6.0)
+	assert_int(sim.rng.draw_count).is_zero()
+	assert_int(node.remaining).is_equal(12)
+	assert_str(sim.actions.action).is_equal("gather_sticks")
+	for i in 3:
+		sim.update(0.001)
+	assert_int(sim.rng.draw_count).is_equal(1)
+	assert_int(sim.inventory.count(&"stick")).is_equal(3)
+	assert_str(sim.actions.action).is_empty()
+	sim.update(0.001)
+	assert_int(sim.rng.draw_count).is_equal(1)
+
+
+func test_dawn_and_death_in_owed_minutes_discard_pending_completion() -> void:
+	var tuning := SliceTuning.new()
+	tuning.max_ticks = 1
+	var sim := RunSimulation.new(1, tuning)
+	var node := GatherNode.new(&"bush", 12)
+	sim.clock.day = 2
+	sim.clock.minute_of_day = 511
+	sim.start_action(&"gather_sticks", null, node)
+	sim.update(6.0)
+	assert_int(sim.rng.draw_count).is_zero()
+	sim.update(0.001)
+	assert_str(sim.terminal).is_equal("dawn_survived")
+	assert_int(sim.rng.draw_count).is_zero()
+	assert_int(sim.inventory.count(&"stick")).is_zero()
+	assert_int(node.remaining).is_equal(12)
+	tuning.rate_min = -0.6
+	tuning.rate_max = -0.6
+	sim = RunSimulation.new(1, tuning)
+	var fire := sim.create_fire(Vector3(20, 0, 0))
+	fire.stage = &"Burning"
+	fire.fuel = 120.0
+	sim.inventory.add(&"log", 1)
+	sim.start_action(&"add_fuel", fire)
+	sim.body.core_temp_c = 30.015
+	sim.body.refresh_stage()
+	sim.update(6.0)
+	assert_str(sim.terminal).is_empty()
+	assert_int(sim.inventory.count(&"log")).is_equal(1)
+	sim.update(0.001)
+	assert_str(sim.terminal).is_equal("hypothermia")
+	assert_int(sim.inventory.count(&"log")).is_equal(1)
+	assert_float(fire.fuel).is_less(120.0)
+	assert_int(sim.rng.draw_count).is_zero()
+
+
 func test_simulation_same_minute_out_terminal_and_restart() -> void:
 	var s := RunSimulation.new()
 	var f := s.create_fire(Vector3.ZERO)
