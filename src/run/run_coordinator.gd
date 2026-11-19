@@ -19,6 +19,7 @@ var _environment: Environment
 var _demo: bool = false
 var _demo_end: bool = false
 var _demo_gather: bool = false
+var _demo_driver: FirstNightDemo
 
 @onready var input_router: InputRouter = $InputRouter
 @onready var world: WorldMap = $WorldMap
@@ -59,7 +60,7 @@ func _ready() -> void:
 	_environment.fog_density = 0.007
 	environment_node.environment = _environment
 	if _demo:
-		_setup_demo()
+		_demo_driver = FirstNightDemo.new(self, _time_scale)
 	if _demo_end:
 		simulation.clock.day = 2
 		simulation.clock.minute_of_day = 512
@@ -73,7 +74,8 @@ func _process(delta: float) -> void:
 		return
 	paused = input_router.is_paused()
 	survivor.frozen = paused
-	simulation.update(delta * _time_scale, paused)
+	var speed := _demo_driver.advance(delta) if _demo_driver != null and not paused else _time_scale
+	simulation.update(delta * speed, paused)
 	if simulation.terminal != &"":
 		input_router.set_context(InputRouter.Context.LOCKED)
 	_update_target()
@@ -231,13 +233,3 @@ func _update_lighting() -> void:
 	_environment.background_color = Color(0.02, 0.04, 0.10).lerp(Color(0.6939, 0.7835, 0.8963), daylight)
 	_environment.fog_light_color = _environment.background_color
 	_environment.fog_light_energy = lerpf(0.45, 1.0, daylight)
-
-func _setup_demo() -> void:
-	simulation.clock.minute_of_day = 1050
-	for item: StringName in [&"stick", &"bark", &"log"]:
-		simulation.inventory.add(item, 12)
-	var fire := simulation.create_fire(Vector3(1.1, 0, -0.8))
-	for action: StringName in [&"clear_snow", &"arrange_tinder", &"strike", &"blow_embers", &"add_fuel", &"add_fuel"]:
-		fire.commit_action(action, simulation.inventory, true)
-	world.add_fire(fire)
-	survivor.facing = Vector3(1.1, 0, -0.8).normalized()

@@ -1,5 +1,8 @@
 class_name SliceTuning extends Resource
 
+@export_range(1, 60) var start_day: int = 1
+@export_range(0, 1439) var start_minute_of_day: int = 990
+
 @export var daylight_start: float = 8.0
 @export var daylight_min: float = 5.0
 @export var daylight_shrink: float = 0.1

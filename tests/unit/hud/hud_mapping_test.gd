@@ -73,10 +73,10 @@ func test_controls_hint_latches_on_timeout_and_never_returns() -> void:
 	var state := _snapshot()
 	model.update(state, 0)
 	assert_bool(model.hint_gone).is_false()
-	state[&"clock"][&"minute_of_day"] = 789
+	state[&"clock"][&"elapsed_minutes"] = 9
 	model.update(state, 0)
 	assert_bool(model.hint_gone).is_false()
-	state[&"clock"][&"minute_of_day"] = 790
+	state[&"clock"][&"elapsed_minutes"] = 10
 	model.update(state, 0)
 	assert_bool(model.hint_gone).is_true()
 	model.update(_snapshot(), 0)

@@ -92,9 +92,7 @@ func update(snapshot: Dictionary, delta_s: float, paused: bool = false) -> bool:
 		fade_dt = 0.0
 	_fade_s += fade_dt
 	opacity = lerpf(_fade_from, target, smoothstep(0.0, 1.0, minf(1.0, _fade_s / _fade_duration)))
-	var day: int = clock.get(&"day", 1)
-	var minute: int = clock.get(&"minute_of_day", 0)
-	hint_gone = hint_gone or (day - 1) * 1440 + minute >= tuning.hint_start_minute + tuning.hint_minutes
+	hint_gone = hint_gone or int(clock.get(&"elapsed_minutes", 0)) >= tuning.hint_minutes
 	for fire: Dictionary in snapshot.get(&"fires", []):
 		if fire.get(&"stage", &"") in [&"Kindling", &"Burning", &"Embers", &"Out"]:
 			hint_gone = true

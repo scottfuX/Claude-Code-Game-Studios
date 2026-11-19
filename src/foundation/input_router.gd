@@ -10,6 +10,19 @@ var _blocked: Dictionary[StringName, bool] = {}
 var _ui_sources: Dictionary[StringName, bool] = {}
 var _pause_tokens: Dictionary[int, StringName] = {}
 var _next_token: int = 1
+var _debug_driving: bool = false
+var _debug_move: Vector2 = Vector2.ZERO
+var _debug_hurry: bool = false
+
+## Supplies replay commands through the same context gate as physical bindings.
+func drive_debug(movement: Vector2, action: StringName = &"", hurry: bool = false) -> void:
+	if not OS.is_debug_build():
+		return
+	_debug_driving = true
+	_debug_move = movement.limit_length(1.0) if movement.is_finite() else Vector2.ZERO
+	_debug_hurry = hurry
+	if action in ROUTED:
+		_dispatch(action)
 
 ## Requests a UI context without stopping simulation or active work.
 func request_ui_context(source: StringName, open: bool) -> void:
@@ -60,6 +73,8 @@ func set_context(value: Context) -> void:
 func sample_actions() -> Dictionary[StringName, Variant]:
 	if context != Context.GAMEPLAY:
 		return {&"move": Vector2.ZERO, &"hurry": false}
+	if OS.is_debug_build() and _debug_driving:
+		return {&"move": _debug_move, &"hurry": _debug_hurry}
 	var move := Input.get_vector(&"move_left", &"move_right", &"move_forward", &"move_back", 0.2)
 	if (move.x < 0 and _blocked.has(&"move_left")) or (move.x > 0 and _blocked.has(&"move_right")):
 		move.x = 0
@@ -78,11 +93,15 @@ func _input(event: InputEvent) -> void:
 			_blocked.erase(action)
 		if not event.is_action_pressed(action) or _blocked.has(action):
 			continue
-		var debug := action == &"debug_overlay" and OS.is_debug_build()
-		if context == Context.LOCKED and action != &"pause_menu" and not debug:
-			continue
-		if context == Context.UI and action not in [&"pause_menu", &"backpack"] and not debug:
-			continue
-		action_pressed.emit(action)
-		get_viewport().set_input_as_handled()
-		return
+		if _dispatch(action):
+			get_viewport().set_input_as_handled()
+			return
+
+func _dispatch(action: StringName) -> bool:
+	var debug := action == &"debug_overlay" and OS.is_debug_build()
+	if context == Context.LOCKED and action != &"pause_menu" and not debug:
+		return false
+	if context == Context.UI and action not in [&"pause_menu", &"backpack"] and not debug:
+		return false
+	action_pressed.emit(action)
+	return true

@@ -11,13 +11,15 @@ signal run_day_cap_reached
 
 var tuning: SliceTuning
 var day: int = 1
-var minute_of_day: int = 780
+var minute_of_day: int = 0
 var rate_mode: StringName = &"normal"
 var debt: float = 0.0
 var _capped: bool = false
 
 func _init(data: SliceTuning = null) -> void:
 	tuning = data if data != null else preload("res://assets/data/slice_defaults.tres")
+	day = tuning.start_day
+	minute_of_day = tuning.start_minute_of_day
 
 ## Returns this day's sunrise in decimal hours.
 func sunrise_hour() -> float:
@@ -92,4 +94,4 @@ func advance_minute() -> void:
 
 ## Returns detached clock values for presentation.
 func snapshot() -> Dictionary[StringName, Variant]:
-	return {&"day": day, &"minute_of_day": minute_of_day, &"phase": phase(), &"sunrise_hour": sunrise_hour(), &"sunset_hour": sunset_hour(), &"rate_mode": rate_mode}
+	return {&"day": day, &"minute_of_day": minute_of_day, &"elapsed_minutes": maxi(0, (day - tuning.start_day) * 1440 + minute_of_day - tuning.start_minute_of_day), &"phase": phase(), &"sunrise_hour": sunrise_hour(), &"sunset_hour": sunset_hour(), &"rate_mode": rate_mode}

@@ -69,3 +69,24 @@ func test_context_closure_requires_held_movement_release_before_rearming() -> vo
 	Input.action_press(&"move_forward")
 	assert_vector(router.sample_actions()[&"move"]).is_equal(Vector2.UP)
 	Input.action_release(&"move_forward")
+
+
+func test_debug_commands_share_context_gates_and_reject_unknown_or_invalid_input() -> void:
+	var router: InputRouter = auto_free(InputRouter.new())
+	var received: Array[StringName] = []
+	router.action_pressed.connect(func(action: StringName) -> void: received.append(action))
+	router.drive_debug(Vector2(3, 4), &"interact")
+	if OS.is_debug_build():
+		var movement: Vector2 = router.sample_actions()[&"move"]
+		assert_float(movement.length()).is_equal_approx(1.0, 0.0001)
+		assert_int(received.size()).is_equal(1)
+	router.drive_debug(Vector2(NAN, INF), &"unknown_action")
+	assert_vector(router.sample_actions()[&"move"]).is_equal(Vector2.ZERO)
+	var previous := received.size()
+	router.request_ui_context(&"backpack", true)
+	router.drive_debug(Vector2.ONE, &"interact")
+	assert_int(received.size()).is_equal(previous)
+	assert_vector(router.sample_actions()[&"move"]).is_equal(Vector2.ZERO)
+	router.set_context(InputRouter.Context.LOCKED)
+	router.drive_debug(Vector2.ONE, &"secondary")
+	assert_int(received.size()).is_equal(previous)

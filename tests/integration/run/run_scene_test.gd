@@ -20,7 +20,7 @@ func test_shell_restart_replaces_all_mutable_run_state() -> void:
 	assert_int(fresh.simulation.inventory.count(&"log")).is_zero()
 	assert_int(fresh.simulation.fires.size()).is_zero()
 	assert_str(fresh.simulation.actions.action).is_empty()
-	assert_int(fresh.simulation.clock.minute_of_day).is_equal(780)
+	assert_int(fresh.simulation.clock.minute_of_day).is_equal(990)
 	assert_int(fresh.input_router.context).is_equal(InputRouter.Context.GAMEPLAY)
 
 
@@ -34,12 +34,12 @@ func test_scene_routes_gathering_and_backpack_keeps_work_and_time_running() -> v
 	run.input_router.action_pressed.emit(&"backpack")
 	assert_int(run.input_router.context).is_equal(InputRouter.Context.UI)
 	run.call("_process", 1.5)
-	assert_int(run.simulation.clock.minute_of_day).is_equal(781)
+	assert_int(run.simulation.clock.minute_of_day).is_equal(991)
 	assert_float(run.simulation.actions.elapsed_s).is_equal(1.5)
 	run.input_router.action_pressed.emit(&"pause_menu")
 	assert_int(run.input_router.context).is_equal(InputRouter.Context.UI)
 	run.call("_process", 10.0)
-	assert_int(run.simulation.clock.minute_of_day).is_equal(781)
+	assert_int(run.simulation.clock.minute_of_day).is_equal(991)
 	assert_float(run.simulation.actions.elapsed_s).is_equal(1.5)
 	run.input_router.action_pressed.emit(&"pause_menu")
 	assert_int(run.input_router.context).is_equal(InputRouter.Context.UI)
@@ -192,9 +192,27 @@ func test_f3_toggles_numeric_debug_surface_only_in_debug_builds() -> void:
 		assert_str(debug.text).contains("Core")
 		assert_str(debug.text).contains("Felt")
 		assert_str(debug.text).contains("Energy")
-		assert_str(debug.text).contains("13:01")
+		assert_str(debug.text).contains("16:31")
 		run.input_router.call("_input", key)
 		run.call("_process", 0.0)
 		assert_bool(debug.visible).is_false()
 	else:
 		assert_bool(debug.visible).is_false()
+
+
+func test_demo_arrival_latches_while_turning_without_teleporting_or_seeding() -> void:
+	var shell: Node = auto_free(SHELL.instantiate())
+	shell.process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(shell)
+	var run := shell.get_child(0) as RunCoordinator
+	var demo := FirstNightDemo.new(run)
+	assert_int(run.simulation.fires.size()).is_zero()
+	assert_int(run.simulation.inventory.count(&"log")).is_zero()
+	run.survivor.position = Vector3(0, 0, 0.11)
+	run.survivor.facing = Vector3.BACK
+	assert_bool(demo.call("_walk", Vector3.ZERO, Vector3.FORWARD)).is_false()
+	assert_vector(run.survivor.position).is_equal(Vector3(0, 0, 0.11))
+	run.survivor.position = Vector3(0, 0, -0.2)
+	run.survivor.facing = Vector3.FORWARD
+	assert_bool(demo.call("_walk", Vector3.ZERO, Vector3.FORWARD)).is_true()
+	assert_vector(run.input_router.sample_actions()[&"move"]).is_equal(Vector2.ZERO)
