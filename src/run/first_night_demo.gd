@@ -82,7 +82,7 @@ func advance(delta: float) -> float:
 					_press(&"interact")
 			return 3.0
 		9:
-			if _walk(sim.fires[0].position + Vector3(0, 0, 0.45), sim.fires[0].position):
+			if _walk(sim.fires[0].position + Vector3(-0.65, 0, 0.2), sim.fires[0].position):
 				_lit_s += delta
 				if _lit_s >= 1.5:
 					_next()

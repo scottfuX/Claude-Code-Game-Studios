@@ -216,3 +216,24 @@ func test_demo_arrival_latches_while_turning_without_teleporting_or_seeding() ->
 	run.survivor.facing = Vector3.FORWARD
 	assert_bool(demo.call("_walk", Vector3.ZERO, Vector3.FORWARD)).is_true()
 	assert_vector(run.input_router.sample_actions()[&"move"]).is_equal(Vector2.ZERO)
+
+
+func test_lit_fire_without_an_available_verb_never_requests_tinder() -> void:
+	var shell: Node = auto_free(SHELL.instantiate())
+	shell.process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(shell)
+	var run := shell.get_child(0) as RunCoordinator
+	var fire := run.simulation.create_fire(Vector3(0, 0, 1))
+	run.world.add_fire(fire)
+	fire.stage = &"Burning"
+	fire.fuel = 300.0
+	run.simulation.inventory.add(&"log", 1)
+	run.survivor.facing = Vector3.BACK
+	run.call("_update_target")
+	assert_str(run.call("_prompt")).is_empty()
+	fire.fuel = 200.0
+	run.call("_update_target")
+	assert_str(run.call("_prompt")).contains("Add fuel")
+	run.simulation.inventory.consume(&"log", 1)
+	run.call("_update_target")
+	assert_str(run.call("_prompt")).is_empty()

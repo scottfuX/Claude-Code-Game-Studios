@@ -201,7 +201,7 @@ func _prompt() -> String:
 	if _target == null:
 		return tr(&"HUD_MAKE_FIRE") % input_router.glyph_for(&"secondary") if simulation.fires.size() < simulation.tuning.max_fire_sites else ""
 	if _verbs.is_empty():
-		return tr(&"HUD_NEED_TINDER") % tr(_target.display_name)
+		return "" if _target.fire != null else tr(&"HUD_NEED_TINDER") % tr(_target.display_name)
 	var result: String = tr(&"HUD_VERB") % [input_router.glyph_for(&"interact"), tr(VERB_NAMES[_verbs[0]])]
 	if _verbs.size() > 1:
 		result += "     " + tr(&"HUD_VERB") % [input_router.glyph_for(&"secondary"), tr(VERB_NAMES[_verbs[1]])]
