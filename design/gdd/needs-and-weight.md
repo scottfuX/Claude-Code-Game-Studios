@@ -34,7 +34,7 @@ For the player this system supplies the 饥饿感 that Morale turns into feeling
 9. **Sleep.**
    - The player may start sleeping (Interaction "sleep") when energy < 90 at night or < 50 by day (a nap). Otherwise refused ("还不困").
    - On sleep: `is_asleep = true`, request Time `sleep` mode.
-   - The survivor wakes when energy reaches `energy_cap` (natural wake), or on any `wake_request(cause)` from another system (Body Temperature's cold, Fire's low fire), or whenever Time reports `rate_mode_changed(normal)` while asleep (any interrupter). On wake: `is_asleep = false`, request Time `normal`. This keeps `is_asleep` and Time's mode in step (the Time review's desync note).
+   - The survivor wakes when energy reaches `energy_cap` (natural wake), when Body Temperature emits `wake_request(cold)`, or when Time reports `rate_mode_changed(normal)` from a valid interruption while asleep. On wake: `is_asleep = false`, request Time `normal` if not already normal. Fire going Out changes felt temperature through Thermal; only Body Temperature can turn the resulting cold into a wake request. Fire never requests wake or `normal` ([ADR-0011](../../docs/architecture/adr-0011-fire-stage-machine-material-consumption-and-heat-light-publication.md#decision)).
    - **Collapse:** if energy reaches 0 while awake, the survivor collapses asleep where they stand (`is_asleep = true`, cause `exhaustion`), regardless of place or cold. After a forced wake, energy is raised to at least 5 so collapse does not repeat instantly.
 10. **Stages and effects** (N6): energy, hydration and fullness each map to a stage whose effects feed other systems:
 
@@ -60,7 +60,7 @@ For the player this system supplies the 饥饿感 that Morale turns into feeling
 
 | Machine | States | Transitions |
 |---|---|---|
-| Sleep | Awake · Asleep (chosen) · Asleep (collapsed) | Awake → Asleep(chosen) on a permitted sleep action; Awake → Asleep(collapsed) at energy 0; either Asleep → Awake on natural wake, `wake_request`, or Time `normal`; Asleep(collapsed) → Awake sets energy ≥ 5 |
+| Sleep | Awake · Asleep (chosen) · Asleep (collapsed) | Awake → Asleep(chosen) on a permitted sleep action; Awake → Asleep(collapsed) at energy 0; either Asleep → Awake on natural wake, Body's `wake_request(cold)`, or Time `normal`; Asleep(collapsed) → Awake sets energy ≥ 5 |
 | Energy stage | Rested · Tired · Exhausted | down at < 25, < 10; up at ≥ 27, ≥ 12 (hysteresis 2) |
 | Hydration stage | OK · Thirsty · Parched · Dehydrated | down at < 30, < 10, = 0; up at ≥ 32, ≥ 12, > 0 |
 | Fullness stage | Fed · Hungry · Empty · Starving | down at < 30, = 0, 24 h at 0; up at ≥ 32; any food leaves Empty/Starving |
@@ -78,7 +78,6 @@ One step per tick in each machine; each change emits `needs_stage_changed(need, 
 | Item Database & Inventory | in | `food_kcal`, `drink_hydration`, `eat_minutes` per item; consumes the item | Item DB |
 | Mishaps & Failure | out | `fatigue_penalty` | Needs (value) / Mishaps (clamp) |
 | Morale & Mental State | out | `fullness`, `weight_kg`, `start_weight_kg`, `is_asleep` | Needs |
-| Fire | in | `wake_request(low_fire)` (optional — Fire GDD decides) | Fire |
 | Emotional Feedback | out | stages, collapse, `weight_lost_frac` | Needs |
 | HUD | out | stages for need icons | Needs |
 | Food (VS), Water (VS) | in | food and water items through Item DB | Item DB |
@@ -196,7 +195,7 @@ One step per tick in each machine; each change emits `needs_stage_changed(need, 
 - **Body Temperature** (approved) — `is_shivering`, `stage`, `wake_request`.
 - **Item Database & Inventory** — food and drink values, item consumption (not yet written — provisional fields `food_kcal`, `drink_hydration`, `eat_minutes`).
 
-**Upstream — soft:** Character Controller (movement activity), Interaction (work activity and eat/drink/sleep actions), Fire (optional low-fire wake), Food and Water (VS, through Item DB).
+**Upstream — soft:** Character Controller (movement activity), Interaction (work activity and eat/drink/sleep actions), Food and Water (VS, through Item DB).
 
 **Downstream:** Morale & Mental State (hard: `fullness`, `weight_kg`, `start_weight_kg`, `is_asleep`), Body Temperature (`is_asleep`), Time (mode requests), Mishaps (`fatigue_penalty`), Interaction (`needs_action_mult`, refusals), Character Controller (`needs_move_speed_mult`), Emotional Feedback, HUD, Medical Check-ins (VS), Tap-out & Run Results (VS), Save/Load (Alpha).
 
@@ -252,7 +251,7 @@ Owner decision O1 (2026-11-19): verify snow intake is allowed in Hypothermic on 
 1. [A] **GIVEN** a new run, **THEN** stomach 1,200 kcal (fullness 80), weight 72.0, hydration 100, energy 90, awake.
 2. [A] **GIVEN** stomach 1,400 kcal and a 400 kcal ration, **WHEN** eating, **THEN** refused and the ration stays in the inventory; **GIVEN** stomach 1,000, **THEN** stomach 1,400 and the ration is consumed.
 3. [A] **GIVEN** energy 95 at night, **WHEN** sleep is requested, **THEN** refused; **GIVEN** energy 45 by day, **THEN** allowed, `is_asleep` true and Time mode `sleep`.
-4. [A] **GIVEN** asleep, **WHEN** Body emits `wake_request(cold)`, **THEN** `is_asleep` false and Time mode `normal` in the same minute; **WHEN** instead Time reports `rate_mode_changed(normal)` from another source, **THEN** also awake.
+4. [A] **GIVEN** asleep below the energy cap, **WHEN** Fire goes Out and Body does not emit a cold wake and no other valid interruption occurs, **THEN** remain asleep. **WHEN** Body emits `wake_request(cold)`, **THEN** clear `is_asleep` and return Time to `normal` before the next owed minute; **WHEN** instead Time reports `rate_mode_changed(normal)` from a valid interruption, **THEN** also awake.
 5. [A] **GIVEN** awake with energy 0.1 and heavy work, **WHEN** energy reaches 0, **THEN** collapse: `is_asleep` true with cause `exhaustion`; **WHEN** woken by Body, **THEN** energy ≥ 5.
 6. [A] **GIVEN** hydration 0, **WHEN** 6 game hours pass without drinking, **THEN** `needs_died(dehydration)` once; **GIVEN** a snow handful at 5 h 59 min, **THEN** no death and the timer resets.
 7. [A] **GIVEN** Exhausted, **WHEN** the player starts chopping (heavy work), **THEN** refused.

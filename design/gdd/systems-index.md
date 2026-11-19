@@ -18,8 +18,10 @@ show's feelings were present. This index therefore treats three things as core,
 not polish: **feeling** (Morale & Mental State, Mishaps & Failure, Emotional
 Feedback), **body and ground** (Character Controller & Animation, Terrain & Snow
 Surface), and **real pressure** (Thermal Environment, Body Temperature, Needs &
-Weight). The MVP is the next playable: one harsh first day and night that must
+Weight). The broader MVP covers one harsh first day and night that must
 be physically heavy, readable from the high camera, and emotionally legible.
+The [first playable night](../../production/milestones/first-playable-night.md)
+is a smaller dusk-to-dawn milestone within that scope.
 Owner decision 2026-11-16: emotion design comes first, so Morale & Mental State
 is designed out of dependency order, and its GDD carries the feeling → show
 feature → mechanic map every later GDD answers to.
@@ -122,7 +124,7 @@ feature → mechanic map every later GDD answers to.
 
 | Tier | Definition | Target Milestone | Design Urgency |
 |------|------------|------------------|----------------|
-| **MVP** | Required for the core loop to function. Without these, you can't test "is this fun?" | Next playable: one harsh day and night, physical and emotionally legible | Design FIRST |
+| **MVP** | Required for the core loop to function. Without these, you can't test "is this fun?" | One harsh day and night, physical and emotionally legible | Design FIRST |
 | **Vertical Slice** | Required for one complete, polished area. Demonstrates the full experience. | Survive three days, full run with tap-out and results | Design SECOND |
 | **Alpha** | All features present in rough form. Complete mechanical scope, placeholder content OK. | Alpha milestone | Design THIRD |
 | **Full Vision** | Polish, edge cases, nice-to-haves, and content-complete features. | Beta / Release | Design as needed |
