@@ -3,6 +3,33 @@ extends GdUnitTestSuite
 const SHELL: PackedScene = preload("res://src/run/app_shell.tscn")
 
 
+func test_survivor_capsule_and_camera_read_custom_playfield_tuning() -> void:
+	var tuning := PlayfieldTuning.new()
+	tuning.capsule_radius = 0.4
+	tuning.capsule_height = 2.0
+	tuning.camera_turn_degrees = 30.0
+	tuning.camera_distance = 7.0
+	tuning.camera_zoom_step = 1.5
+	tuning.camera_zoom_min = 5.0
+	tuning.camera_zoom_max = 8.0
+	var survivor: SurvivorController = auto_free(SurvivorController.new())
+	survivor.tuning = tuning
+	add_child(survivor)
+	var collision := survivor.get_child(0) as CollisionShape3D
+	assert_float((collision.shape as CapsuleShape3D).radius).is_equal(0.4)
+	assert_float((collision.shape as CapsuleShape3D).height).is_equal(2.0)
+	assert_float(collision.position.y).is_equal(1.0)
+	var camera: SurvivalCamera = auto_free(SurvivalCamera.new())
+	camera.tuning = tuning
+	add_child(camera)
+	camera.turn(1)
+	assert_float(camera.yaw).is_equal_approx(PI / 6.0, 0.0001)
+	camera.zoom(1)
+	assert_float(camera.distance).is_equal(8.0)
+	camera.zoom(-100)
+	assert_float(camera.distance).is_equal(5.0)
+
+
 func test_shell_restart_replaces_all_mutable_run_state() -> void:
 	var shell: Node = auto_free(SHELL.instantiate())
 	shell.process_mode = Node.PROCESS_MODE_DISABLED

@@ -1,7 +1,7 @@
 class_name SurvivorController extends CharacterBody3D
 
 const MODEL: PackedScene = preload("res://assets/models/survivor_rigged.glb")
-const TUNING: PlayfieldTuning = preload("res://assets/data/playfield_defaults.tres")
+@export var tuning: PlayfieldTuning = preload("res://assets/data/playfield_defaults.tres")
 var simulation: RunSimulation
 var router: InputRouter
 var camera: SurvivalCamera
@@ -20,10 +20,10 @@ func configure(run: RunSimulation, input: InputRouter, view: SurvivalCamera) -> 
 func _ready() -> void:
 	var collision := CollisionShape3D.new()
 	var capsule := CapsuleShape3D.new()
-	capsule.radius = 0.3
-	capsule.height = 1.75
+	capsule.radius = tuning.capsule_radius
+	capsule.height = tuning.capsule_height
 	collision.shape = capsule
-	collision.position.y = 0.875
+	collision.position.y = tuning.capsule_height / 2.0
 	add_child(collision)
 	_visual = MODEL.instantiate()
 	_visual.rotation.y = PI
@@ -49,22 +49,22 @@ func _physics_process(delta: float) -> void:
 	var movement: Vector2 = input[&"move"]
 	var direction := camera.move_direction(movement)
 	var hurry: bool = input[&"hurry"] and simulation.body.stage in [&"Warm", &"Chilled", &"Cold"] and simulation.needs.stage != &"Exhausted"
-	var speed := TUNING.critical_speed if simulation.body.stage == &"Critical" else TUNING.walk_speed * maxf(0.15, simulation.body.move_speed_mult() * simulation.needs.move_speed_mult() * (TUNING.hurry_multiplier if hurry else 1.0))
+	var speed := tuning.critical_speed if simulation.body.stage == &"Critical" else tuning.walk_speed * maxf(tuning.speed_multiplier_floor, simulation.body.move_speed_mult() * simulation.needs.move_speed_mult() * (tuning.hurry_multiplier if hurry else 1.0))
 	velocity.x = direction.x * speed
 	velocity.z = direction.z * speed
-	velocity.y = -1.0 if is_on_floor() else velocity.y - 9.8 * delta
+	velocity.y = -tuning.grounded_down_speed if is_on_floor() else velocity.y - tuning.gravity * delta
 	move_and_slide()
 	var horizontal := Vector2(velocity.x, velocity.z).length()
-	simulation.movement = &"heavy" if horizontal >= 0.1 and hurry else (&"walk" if horizontal >= 0.1 else &"idle")
+	simulation.movement = &"heavy" if horizontal >= tuning.activity_speed_cutoff and hurry else (&"walk" if horizontal >= tuning.activity_speed_cutoff else &"idle")
 	simulation.position = global_position
-	if direction.length_squared() > 0.01:
+	if direction.length_squared() > tuning.facing_input_squared:
 		facing = direction.normalized()
-		_visual.rotation.y = lerp_angle(_visual.rotation.y, atan2(facing.x, facing.z), minf(1.0, delta * 10.0))
-	var desired: StringName = &"walk" if horizontal >= 0.1 else (&"shiver" if simulation.body.is_shivering() else &"idle")
+		_visual.rotation.y = lerp_angle(_visual.rotation.y, atan2(facing.x, facing.z), minf(1.0, delta * tuning.facing_response))
+	var desired: StringName = &"walk" if horizontal >= tuning.activity_speed_cutoff else (&"shiver" if simulation.body.is_shivering() else &"idle")
 	if simulation.actions.action == &"chop_log":
 		desired = &"chop"
 	elif simulation.actions.action in [&"strike", &"blow_embers"]:
 		desired = &"strike"
 	if _animation != null and desired != _clip and _animation.has_animation(desired):
-		_animation.play(desired, 0.15)
+		_animation.play(desired, tuning.animation_blend_seconds)
 		_clip = desired

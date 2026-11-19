@@ -45,7 +45,7 @@ func _ready() -> void:
 		if argument == "--demo-gather":
 			_demo_gather = true
 	camera.target = survivor
-	camera.position = survivor.position + Vector3.UP * 0.75
+	camera.position = survivor.position + Vector3.UP * camera.tuning.camera_target_height
 	survivor.configure(simulation, input_router, camera)
 	input_router.action_pressed.connect(_on_action)
 	simulation.action_resolved.connect(_on_action_resolved)
