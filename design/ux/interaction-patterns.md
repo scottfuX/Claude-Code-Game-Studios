@@ -14,7 +14,7 @@ Reusable paper-and-ink behaviors for Lonefire's small survival interface. This c
 
 All patterns use named InputMap actions, localization keys and current-device glyphs. Keyboard/mouse is primary; gamepad is partial on macOS/Windows PC. No touch or console behavior is promised. Noninteractive HUD controls ignore focus/input. Keyboard/gamepad focus and mouse hover are independent; raw event handling never dispatches an owner command twice.
 
-The provisional accessibility target is **Standard**, not yet confirmed by Scott; see Own Calls A1–A6 in the accessibility document. All 16 ADRs were **Accepted** by Scott (owner) on 2026-11-19; ADR-0002/0014/0016 supply Accepted implementation contracts, not proof of runtime/UI validation. QQ-08 is owner-decided; QQ-01–QQ-07, QQ-09 and QQ-10 remain open. O1–O4 were resolved by Scott on 2026-11-19; O4 profiling remains pending.
+The accessibility tier is **Standard**, confirmed and committed by Scott (owner) on 2026-11-19; A1 is resolved, while A2–A6 and delivery-scope decisions remain open in the accessibility document. All 16 ADRs were **Accepted** by Scott (owner) on 2026-11-19; ADR-0002/0014/0016 supply Accepted implementation contracts, not proof of runtime/UI validation. QQ-08 is owner-decided; QQ-01–QQ-07, QQ-09 and QQ-10 remain open. O1–O4 were resolved by Scott on 2026-11-19; O4 profiling remains pending.
 
 ## Pattern Catalog
 
@@ -316,12 +316,12 @@ Actual assets, licensing, sparse music stems and rumble remain QQ-03/QQ-10 open.
 
 ## Gaps & Patterns Needed
 
-- No existing per-screen component inventory/navigation map to reconcile. Write core HUD, backpack, main menu and pause specs at standard workflow, then use this catalog by name; no screen layout is approved by this library.
+- Dedicated HUD, backpack, pause, main-menu and death specs are linked above and reference this catalog by name; this library does not itself approve their layouts. Main-menu/terminal lifecycle inputs remain deferred.
 - Player journey absent: author `design/player-journey.md` from `.claude/docs/templates/player-journey.md` before claiming researched emotional arrival states.
 - Full inventory grid/counts/load gauge, settings/remapping, save/load, kit selection, diary, radio/results and captions need screen specs in their actual milestones. QQ-09/QQ-10 gate expansion.
 - Preserve Interaction's optional thin progress arc as an Alpha accessibility hook, never a mandatory MVP work bar. Deferred settings also include camera default zoom/45°–90° turn-step, reduce camera motion/effects, HUD scale/off/high-contrast, and per-action keyboard/gamepad remap columns/conflict warnings. Diary mood words and weigh-in/body-weight information are VS screen requirements, not extra HUD elements.
 - Critical × sleep/ritual/end visibility and disconnect while backpack UI is active need explicit owner-reviewed fixtures against Accepted ADR-0016/0002; not resolved here.
-- A1–A6 accessibility targets need Scott confirmation; Standard requirements not implemented in MVP are gaps, not a compliance claim. Screen reader/live announcement support needs platform spike.
+- A1 is resolved: Scott committed Standard. A2–A6 details still need confirmation; Standard requirements not implemented in MVP are delivery gaps, not a tier waiver or compliance claim. Screen reader/live announcement support needs platform spike.
 - Ability icons, damage numbers, generic numeric health/resource bars and dialogue UI are deliberately not applicable, not missing MVP features.
 
 ### Cross-Reference Check
@@ -330,10 +330,10 @@ Actual assets, licensing, sparse music stems and rumble remain QQ-03/QQ-10 open.
 |---|---|
 | GDD UI requirements | Scanned 18/18 system GDD UI sections, no unmatched systems. All have a requirement destination in accessibility matrix: prompts, band/needs/arc, backpack, world-only cues or deferred settings. This is design coverage, not 18 systems implemented or all future screens specced. |
 | Patterns | Every named interaction above appears in this catalog or is an explicit deferred/non-applicable entry. Accessibility doc uses the same names. |
-| Navigation | No other UX specs exist to compare. Proposed backpack/pause stack follows owner QQ-08; per-screen and runtime routing remain unverified. |
-| Accessibility | Provisional Standard mapped; A1–A6 and settings/caption/hold alternatives remain pending. No numeric HUD workaround. |
+| Navigation | Dedicated screen drafts linked above preserve the owner QQ-08 backpack/pause stack; runtime routing remains unverified and future title/result lifecycle inputs are missing. |
+| Accessibility | Committed Standard mapped; A1 resolved by Scott on 2026-11-19. A2–A6 details and settings/caption/hold alternatives remain pending. No numeric HUD workaround or Standard delivery waiver. |
 | Empty/error states | Backpack, selection, dropdown, loading, target, warnings and invalid snapshots defined; future screens must add their own cases. |
-| Architecture conflicts | O1–O4 resolved by Scott (2026-11-19), with O4 profiling pending; QQ-01–QQ-07/09/10 preserved open. Inventory GDD's future counts versus minimal facade explicitly deferred to QQ-09. No ADR accepted. |
+| Architecture conflicts | O1–O4 resolved by Scott (2026-11-19), with O4 profiling pending; QQ-01–QQ-07/09/10 preserved open. Accepted ADR-0016 governs the nonnumeric minimal facade; future full-inventory scope remains QQ-09. All 16 ADRs Accepted. |
 
 ## Open Questions
 
@@ -342,7 +342,8 @@ Actual assets, licensing, sparse music stems and rumble remain QQ-03/QQ-10 open.
 | P1 | Confirm safe focus, visible 2 px reference outline, bounded navigation and explicit tab activation? Recommend these defaults, test at actual scales; screen layouts remain undecided. | Scott/UX; screen review | Provisional Own Call |
 | P2 | Confirm restrained timing/notification defaults? Recommend table above, one visible future menu toast + two queued, 5 s minimum; no in-play toast queue. | Scott/art/UX; first UI playtest | Provisional Own Call |
 | P3 | Missing glyph fallback? Recommend localized current binding/action text instead of wrong icon; missing localization still follows GDD release-empty+log. | Scott/input/UI; prompt implementation | Provisional Own Call |
-| A1–A6 / S1–S3 | See accessibility document's Own Call/open-question tables; recommend defaults there, including Standard provisional tier and no numeric HUD. | Scott; before affected gates/scope | Open |
+| A1 | Standard tier | Scott (owner); 2026-11-19 | Confirmed and committed; not a runtime compliance audit |
+| A2–A6 / S1–S3 | See accessibility document's remaining Own Call/open-question tables; no numeric HUD or new MVP scope authorized. | Scott; before affected scope | Open |
 | QQ-01–QQ-07, QQ-09, QQ-10 | [Inherited owner decisions and recommended defaults](../accessibility-requirements.md#architecture-decisions-explicitly-preserved); no new authority to tune, spend or expand. | Scott; architecture review deadlines | Open |
 | O1 | Snow: retain Body whitelist; allowed Hypothermic, refused Critical. UI displays owner-offered verbs only. | Scott; affected action acceptance | Resolved by Scott 2026-11-19 |
 | O2 | Failed bush bonus: floor half per output; one grass becomes zero, reserve unchanged. No UI predicted reward count. | Scott; gathering acceptance | Resolved by Scott 2026-11-19 |

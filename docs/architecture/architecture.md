@@ -1012,7 +1012,7 @@ Defines Foundation game-time/event/RNG ownership, unblocking C4/C5 transactions;
 > - [ ] Owner reviews remaining open questions before affected decisions/content spending.
 > - [x] Run /architecture-review — 2026-11-18 CONCERNS; index and 521 permanent TR IDs written.
 > - [x] Run /test-setup — tests/unit, tests/integration, CI workflow and example test now exist; implementation coverage is separate.
-> - [x] Run /ux-design — design/ux/interaction-patterns.md and design/accessibility-requirements.md now exist as drafts; tier/scope confirmation and screen specs remain pending.
+> - [x] Run /ux-design — design/ux/interaction-patterns.md, design/accessibility-requirements.md and five dedicated screen specs exist. Scott confirmed and committed Standard on 2026-11-19 (A1 resolved); A2–A6/delivery scope and runtime validation remain open, with future title/result lifecycle inputs still missing.
 >
 > Run /gate-check pre-production when all boxes are checked. This run does not claim gate readiness.
 

@@ -5,13 +5,13 @@
 > **Last Updated**: 2026-11-19
 > **Journey Phase(s)**: Inferred from game brief; no player journey map exists
 > **Platform Target**: PC macOS / Windows; keyboard/mouse primary, partial gamepad; no touch
-> **Accessibility Tier**: Standard, provisional pending owner confirmation (A1)
+> **Accessibility Tier**: Standard — confirmed and committed by Scott (owner), 2026-11-19 (A1 resolved)
 > **Template**: UX Spec
 > **Related GDDs**: [Emotional Feedback death edge / AC7](../gdd/emotional-feedback.md), [Input Locked rule](../gdd/input-and-action-map.md), [Time UI Requirements](../gdd/time-and-day-cycle.md), [Systems index](../gdd/systems-index.md)
 > **Related ADRs**: Accepted ADR-0002, ADR-0016; [control manifest](../../docs/architecture/control-manifest.md)
 > **Related UX Specs**: [HUD](hud.md), [Backpack](inventory.md), [Title](main-menu.md)
 
-All controls use [interaction patterns](interaction-patterns.md): Button, Focus Management, Escape / Cancel, Screen Push / Pop / Replace, Loading State / Empty State / Error State and Reconnect Recovery. Paper-and-ink UI follows [art bible §4/§7](../art/art-bible.md). [Accessibility requirements](../accessibility-requirements.md) govern provisional targets; no runtime, contrast, assistive-tech or visual verification is claimed.
+All controls use [interaction patterns](interaction-patterns.md): Button, Focus Management, Escape / Cancel, Screen Push / Pop / Replace, Loading State / Empty State / Error State and Reconnect Recovery. Paper-and-ink UI follows [art bible §4/§7](../art/art-bible.md). [Accessibility requirements](../accessibility-requirements.md) govern the committed Standard tier and separately identified proposals; no runtime, contrast, assistive-tech or visual verification is claimed.
 
 ## 1. Purpose & Player Need
 
@@ -131,7 +131,7 @@ Touch: not supported. Menu `ui_*` mappings are semantic InputRouter bindings, no
 
 ## 12. Accessibility
 
-Provisional Standard only; project A1/A3 and QQ-09 remain owner decisions. Proposed menu floor 24 px at 1080p; at 720p use at least 18 px. Plan 100–200% release text reflow, not an MVP settings addition. Do not claim Standard compliance while remapping/resizing/settings remain deferred. The template's generic Standard narration assumption differs from the project tier table: accessible names and announcement strings below are implementation hooks; comprehensive menu narration remains unapproved scope.
+Standard is confirmed and committed by Scott (owner), 2026-11-19; A1 is resolved. Detailed A2–A6 proposals and QQ-09 delivery scope remain open. Proposed menu floor 24 px at 1080p; at 720p use at least 18 px. Require adjustable text with reflow for Standard release delivery; the proposed range is 100–200%, not a new MVP settings addition. Remapping, text adjustment, colorblind support and applicable speaker-identified subtitles remain Standard release requirements even while their shared settings implementation is deferred. This is a screen design requirement, not a claim that an implemented build meets Standard. The template's generic Standard narration assumption differs from the project tier table: accessible names and announcement strings below are implementation hooks; comprehensive menu narration remains unapproved scope.
 
 | Text / control | Background | Required contrast | Measured |
 |---|---|---|---|
@@ -171,7 +171,7 @@ Implementation targets below remain unexecuted.
 
 | ID | Decision / gap | Owner / deadline | Disposition |
 |---|---|---|---|
-| A1 | Standard tier is provisional, not committed | Scott; before tier gate | Cannot receive APPROVED accessibility review until confirmed |
+| A1 | Standard tier confirmed and committed | Scott (owner); resolved 2026-11-19 | Tier criterion available for UX review; implementation compliance and A2–A6 not approved by this decision |
 | J1 | Player journey map not yet created | Design; before implementation planning | Author from `.claude/docs/templates/player-journey.md`; arrival context here is inferred |
 | U1 | Menu fade timings, layout sizes, target sizes and text budgets above | Scott + UI/art; before implementation | Reasonable author defaults, not measured outcomes |
 | D1 | Neutral Run ended copy; no numerical results | Scott + Results design; before VS | Avoid inventing cause, penalty or survival scoring |
