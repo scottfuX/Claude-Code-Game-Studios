@@ -148,7 +148,7 @@ func _update_target() -> void:
 	if _target == null:
 		return
 	if _target.fire == null:
-		_verbs = _target.gather_verbs(simulation.gathering, simulation.inventory)
+		_verbs.assign(_target.gather_verbs(simulation.gathering, simulation.inventory))
 	else:
 		for action: StringName in [&"clear_snow", &"arrange_tinder", &"strike", &"blow_embers", &"add_fuel"]:
 			if _target.fire.can_act(action, simulation.inventory):

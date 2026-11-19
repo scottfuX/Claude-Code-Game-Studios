@@ -91,6 +91,27 @@ func test_world_interaction_respects_facing_reach_and_finite_reserves() -> void:
 	assert_int(world.interactables.size()).is_equal(13)
 
 
+func test_gather_verb_cache_reuses_storage_and_invalidates_on_reserves_and_tools() -> void:
+	var entry: WorldInteractable = auto_free(WorldInteractable.new())
+	var resolver := GatheringResolver.new()
+	var inventory := InventoryModel.new()
+	assert_array(entry.gather_verbs(resolver, inventory)).is_empty()
+	entry.gather_node = GatherNode.new(&"deadfall", 2, 0, 2)
+	var verbs := entry.gather_verbs(resolver, inventory)
+	assert_int(verbs.size()).is_equal(2)
+	assert_bool(is_same(verbs, entry.gather_verbs(resolver, inventory))).is_true()
+	inventory.tools.erase(&"hatchet")
+	assert_array(entry.gather_verbs(resolver, inventory)).contains_exactly([&"strip_bark"])
+	entry.gather_node.bark_remaining = 0
+	assert_array(entry.gather_verbs(resolver, inventory)).is_empty()
+	inventory.tools.append(&"hatchet")
+	assert_array(entry.gather_verbs(resolver, inventory)).contains_exactly([&"chop_log"])
+	entry.gather_node.remaining = 0
+	assert_array(entry.gather_verbs(resolver, inventory)).is_empty()
+	entry.gather_node = GatherNode.new(&"bush", 1)
+	assert_array(entry.gather_verbs(resolver, inventory)).contains_exactly([&"gather_sticks"])
+
+
 func test_open_ground_creates_only_two_sites_and_rejects_busy_or_critical_work() -> void:
 	var shell: Node = auto_free(SHELL.instantiate())
 	shell.process_mode = Node.PROCESS_MODE_DISABLED

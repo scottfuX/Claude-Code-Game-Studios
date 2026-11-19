@@ -45,7 +45,8 @@ func unregister_heat_source(id: StringName) -> void:
 ## Returns TH4 summed/capped horizontal heat at a point.
 func heat_at(position: Vector3) -> float:
 	var total := 0.0
-	for source: Dictionary in _sources.values():
+	for id: StringName in _sources:
+		var source: Dictionary = _sources[id]
 		if not source[&"enabled"]:
 			continue
 		var offset: Vector3 = position - source[&"position"]
