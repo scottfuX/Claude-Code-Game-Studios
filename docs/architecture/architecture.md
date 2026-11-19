@@ -11,6 +11,8 @@
 - TD-ARCHITECTURE: 2026-11-18 — skipped — lean mode (formal independent gate).
 - LP-FEASIBILITY: 2026-11-18 — skipped — lean mode (formal independent gate).
 - Supplemental inline review: technical CONCERNS; feasibility CONCERNS. Not independent sign-off or owner acceptance.
+- **Technical Director Review (TD-PHASE-GATE)**: CONCERNS — 2026-11-19; align the sleep/wake specifications before integration. [Panel assessment](../../production/gate-checks/technical-setup-to-pre-production-2026-11-19-rerun.md#director-panel-assessment).
+- **Producer Review (PR-PHASE-GATE)**: CONCERNS — 2026-11-19; pin first-playable scope and exit criteria for the individual team. [Panel assessment](../../production/gate-checks/technical-setup-to-pre-production-2026-11-19-rerun.md#director-panel-assessment).
 - Configuration: autonomous / standard / balanced / lean. Explicit full-mode request expands standard's simplified minimum to all phases.
 - QQ-08: resolved by owner decision 2026-11-18 — backpack/inventory does not pause time or ongoing actions; Time Rule 8 updated.
 
