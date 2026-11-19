@@ -3,7 +3,7 @@
 > **Status**: Designed (pending review)
 > **Creative Director Review (CD-GDD-ALIGN)**: skipped — Lean mode
 > **Author**: owner + Devin (game-designer / systems-designer lenses)
-> **Last Updated**: 2026-11-16
+> **Last Updated**: 2026-11-19
 > **Last Verified**: 2026-11-16
 > **Implements Pillar**: 冷是真的 · 退赛是赌注
 
@@ -264,7 +264,7 @@ Thresholds must strictly decrease; otherwise the table is rejected at load.
 19. [P] **GIVEN** the MVP first afternoon, **WHEN** the owner stands still outdoors for 3 real minutes, **THEN** the survivor's posture changes visibly (Chilled) and the owner notices the cold without the HUD.
 20. [P] **GIVEN** five testers shown 10-second clips of each stage, **THEN** ≥ 4 order them correctly from posture alone.
 
-**Performance:** ≤ 0.02 ms per tick (one Thermal query + arithmetic).
+**Performance:** ≤ 0.02 ms per tick (one Thermal query + arithmetic). O4 resolved by Scott (2026-11-19): profile this full inclusive path; retain this budget and tighten Thermal's per-query budget after profiling. Follow-up: measure inclusive/exclusive costs and set the tighter query allocation; no new query number is approved.
 
 *QA gaps found and resolved: shiver cut-off (4), single wake per step (5), Critical action whitelist (6), exact death clamp (7), bad Thermal data (8), activity max-not-sum (3). Feel lines moved to playtest criteria 19–20.*
 

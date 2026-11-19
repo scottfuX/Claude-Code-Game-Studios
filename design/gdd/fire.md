@@ -3,7 +3,7 @@
 > **Status**: Designed (pending review)
 > **Creative Director Review (CD-GDD-ALIGN)**: skipped — Lean mode
 > **Author**: owner + Devin (game-designer / systems-designer / art-director lenses)
-> **Last Updated**: 2026-11-17
+> **Last Updated**: 2026-11-19
 > **Last Verified**: 2026-11-17
 > **Implements Pillar**: 冷是真的 · 苦中有美 · 亲手做 · 越活越懂
 
@@ -51,7 +51,7 @@ For the player it is the first goal ("天黑前要有火"), the evening ritual (
 5. **Fuel and wetness.** Adding an item adds its effective fuel (FI5: damp wood gives less) and mixes its wetness into the fire's burning wetness, which dries at 0.05 per game minute while burning. Burning wetness lowers heat (FI2) and makes the fire smoke.
 6. **Smothering.** Adding a log with wetness > 0.6 to a fire in Kindling flame (F < 30) smothers it to Embers (hiss, white smoke) — the cause is visible; dry the log at the fire first (Inventory camp piles) or build the flame up with sticks.
 7. **Too big.** Adding fuel that would push F above `F_max` is refused ("火已经够大了").
-8. **Heat and light** (FI1–FI3, FI6) update each game minute and are pushed to Thermal (`register/update heat source {position, heat_c, radius_m, enabled}`; `enabled` false at Out) and to rendering. `warm_radius` = the registered `radius_m` (Morale's contract). Inventory piles within `warm_radius` are camp piles and dry.
+8. **Heat and light** (FI1–FI3, FI6) update each game minute. Exact heat/radius/enabled values are published to Thermal via `register_heat_source` / `update_heat_source` before Body queries that minute, regardless of change magnitude; rendering reads the visual values. Source records contain `{position, heat_c, radius_m, enabled}` (`enabled` false at Out). `warm_radius` = the registered `radius_m` (Morale's contract). Inventory piles within `warm_radius` are camp piles and dry.
 9. **Unattended death.** When a fire goes Out while the survivor is asleep or more than 15 m away, emit `loss{kind: fire_died_unattended}` (Morale: G +10, F +8). Watching it die while awake and near is not a loss event.
 10. **No wake-up from Fire.** Fire does not wake the sleeping survivor; the body does (Body Temperature wakes them when Cold). The dying fire and the cold that follows are the night's story.
 11. **Fire tending in Critical.** `add_fuel` and `blow_embers` are `critical_allowed` (Interaction): a crawling survivor can still save the fire.
@@ -265,7 +265,7 @@ Solved, the fuel falls as `F(t) = (F0 + b0·b_div) · e^(−t·w/b_div) − b0·
 19. [P] **GIVEN** a night left with 4 logs at 21:00, **THEN** the owner wakes cold to embers or a dead fire and relights or rebuilds it.
 20. [P] **GIVEN** night screenshots of a strong fire, embers and a smoking damp fire, **THEN** testers tell the three apart.
 
-**Performance:** ≤ 0.02 ms per fire per tick; heat source update only when heat or radius changes by > 0.1.
+**Performance:** ≤ 0.02 ms per fire per tick; the > 0.1 heat/radius update threshold applies to visuals only. Exact authoritative heat/radius is published to Thermal and available to Body every game minute, including changes ≤ 0.1 (O3 resolved by Scott, 2026-11-19).
 
 *QA gaps found and resolved: site validity (1), missing materials (2), ember window (3), smother (5), fuel cap (6), Thermal/Morale contract (7), unattended rule (8), Critical tending (9), ember life (10). Feel lines moved to playtest criteria 18–20.*
 

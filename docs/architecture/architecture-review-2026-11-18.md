@@ -1,5 +1,18 @@
 # Architecture Review Report — Lonefire
 
+## Owner resolution update — 2026-11-19
+
+Scott resolved O1–O4. This dated note supersedes all historical references below to those items being open, awaiting confirmation or blocking owner reconciliation. The original **CONCERNS verdict and review-time counts are unchanged**, not a new full review or ADR acceptance.
+
+- **O1 resolved:** retain Critical whitelist; snow allowed in Hypothermic, refused in Critical. No cooling-cost addition.
+- **O2 resolved:** floor each failed output independently; one bonus grass becomes 0, with reserves unchanged.
+- **O3 resolved:** >0.1 heat/radius threshold is visual-only; exact authoritative values reach Thermal and Body every minute.
+- **O4 resolved (decision), follow-up pending profiling:** profile full Body path, retain inclusive 0.02 ms budget, then tighten Thermal's per-query allocation. No new query number approved.
+- Stale ADR audit refreshed in architecture.md; canonical ADR-0013 Camera and ADR-0006 Thermal names/signatures adopted. No runtime adapter verification is implied.
+- Current index: 519 Covered (Proposed), 2 Partial (O4 profiling), 0 gaps; all 16 ADRs remain Proposed. QQ-01–07/09/10 defaults unchanged; QQ-08 remains decided.
+
+The original input hashes below are historical receipts and were not restamped after these source changes; a future review must detect them as changed.
+
 Date: 2026-11-18
 Mode: full
 Workflow: standard
@@ -172,17 +185,17 @@ means architectural acceptance or a passing test.
 | Ambient & Foley Audio | 24 | 0015 | 24 | 0 | AF1–5, head listener, inclusive 24-voice pool, bus/mask/cause ordering. |
 | HUD | 24 | 0016 | 24 | 0 | H1–5, non-numeric snapshots, safe projection, current list commands. |
 
-### Partial requirements and owner reconciliation
+### Partial requirements and owner reconciliation — historical findings; O1–O4 resolved 2026-11-19
 
 | Finding | Partial rows | Evidence and impact | Options; recommendation only |
 |---|---|---|---|
-| O1 — Snow in Critical | TR-needs-and-weight-006, 031, 033 | Needs Drinking rule says available anywhere on snow; its Edge Cases expressly allow Hypothermic “or worse.” Body Rules 7/10 and Interaction's catalogue restrict Critical to crawl/fire tending/sit/drop. ADR-0008 Decision explicitly flags this and retains the whitelist; ADR-0007 validates Body permissions. A Critical snow command cannot satisfy both texts. Blocks affected action/Needs acceptance. | Clarify snow allowed below Critical only; or explicitly revise Body/Interaction to admit it. Recommend preserve Critical whitelist, allow snow in Hypothermic, with no invented cooling cost. |
-| O2 — Failed bush bonus grass | TR-gathering-001, 002, 010, 023 | Gathering action table adds one bonus grass; G1 halves failed produce and leaves node yield unchanged. ADR-0010 proposes flooring each line (one grass → zero) and explicitly requests confirmation; ADR-0007 preserves partial-yield profiles. Whether the bonus inherits failure rules is not settled. Blocks bush reward acceptance. | Apply floor-half independently to each output; or author a separate bonus-on-failure rule. Recommend zero bonus grass on failure, retain reserve; it follows G1 without inventing a reward. |
-| O3 — Heat threshold | TR-fire-008, 031 | Fire Rule 8 pushes heat/radius each minute, but its Performance paragraph says source update only for changes >0.1. Thermal source contract/ADR-0006 requires current exact values before Body. ADR-0011 proposes exact authoritative publication and cosmetic coalescing only, explicitly pending confirmation. | Clarify threshold is render-only; or revise Thermal's exact-sampling contract with explicit error bounds. Recommend render-only threshold to preserve same-minute physiological correctness. |
-| O4 — Inclusive Body cost | TR-body-temperature-029, TR-thermal-environment-029 | Body Performance ≤0.02 ms includes one Thermal query; Thermal permits ≤0.05 ms/query at eight sources/four nearby zones. ADR-0008 flags this against ADR-0006; neither is measured. A query reaching its allowed ceiling would exceed the caller budget before arithmetic. | Allocate a tighter inclusive query target; or owner-approved budget revision after profiling. Recommend profile the inclusive path and tighten its query allocation first; do not silently raise either budget. |
+| O1 — **RESOLVED 2026-11-19** — Snow in Critical | TR-needs-and-weight-006, 031, 033 | Needs Drinking rule says available anywhere on snow; its Edge Cases expressly allow Hypothermic “or worse.” Body Rules 7/10 and Interaction's catalogue restrict Critical to crawl/fire tending/sit/drop. ADR-0008 Decision explicitly flags this and retains the whitelist; ADR-0007 validates Body permissions. A Critical snow command cannot satisfy both texts. Blocks affected action/Needs acceptance. | Clarify snow allowed below Critical only; or explicitly revise Body/Interaction to admit it. Recommend preserve Critical whitelist, allow snow in Hypothermic, with no invented cooling cost. |
+| O2 — **RESOLVED 2026-11-19** — Failed bush bonus grass | TR-gathering-001, 002, 010, 023 | Gathering action table adds one bonus grass; G1 halves failed produce and leaves node yield unchanged. ADR-0010 proposes flooring each line (one grass → zero) and explicitly requests confirmation; ADR-0007 preserves partial-yield profiles. Whether the bonus inherits failure rules is not settled. Blocks bush reward acceptance. | Apply floor-half independently to each output; or author a separate bonus-on-failure rule. Recommend zero bonus grass on failure, retain reserve; it follows G1 without inventing a reward. |
+| O3 — **RESOLVED 2026-11-19** — Heat threshold | TR-fire-008, 031 | Fire Rule 8 pushes heat/radius each minute, but its Performance paragraph says source update only for changes >0.1. Thermal source contract/ADR-0006 requires current exact values before Body. ADR-0011 proposes exact authoritative publication and cosmetic coalescing only, explicitly pending confirmation. | Clarify threshold is render-only; or revise Thermal's exact-sampling contract with explicit error bounds. Recommend render-only threshold to preserve same-minute physiological correctness. |
+| O4 — **RESOLVED 2026-11-19** — Inclusive Body cost | TR-body-temperature-029, TR-thermal-environment-029 | Body Performance ≤0.02 ms includes one Thermal query; Thermal permits ≤0.05 ms/query at eight sources/four nearby zones. ADR-0008 flags this against ADR-0006; neither is measured. A query reaching its allowed ceiling would exceed the caller budget before arithmetic. | Allocate a tighter inclusive query target; or owner-approved budget revision after profiling. Recommend profile the inclusive path and tighten its query allocation first; do not silently raise either budget. |
 
 There are no no-ADR gap rows and no new missing-ADR request. These are partial
-contracts in existing proposals, not absent designs. O1–O4 remain OPEN for Scott.
+contracts in existing proposals, not absent designs. O1–O4 were resolved by Scott on 2026-11-19; O4 profiling remains pending (see dated update).
 Normal, empty/refused, invalid-data and duplicate/cancellation behavior has design
 coverage in the ADR decisions/validation criteria; **none is claimed as tested**.
 
@@ -307,9 +320,9 @@ therefore no systems-index status is changed to Needs Revision.
 - Budgets/hardware are still proposed (QQ-01); no min-spec, 60 fps, draw, memory or
   mesh-cap compliance is certified. Inclusive C5/C3 budget concern is O4 above.
 
-## Owner decision register — recommendations, not decisions
+## Owner decision register — O1–O4 resolved 2026-11-19; QQ defaults unchanged
 
-Every item below remains **OPEN** except QQ-08. None is accepted by writing this
+O1–O4 below are **RESOLVED by Scott (2026-11-19)**; O4 profiling remains pending. QQ-08 is decided; QQ-01–07/09/10 remain **OPEN**. No ADR is accepted by writing this
 report. QQ recommendations retain architecture.md's existing direction, not a new
 design commitment.
 

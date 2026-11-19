@@ -14,7 +14,7 @@ Reusable paper-and-ink behaviors for Lonefire's small survival interface. No per
 
 All patterns use named InputMap actions, localization keys and current-device glyphs. Keyboard/mouse is primary; gamepad is partial on macOS/Windows PC. No touch or console behavior is promised. Noninteractive HUD controls ignore focus/input. Keyboard/gamepad focus and mouse hover are independent; raw event handling never dispatches an owner command twice.
 
-The provisional accessibility target is **Standard**, not yet confirmed by Scott; see Own Calls A1–A6 in the accessibility document. All 16 ADRs stay **Proposed**; ADR-0002/0014/0016 supply proposed implementation contracts, not accepted architecture. QQ-08 is owner-decided; QQ-01–QQ-07, QQ-09, QQ-10 and O1–O4 remain open.
+The provisional accessibility target is **Standard**, not yet confirmed by Scott; see Own Calls A1–A6 in the accessibility document. All 16 ADRs stay **Proposed**; ADR-0002/0014/0016 supply proposed implementation contracts, not accepted architecture. QQ-08 is owner-decided; QQ-01–QQ-07, QQ-09 and QQ-10 remain open. O1–O4 were resolved by Scott on 2026-11-19; O4 profiling remains pending.
 
 ## Pattern Catalog
 
@@ -144,7 +144,7 @@ Paper/ink, no low-poly widgets/glow/gradients. Text ≥18 px at 720p, 5% safe in
 
 Project final camera world point into UI once, reject behind-camera/invisible points, stay ≥40 px clear of actual survivor silhouette and inside safe area. Hide immediately when target/verb disappears; do not leave fading stale actionable prompts or offscreen markers. Changed device/rebind updates glyph and text; no hard-coded E/F. Missing glyph falls back to localized action/binding text (P3), not a wrong controller icon. Missing localization follows HUD GDD: key in dev, empty+log in release; log a release-blocking critical text defect rather than inventing translation.
 
-First-fire hint starts in the first minute and latches gone on first Kindling flame or ten game minutes. Refusals use **Action Refusal**. No extra sound or animated rise through the survivor. Empty target = no prompt; controller disconnect uses recovery overlay. Critical verbs come from owner admission; O1 is unresolved and UI cannot settle it.
+First-fire hint starts in the first minute and latches gone on first Kindling flame or ten game minutes. Refusals use **Action Refusal**. No extra sound or animated rise through the survivor. Empty target = no prompt; controller disconnect uses recovery overlay. Critical verbs come from owner admission; O1 was resolved by Scott (2026-11-19): snow allowed in Hypothermic, refused in Critical; UI cannot override it.
 
 #### Action Refusal
 
@@ -333,7 +333,7 @@ Actual assets, licensing, sparse music stems and rumble remain QQ-03/QQ-10 open.
 | Navigation | No other UX specs exist to compare. Proposed backpack/pause stack follows owner QQ-08; per-screen and runtime routing remain unverified. |
 | Accessibility | Provisional Standard mapped; A1–A6 and settings/caption/hold alternatives remain pending. No numeric HUD workaround. |
 | Empty/error states | Backpack, selection, dropdown, loading, target, warnings and invalid snapshots defined; future screens must add their own cases. |
-| Architecture conflicts | O1–O4 and QQ-01–QQ-07/09/10 preserved open. Inventory GDD's future counts versus minimal facade explicitly deferred to QQ-09. No ADR edited/accepted. |
+| Architecture conflicts | O1–O4 resolved by Scott (2026-11-19), with O4 profiling pending; QQ-01–QQ-07/09/10 preserved open. Inventory GDD's future counts versus minimal facade explicitly deferred to QQ-09. No ADR accepted. |
 
 ## Open Questions
 
@@ -344,10 +344,10 @@ Actual assets, licensing, sparse music stems and rumble remain QQ-03/QQ-10 open.
 | P3 | Missing glyph fallback? Recommend localized current binding/action text instead of wrong icon; missing localization still follows GDD release-empty+log. | Scott/input/UI; prompt implementation | Provisional Own Call |
 | A1–A6 / S1–S3 | See accessibility document's Own Call/open-question tables; recommend defaults there, including Standard provisional tier and no numeric HUD. | Scott; before affected gates/scope | Open |
 | QQ-01–QQ-07, QQ-09, QQ-10 | [Inherited owner decisions and recommended defaults](../accessibility-requirements.md#architecture-decisions-explicitly-preserved); no new authority to tune, spend or expand. | Scott; architecture review deadlines | Open |
-| O1 | Snow in Critical; recommend existing Body whitelist pending explicit reconciliation. UI displays owner-offered verbs only. | Scott; affected action acceptance | Open |
-| O2 | Failed bush bonus; recommend per-output floor-half pending owner. No UI predicted reward count. | Scott; gathering acceptance | Open |
-| O3 | Fire threshold; recommend exact gameplay publication/cosmetic coalescing pending owner. | Scott; heat contract acceptance | Open |
-| O4 | Body/Thermal inclusive budgets; recommend profile/tighten sub-budget before increases. | Scott/technical director; performance acceptance | Open |
+| O1 | Snow: retain Body whitelist; allowed Hypothermic, refused Critical. UI displays owner-offered verbs only. | Scott; affected action acceptance | Resolved by Scott 2026-11-19 |
+| O2 | Failed bush bonus: floor half per output; one grass becomes zero, reserve unchanged. No UI predicted reward count. | Scott; gathering acceptance | Resolved by Scott 2026-11-19 |
+| O3 | Fire threshold: exact Thermal/Body publication every minute; >0.1 visual-only. | Scott; heat contract acceptance | Resolved by Scott 2026-11-19 |
+| O4 | Body/Thermal: keep Body ≤0.02 ms; profile full path then tighten query budget, number pending. | Scott/technical director; performance acceptance | Resolved by Scott 2026-11-19; profiling pending |
 | UX-01 | Full inventory counts/load gauge versus proposed qualitative facade? Recommend minimal MVP, separate full-screen decision in QQ-09. | Scott; inventory screen scope | Open |
 | UX-02 | Combined Critical/sleep/ritual visibility and backpack disconnect? Recommend fixture-led review of proposed ADR precedence/router safety, no independent UI exception. | Scott/input/UI; first HUD acceptance | Open |
 

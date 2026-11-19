@@ -108,13 +108,13 @@ This matrix covers all 18 designed MVP systems and explicitly records the remain
 | Map & Resource Distribution | World landmarks, no minimap/markers | No undisclosed route assist | World-readability audit pending QQ-04 |
 | Character Controller & Animation | Posture/gait supports strain cues | Named actions, tap work, optional hurry alternative pending | World/input test pending |
 | Camera | Survivor visible, no shake-only signal | Turn/zoom actions, reduced motion proposal | QQ-04; read camera GDD, no reframing decision |
-| Interaction & Timed Actions | Up to two verbs and qualitative refusal | Tap work/cancel, no mandatory progress HUD | Context Action Prompt, Action Refusal; O1/QQ-07 open |
-| Thermal Environment | No thermometer; body/world cues | No extra simulation controls | World-readability audit pending O3/O4 |
-| Body Temperature | Band/ticks/trend plus breath/posture | Critical whitelist stays owner-defined | Qualitative Survival HUD; O1 open |
+| Interaction & Timed Actions | Up to two verbs and qualitative refusal | Tap work/cancel, no mandatory progress HUD | Context Action Prompt, Action Refusal; O1 resolved 2026-11-19; QQ-07 open |
+| Thermal Environment | No thermometer; body/world cues | No extra simulation controls | World-readability audit pending; O3 resolved 2026-11-19; O4 profiling pending |
+| Body Temperature | Band/ticks/trend plus breath/posture | Critical whitelist stays owner-defined | Qualitative Survival HUD; O1 resolved 2026-11-19 |
 | Mishaps & Failure | Visible cause, animation; captions proposal | No reaction-time escape added | Feedback audit; QQ-05/QQ-07 open |
-| Gathering | Interaction verbs, backpack state | No result-count overlay; no auto-repeat | Real-time Backpack; O2 open |
-| Fire | Flame/smoke/light + prompts; captions proposal | Existing timed/repeat verbs only | No fire meter; O3 open |
-| Needs & Weight | Three need icons maximum, no mass/hunger numerals | Qualitative load and allowed-action explanations | Qualitative Survival HUD; O1 open |
+| Gathering | Interaction verbs, backpack state | No result-count overlay; no auto-repeat | Real-time Backpack; O2 resolved 2026-11-19 |
+| Fire | Flame/smoke/light + prompts; captions proposal | Existing timed/repeat verbs only | No fire meter; O3 resolved 2026-11-19 |
+| Needs & Weight | Three need icons maximum, no mass/hunger numerals | Qualitative load and allowed-action explanations | Qualitative Survival HUD; O1 resolved 2026-11-19 |
 | Morale & Mental State | Posture/gait/world, never a Resolve meter | Do not expose hidden morale or change relief | QQ-05/QQ-07/QQ-10 open |
 | Emotional Feedback | Warm hue preserved, redundant bodily cues | Reduced motion proposal, no gameplay changes | ADR-0014 proposed; QQ-10 open |
 | Ambient & Foley Audio | Visual cues/captions proposal | No HUD chatter/sound added during play | Sound Standards; cue audit pending |
@@ -220,9 +220,9 @@ All 16 ADRs remain **Proposed**. This document neither accepts them nor resolves
 | QQ-08 | Backpack real-time; pause menu pauses all. | Decided by owner; not reopened |
 | QQ-09 | Minimal backpack, calm fade, 100% MVP scale/hooks vs extra screens/settings; retain proposal pending usability decision. | Open |
 | QQ-10 | Deferred content/music/rumble/keepsakes etc.; no new MVP additions/spend. | Open |
-| O1 | Snow in Critical: recommend preserve Body/Interaction whitelist; Hypothermic snow allowed, no invented cooling cost. UI must not decide availability itself. | Open GDD conflict |
-| O2 | Failed bush bonus: recommend floor each output independently, one grass → zero on failure, reserve unchanged. Do not print a predicted reward. | Open GDD conflict |
-| O3 | Fire threshold: recommend exact authoritative heat/radius each minute, >0.1 threshold cosmetic only. No UI-owned heat inference. | Open GDD conflict |
-| O4 | Inclusive Body/Thermal cost: recommend profile and tighten query sub-budget before any budget increase; no compliance claim. | Open GDD conflict |
+| O1 | Snow: preserve Body/Interaction whitelist; Hypothermic snow allowed, Critical refused, no invented cooling cost. UI must not decide availability itself. | Resolved by Scott 2026-11-19 |
+| O2 | Failed bush bonus: floor each output independently, one grass → zero on failure, reserve unchanged. Do not print a predicted reward. | Resolved by Scott 2026-11-19 |
+| O3 | Fire threshold: exact authoritative heat/radius each minute, >0.1 threshold cosmetic only. No UI-owned heat inference. | Resolved by Scott 2026-11-19 |
+| O4 | Inclusive Body/Thermal cost: keep Body ≤0.02 ms; profile full path, then tighten query sub-budget (number pending profiling); no compliance claim. | Resolved by Scott 2026-11-19; profiling pending |
 
 **Handoff**: Run `/ux-review` before implementation; independent audit and Scott's tier/scope confirmations remain outstanding. At standard workflow, review of key screen specs is recommended before `/gate-check production`; this project-wide draft is not a substitute for those specs.

@@ -38,7 +38,7 @@
 #   line in any other shape is reported as unsupported layout, with its number.
 
 version: 2
-last_updated: "2026-11-18"
+last_updated: "2026-11-19"
 
 requirements:
 - id: TR-input-and-action-map-001
@@ -1686,7 +1686,7 @@ requirements:
   gdd: design/gdd/thermal-environment.md
   requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
   created: 2026-11-18
-  revised: ""
+  revised: "2026-11-19"
   status: active
 
 - id: TR-interaction-and-timed-actions-001
@@ -2142,15 +2142,15 @@ requirements:
   gdd: design/gdd/gathering.md
   requirement: "Gather actions (Interaction's catalogue; durations confirmed here):"
   created: 2026-11-18
-  revised: ""
+  revised: "2026-11-19"
   status: active
 
 - id: TR-gathering-002
   system: gathering
   gdd: design/gdd/gathering.md
-  requirement: "Yield. Each completion takes take units (or what is left) from the node's remaining yield (G1). On a Mishaps failure the player gets half, rounded down (chop: nothing — a glancing blow). The node's remaining yield falls by what was *attempted*, not what was kept, only on success; a failure leaves the node's yield untouched (the wood is still there; you fumbled it)."
+  requirement: "Yield. Each completion takes take units (or what is left) from the node's remaining yield (G1). On a Mishaps failure the player gets half of each output separately, rounded down (one bonus grass becomes 0; chop: nothing — a glancing blow). The node's remaining yield falls by what was *attempted*, not what was kept, only on success; a failure leaves the node's yield untouched (the wood is still there; you fumbled it)."
   created: 2026-11-18
-  revised: ""
+  revised: "2026-11-19"
   status: active
 
 - id: TR-gathering-003
@@ -2214,7 +2214,7 @@ requirements:
   gdd: design/gdd/gathering.md
   requirement: "G1 — Yield per completion. The gather_yield formula is defined as:"
   created: 2026-11-18
-  revised: ""
+  revised: "2026-11-19"
   status: active
 
 - id: TR-gathering-011
@@ -2318,7 +2318,7 @@ requirements:
   gdd: design/gdd/gathering.md
   requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
   created: 2026-11-18
-  revised: ""
+  revised: "2026-11-19"
   status: active
 
 - id: TR-fire-001
@@ -2380,9 +2380,9 @@ requirements:
 - id: TR-fire-008
   system: fire
   gdd: design/gdd/fire.md
-  requirement: "Heat and light (FI1–FI3, FI6) update each game minute and are pushed to Thermal (register/update heat source {position, heat_c, radius_m, enabled}; enabled false at Out) and to rendering. warm_radius = the registered radius_m (Morale's contract). Inventory piles within warm_radius are camp piles and dry."
+  requirement: "Heat and light (FI1–FI3, FI6) update each game minute. Exact heat/radius/enabled values are published to Thermal via register_heat_source / update_heat_source before Body queries that minute, regardless of change magnitude; rendering reads the visual values. Source records contain {position, heat_c, radius_m, enabled} (enabled false at Out). warm_radius = the registered radius_m (Morale's contract). Inventory piles within warm_radius are camp piles and dry."
   created: 2026-11-18
-  revised: ""
+  revised: "2026-11-19"
   status: active
 
 - id: TR-fire-009
@@ -2566,7 +2566,7 @@ requirements:
   gdd: design/gdd/fire.md
   requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
   created: 2026-11-18
-  revised: ""
+  revised: "2026-11-19"
   status: active
 
 - id: TR-body-temperature-001
@@ -2798,7 +2798,7 @@ requirements:
   gdd: design/gdd/body-temperature.md
   requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
   created: 2026-11-18
-  revised: ""
+  revised: "2026-11-19"
   status: active
 
 - id: TR-needs-and-weight-001
@@ -2844,9 +2844,9 @@ requirements:
 - id: TR-needs-and-weight-006
   system: needs-and-weight
   gdd: design/gdd/needs-and-weight.md
-  requirement: "Drinking. Drinking adds the item's drink_hydration. MVP stand-in — eating snow: an action available anywhere on snow: +3 hydration, 3 game minutes, −1 energy per handful. It is slow and tiring on purpose; melting and boiling water (Water, VS) is the good way."
+  requirement: "Drinking. Drinking adds the item's drink_hydration. MVP stand-in — eating snow: an action available anywhere on snow except in Critical (Body's whitelist applies): +3 hydration, 3 game minutes, −1 energy per handful. It is slow and tiring on purpose; melting and boiling water (Water, VS) is the good way."
   created: 2026-11-18
-  revised: ""
+  revised: "2026-11-19"
   status: active
 
 - id: TR-needs-and-weight-007
@@ -3044,9 +3044,9 @@ requirements:
 - id: TR-needs-and-weight-031
   system: needs-and-weight
   gdd: design/gdd/needs-and-weight.md
-  requirement: "If the player eats snow while Hypothermic or worse: allowed (no Body input yet); see Open Questions about a core-temperature cost."
+  requirement: "If the player eats snow while Hypothermic: allowed, but refused in Critical by Body's whitelist (O1 resolved by Scott, 2026-11-19); see Open Questions about a core-temperature cost."
   created: 2026-11-18
-  revised: ""
+  revised: "2026-11-19"
   status: active
 
 - id: TR-needs-and-weight-032
@@ -3062,7 +3062,7 @@ requirements:
   gdd: design/gdd/needs-and-weight.md
   requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
   created: 2026-11-18
-  revised: ""
+  revised: "2026-11-19"
   status: active
 
 - id: TR-morale-and-mental-state-001

@@ -3,7 +3,7 @@
 > **Status**: Designed (pending review)
 > **Creative Director Review (CD-GDD-ALIGN)**: skipped — Lean mode
 > **Author**: owner + Devin (systems-designer lens)
-> **Last Updated**: 2026-11-16
+> **Last Updated**: 2026-11-19
 > **Last Verified**: 2026-11-16
 > **Implements Pillar**: 冷是真的 · 苦中有美
 
@@ -251,7 +251,7 @@ Optional for a Core system; written because warmth must be readable at the far c
 16. [P] **GIVEN** the MVP first afternoon, **WHEN** the owner walks away from camp, **THEN** they report that it "feels cold" outdoors before the first night (PIVOT check "出去体温也没有怎么降").
 17. [P] **GIVEN** a night screenshot of camp, **WHEN** reviewed, **THEN** the warm core (~3 m) is distinguishable from the 6 m firelight ring.
 
-**Performance:** ≤ 0.05 ms per `effective_temp_c` query with up to 8 sources and 4 zones nearby (one query per game minute from Body Temperature, plus occasional VFX queries).
+**Performance:** O4 resolved by Scott (2026-11-19): profile the full Body path, including `effective_temp_c` with up to 8 sources and 4 zones nearby. Keep Body's inclusive ≤ 0.02 ms/tick budget. Tighten Thermal's per-query budget after profiling; the new number is pending profiling, not an independent 0.05 ms allowance. Occasional VFX queries must also be measured.
 
 *QA gaps found and resolved: disabled-vs-removed sources (4), registration validation (5), zone blend (3), overlapping shelters (7), sleep-skip sampling (14). Feel lines moved to playtest criteria 16–17.*
 
