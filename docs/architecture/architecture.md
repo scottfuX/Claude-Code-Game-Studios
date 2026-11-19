@@ -3,7 +3,7 @@
 ## Document Status
 
 - Version: 2
-- Last Updated: 2026-11-18
+- Last Updated: 2026-11-19
 - Engine: Godot 4.7.2.stable.official.ed1daf0bf; GDScript; Jolt; Forward+ desktop.
 - Scope: all 18 approved MVP systems, full architecture; no implementation or design revision.
 - GDDs Covered: all 18 linked systems in the Coverage Table and Technical Requirements Baseline.
@@ -323,7 +323,7 @@ These are **PROPOSED**, warn-only profiling starting points, not final approved 
 
 Preserve tighter existing GDD limits: Terrain grid <=8 MB, surface_at <=0.02 ms/query; Time <=0.02 ms/tick and combined subscribers <=0.5 ms/tick at sleep rate; Camera <=0.05 ms/frame plus <=0.1 ms for <=12 occluders; Inventory pickup/drop <=0.1 ms and drying <=0.05 ms/tick for 50 stacks; Audio <=24 voices. Other source acceptance/performance limits remain normative in the baseline. A worst catch-up of 120 x 0.5 ms is 60 ms: F1 must measure hitch recovery, not infer frame compliance from average sleep cost. Optimize costs/presentation scheduling, never discard survival ticks.
 
-Terrain/snow spike remains the next unresolved technical proof: full-run footprints, flat-face readability, displacement/trail representation, memory growth and query cost at approved Camera. Compare batched trail texture/displacement versus mark representation before C1 acceptance; do not assume one lifetime node/decal per footfall is affordable. If persistence cannot fit the proposed ceiling, escalate a measured trade-off rather than deleting marks or changing scope. Rig follow-up is final clip quality/retargeting/IK, not basic import feasibility.
+Terrain/snow spike remains the next unresolved technical proof: full-run footprints, flat-face readability, displacement/trail representation, memory growth and query cost at approved Camera. Compare batched trail texture/displacement versus mark representation during C1 implementation validation; do not assume one lifetime node/decal per footfall is affordable. If persistence cannot fit the proposed ceiling, escalate a measured trade-off rather than deleting marks or changing scope. Rig follow-up is final clip quality/retargeting/IK, not basic import feasibility.
 
 ## Technical Requirements Baseline
 
@@ -857,36 +857,36 @@ Rows extract each numbered rule, named formula and explicit edge case; their cit
 
 ## ADR Audit
 
-Updated 2026-11-19 after owner decisions O1–O4. All 16 ADRs remain **Status: Proposed**; none is Accepted. The full 2026-11-18 review verdict remains CONCERNS. Current traceability has 519 Covered (Proposed), 2 Partial (pending O4 profiling), 0 gaps, and 0 Accepted-covered requirements.
+Updated 2026-11-19 after Scott's explicit owner decision: “Accept all 16” (ADR-0001–ADR-0016). All 16 now have **Status: Accepted**. The full 2026-11-18 review verdict remains historical CONCERNS, not a new review. Current traceability has 519 Accepted-covered requirements, 2 Partial (pending O4 profiling), 0 gaps, and 0 Proposed-covered requirements.
 
-The 16 proposals contain Engine Compatibility sections and target Godot 4.7.2/Jolt consistently. The review found no verified engine contradiction or dependency cycle; runtime adapters and performance remain unverified. Every registered requirement maps to a proposal below. Proposed coverage is not acceptance or implementation permission.
+The 16 Accepted decisions contain Engine Compatibility sections and target Godot 4.7.2/Jolt consistently. The review found no verified engine contradiction or dependency cycle; runtime adapters and performance remain unverified. Every registered requirement maps to an Accepted ADR below. Acceptance clears ADR-status prerequisites only: it does not settle QQ defaults, approve final budgets or complete the phase gate.
 
 | System | Registered TR range (same prefix through suffix) | Count | Architecture / ADR backlog key | Existing coverage |
 |---|---|---|---|---|
-| Input & Action Map | TR-input-and-action-map-001 … 028 | 28 | M1 / F1 | Proposed ADR-0001, 0002 |
-| Time & Day Cycle | TR-time-and-day-cycle-001 … 029 | 29 | M2 / F1 | Proposed ADR-0001, 0003 |
-| Terrain & Snow Surface | TR-terrain-and-snow-surface-001 … 031 | 31 | M3 / C1 | Proposed ADR-0004 |
-| Map & Resource Distribution | TR-map-and-resource-distribution-001 … 025 | 25 | M4 / C1 | Proposed ADR-0004 |
-| Character Controller & Animation | TR-character-controller-and-animation-001 … 035 | 35 | M5 / C2 | Proposed ADR-0005 |
-| Camera | TR-camera-001 … 029 | 29 | M6 / P1 | Proposed ADR-0013 |
-| Thermal Environment | TR-thermal-environment-001 … 029 | 29 | M7 / C3 | Proposed ADR-0006; O4 profiling pending |
-| Interaction & Timed Actions | TR-interaction-and-timed-actions-001 … 030 | 30 | M8 / C4 | Proposed ADR-0007 |
-| Mishaps & Failure | TR-mishaps-and-failure-001 … 026 | 26 | M9 / C4 | Proposed ADR-0003, 0007 |
-| Gathering | TR-gathering-001 … 023 | 23 | M10 / S1 | Proposed ADR-0010 |
-| Fire | TR-fire-001 … 031 | 31 | M11 / S2 | Proposed ADR-0011 |
-| Body Temperature | TR-body-temperature-001 … 029 | 29 | M12 / C5 | Proposed ADR-0008; O4 profiling pending |
-| Needs & Weight | TR-needs-and-weight-001 … 033 | 33 | M13 / C5 | Proposed ADR-0008 |
-| Morale & Mental State | TR-morale-and-mental-state-001 … 038 | 38 | M14 / S3 | Proposed ADR-0012 |
-| Item Database & Inventory | TR-item-database-and-inventory-001 … 030 | 30 | M15 / C6 | Proposed ADR-0009 |
-| Emotional Feedback | TR-emotional-feedback-001 … 027 | 27 | M16 / P2 | Proposed ADR-0014 |
-| Ambient & Foley Audio | TR-ambient-and-foley-audio-001 … 024 | 24 | M17 / P3 | Proposed ADR-0015 |
-| HUD | TR-hud-001 … 024 | 24 | M18 / P4 | Proposed ADR-0016 |
+| Input & Action Map | TR-input-and-action-map-001 … 028 | 28 | M1 / F1 | Accepted ADR-0001, 0002 |
+| Time & Day Cycle | TR-time-and-day-cycle-001 … 029 | 29 | M2 / F1 | Accepted ADR-0001, 0003 |
+| Terrain & Snow Surface | TR-terrain-and-snow-surface-001 … 031 | 31 | M3 / C1 | Accepted ADR-0004 |
+| Map & Resource Distribution | TR-map-and-resource-distribution-001 … 025 | 25 | M4 / C1 | Accepted ADR-0004 |
+| Character Controller & Animation | TR-character-controller-and-animation-001 … 035 | 35 | M5 / C2 | Accepted ADR-0005 |
+| Camera | TR-camera-001 … 029 | 29 | M6 / P1 | Accepted ADR-0013 |
+| Thermal Environment | TR-thermal-environment-001 … 029 | 29 | M7 / C3 | Accepted ADR-0006; O4 profiling pending |
+| Interaction & Timed Actions | TR-interaction-and-timed-actions-001 … 030 | 30 | M8 / C4 | Accepted ADR-0007 |
+| Mishaps & Failure | TR-mishaps-and-failure-001 … 026 | 26 | M9 / C4 | Accepted ADR-0003, 0007 |
+| Gathering | TR-gathering-001 … 023 | 23 | M10 / S1 | Accepted ADR-0010 |
+| Fire | TR-fire-001 … 031 | 31 | M11 / S2 | Accepted ADR-0011 |
+| Body Temperature | TR-body-temperature-001 … 029 | 29 | M12 / C5 | Accepted ADR-0008; O4 profiling pending |
+| Needs & Weight | TR-needs-and-weight-001 … 033 | 33 | M13 / C5 | Accepted ADR-0008 |
+| Morale & Mental State | TR-morale-and-mental-state-001 … 038 | 38 | M14 / S3 | Accepted ADR-0012 |
+| Item Database & Inventory | TR-item-database-and-inventory-001 … 030 | 30 | M15 / C6 | Accepted ADR-0009 |
+| Emotional Feedback | TR-emotional-feedback-001 … 027 | 27 | M16 / P2 | Accepted ADR-0014 |
+| Ambient & Foley Audio | TR-ambient-and-foley-audio-001 … 024 | 24 | M17 / P3 | Accepted ADR-0015 |
+| HUD | TR-hud-001 … 024 | 24 | M18 / P4 | Accepted ADR-0016 |
 
-All 16 proposals include Engine Compatibility, Requirements Addressed, alternatives/consequences and validation obligations. Validate actual adapters on the pin before acceptance; document review is not runtime proof. Permanent IDs and the full index are in tr-registry.yaml and requirements-traceability.md.
+All 16 Accepted ADRs include Engine Compatibility, Requirements Addressed, alternatives/consequences and validation obligations. Validate actual adapters on the pin during implementation; owner acceptance is not runtime proof. Permanent IDs and the full index are in tr-registry.yaml and requirements-traceability.md.
 
-## Required ADRs — Proposal Inventory (Phase 6 backlog mapping)
+## Required ADRs — Accepted Inventory (Phase 6 backlog mapping)
 
-All entries now have Proposed records: F1–F3 → ADR-0001–0003, C1–C6 → ADR-0004–0009, S1–S3 → ADR-0010–0012, P1 → ADR-0013, P2 (audio) → ADR-0015, P3 (feedback) → ADR-0014, P4 → ADR-0016. These backlog keys are not additional missing ADR requests. Coverage includes every registered TR in the audit table.
+All entries now have Accepted records (Scott, 2026-11-19): F1–F3 → ADR-0001–0003, C1–C6 → ADR-0004–0009, S1–S3 → ADR-0010–0012, P1 → ADR-0013, P2 (audio) → ADR-0015, P3 (feedback) → ADR-0014, P4 → ADR-0016. These backlog keys are not additional missing ADR requests. Coverage includes every registered TR in the audit table.
 
 ### Must have before coding starts — Foundation first
 
@@ -943,7 +943,7 @@ Deviation: requester directed inline director/reviewer work instead of subagent 
 - Attempt to disprove layering: Core Thermal/Body might require concrete Fire; source registration/value ports avoid that import. Character/Camera mutual data reads use stable snapshots rather than construction cycles.
 - Attempt to disprove cancellation safety: animation callbacks and buffered inputs could double-commit at immersion/completion. Token validation plus forced-cancel/terminal arbitration before commit is required C4 behavior; tests must exercise the exact boundary.
 - QQ-08 resolved by owner decision 2026-11-18: backpack/inventory does not pause time or ongoing actions; Time Rule 8 now matches Interaction's Edge Case.
-- Remaining concerns: Foundation/Core ADRs are Proposed, not Accepted; snow/IK/runtime APIs and min-spec budgets are unmeasured. Thus this is a blueprint ready for ADR validation/acceptance work, **not ready for implementation or the pre-production gate**.
+- Current status update (2026-11-19): Foundation/Core ADRs are Accepted by Scott. The authoring-time status blocker is cleared; snow/IK/runtime APIs and min-spec budgets remain unmeasured. The original inline review is historical; phase readiness is assessed separately in `production/gate-checks/technical-setup-to-pre-production-2026-11-19.md`.
 
 ### Supplemental inline feasibility review — CONCERNS
 
@@ -1004,13 +1004,13 @@ Defines Foundation game-time/event/RNG ownership, unblocking C4/C5 transactions;
 ## Gate-Check Readiness
 
 > **Required before /gate-check pre-production:**
-> - [ ] Accept ADRs: all 16 remain Proposed; none Accepted.
+> - [x] Accept ADRs: all 16 Accepted by Scott, owner decision 2026-11-19.
 > - [x] Write ADRs: F1–F3, C1–C6, S1–S3 and P1–P4 now map to ADR-0001–0016.
 > - [x] QQ-08 resolved by owner decision 2026-11-18; Time Rule 8 updated.
 > - [ ] Owner reviews remaining open questions before affected decisions/content spending.
 > - [x] Run /architecture-review — 2026-11-18 CONCERNS; index and 521 permanent TR IDs written.
-> - [ ] Run /test-setup — scaffolds tests/unit, tests/integration, CI workflow and example test.
-> - [ ] Run /ux-design — creates design/ux/interaction-patterns.md and design/accessibility-requirements.md.
+> - [x] Run /test-setup — tests/unit, tests/integration, CI workflow and example test now exist; implementation coverage is separate.
+> - [x] Run /ux-design — design/ux/interaction-patterns.md and design/accessibility-requirements.md now exist as drafts; tier/scope confirmation and screen specs remain pending.
 >
 > Run /gate-check pre-production when all boxes are checked. This run does not claim gate readiness.
 

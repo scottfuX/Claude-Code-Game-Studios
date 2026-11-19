@@ -40,7 +40,9 @@
 #   unsupported layout, with its number.
 
 version: 1
-last_updated: "2026-11-18"
+last_updated: "2026-11-19"
+# ADR-0001–ADR-0016 accepted by Scott (owner), 2026-11-19: "Accept all 16".
+# Registry entries remain active; acceptance does not certify runtime validation.
 
 # ─── STATE OWNERSHIP ─────────────────────────────────────────────────────────
 # Who is the authoritative owner of each piece of shared game state.
@@ -63,7 +65,7 @@ state_ownership:
     referenced_by:
       - docs/architecture/adr-0002-input-routing-contexts-and-ui-pause-requests.md
       - docs/architecture/adr-0003-ordered-clock-dispatch-typed-events-and-run-randomness.md
-    notes: "Source ADR is Proposed, not Accepted; active means current registry entry, not implementation authorization."
+    notes: "Source ADR accepted by Scott, 2026-11-19; active means current registry entry, not proof of implementation."
     added: 2026-11-18
     revised: ""
   - state: input_context_holds_buffers_active_device
@@ -73,7 +75,7 @@ state_ownership:
     interface: "sample_actions(real_delta_s) -> InputSnapshot; set_context(context) -> void"
     write_access: InputRouter-only
     referenced_by: []
-    notes: "Source ADR is Proposed; exactly one Gameplay/UI/Locked context; context transitions clear and rearm only after release."
+    notes: "Source ADR is Accepted; exactly one Gameplay/UI/Locked context; context transitions clear and rearm only after release."
     added: 2026-11-18
     revised: ""
   - state: survival_clock
@@ -83,7 +85,7 @@ state_ownership:
     interface: "request_rate_mode(mode, reason) -> void; snapshot() -> ClockSnapshot; original GDD clock signals"
     write_access: Clock-only
     referenced_by: []
-    notes: "Source ADR is Proposed; day/minute/phase/rate/accumulator have one owner; Needs retains sole is_asleep ownership."
+    notes: "Source ADR is Accepted; day/minute/phase/rate/accumulator have one owner; Needs retains sole is_asleep ownership."
     added: 2026-11-18
     revised: ""
   - state: authoritative_run_random_state
@@ -93,7 +95,7 @@ state_ownership:
     interface: "draw_unit(request) -> RandomDrawResult; export_random_state() -> RandomState; restore_random_state(state) -> Result"
     write_access: run-RNG-adapter-only
     referenced_by: []
-    notes: "Source ADR is Proposed; one seeded gameplay stream, seed plus opaque state/draw position; Mishaps retains fumble guards; cosmetics isolated."
+    notes: "Source ADR is Accepted; one seeded gameplay stream, seed plus opaque state/draw position; Mishaps retains fumble guards; cosmetics isolated."
     added: 2026-11-18
     revised: ""
 
@@ -103,7 +105,7 @@ state_ownership:
     adr: docs/architecture/adr-0004-authored-map-jolt-terrain-snow-grid-and-persistent-trail-representation.md
     interface: "surface_at(p, grade_deg=0); stamp_footfall(event); break_ice(cell_id); detached surface samples"
     referenced_by: []
-    notes: "Proposed source; packed authoritative cells, pre-stamp contact sample, per-cell real cooldown, whole-run marks; no Terrain movement or break RNG. Spike unmeasured."
+    notes: "Accepted source; packed authoritative cells, pre-stamp contact sample, per-cell real cooldown, whole-run marks; no Terrain movement or break RNG. Spike unmeasured."
     added: 2026-11-18
     revised: ""
   - state: authored_map_and_remaining_node_yields
@@ -112,7 +114,7 @@ state_ownership:
     adr: docs/architecture/adr-0004-authored-map-jolt-terrain-snow-grid-and-persistent-trail-representation.md
     interface: "zone_at(p); node_snapshot(id); deplete_node(id, attempted_units); playable bounds/drop/safe shore ports"
     referenced_by: []
-    notes: "Proposed source; stable seeded scatter/IDs and finite sole-owner yields, once-only success depletion, no MVP regrowth; guarantees safe drop/camp content."
+    notes: "Accepted source; stable seeded scatter/IDs and finite sole-owner yields, once-only success depletion, no MVP regrowth; guarantees safe drop/camp content."
     added: 2026-11-18
     revised: ""
 
@@ -122,7 +124,7 @@ state_ownership:
     adr: docs/architecture/adr-0005-survivor-locomotion-humanoid-retargeting-and-animation-ik-layers.md
     interface: "read-only position/velocity/facing; movement activity; play_action(id,duration_s) with token; per-foot contacts"
     referenced_by: []
-    notes: "Proposed source; C1 product floor once, Critical crawl without Body0.40; pose callbacks never commit actions, pre-stamp contact sample shared; distinct needs_move_speed_mult already matches Needs GDD."
+    notes: "Accepted source; C1 product floor once, Critical crawl without Body0.40; pose callbacks never commit actions, pre-stamp contact sample shared; distinct needs_move_speed_mult already matches Needs GDD."
     added: 2026-11-18
     revised: ""
 
@@ -132,7 +134,7 @@ state_ownership:
     adr: docs/architecture/adr-0006-thermal-spatial-queries-and-source-registration.md
     interface: "effective_temp_c(p); components(p); wind_eff(p); is_sheltered(p); detached air/wind/source snapshots"
     referenced_by: []
-    notes: "Proposed source; no per-point state; polygon/band exact evaluation behind coarse index, stable source sum; Fire owns heat/radius, Thermal owns registration/table."
+    notes: "Accepted source; no per-point state; polygon/band exact evaluation behind coarse index, stable source sum; Fire owns heat/radius, Thermal owns registration/table."
     added: 2026-11-18
     revised: ""
 
@@ -142,7 +144,7 @@ state_ownership:
     adr: docs/architecture/adr-0007-timed-action-transactions-seeded-mishaps-and-simultaneous-death-precedence.md
     interface: "try_start(action_id,target_id); cancel(reason); progress(); prepare_completion(token,snapshots)"
     referenced_by: []
-    notes: "Proposed source; Core ActionRunner governs Feature MishapResolver boundary; real-time duration snapshot, forced cancel before use/roll/result; owner-held kept progress."
+    notes: "Accepted source; Core ActionRunner governs Feature MishapResolver boundary; real-time duration snapshot, forced cancel before use/roll/result; owner-held kept progress."
     added: 2026-11-18
     revised: ""
   - state: mishap_profiles_and_per_action_fumble_guards
@@ -151,7 +153,7 @@ state_ownership:
     adr: docs/architecture/adr-0007-timed-action-transactions-seeded-mishaps-and-simultaneous-death-precedence.md
     interface: "resolve_attempt(attempt) -> Outcome; check_ice(footfall); export/restore guards plus injected run random-state view"
     referenced_by: []
-    notes: "Proposed source; sole F3 run RNG, stable draw ledger; no-profile/cancelled work no roll, physical cause only, owner-requested once-only consequences."
+    notes: "Accepted source; sole F3 run RNG, stable draw ledger; no-profile/cancelled work no roll, physical cause only, owner-requested once-only consequences."
     added: 2026-11-18
     revised: ""
 
@@ -161,7 +163,7 @@ state_ownership:
     adr: docs/architecture/adr-0008-body-needs-minute-integration-sleep-and-terminal-candidate-ports.md
     interface: "step_minute(context); apply_immersion(event_id); snapshot() -> BodySnapshot; cold wake and hypothermia candidate ports"
     referenced_by: []
-    notes: "Proposed source; B1 pre-step wetness/stage/shiver, independent B2, post-step shiver/stage to Needs; Body alone owns allowed_actions."
+    notes: "Accepted source; B1 pre-step wetness/stage/shiver, independent B2, post-step shiver/stage to Needs; Body alone owns allowed_actions."
     added: 2026-11-18
     revised: ""
   - state: needs_stores_timers_stages_and_sleep
@@ -170,7 +172,7 @@ state_ownership:
     adr: docs/architecture/adr-0008-body-needs-minute-integration-sleep-and-terminal-candidate-ports.md
     interface: "try_eat(stack_id); try_eat_snow(); request_sleep(); wake(causes); detached NeedsSnapshot and dehydration candidate"
     referenced_by: []
-    notes: "Proposed source; sole is_asleep owner; per-table activity max, stomach-first burn, zero/grace timers, one coalesced wake; snow/Critical GDD contradiction flagged before acceptance."
+    notes: "Accepted source; sole is_asleep owner; per-table activity max, stomach-first burn, zero/grace timers, one coalesced wake; O1 resolved: Hypothermic snow allowed, Critical refused."
     added: 2026-11-18
     revised: ""
 
@@ -180,7 +182,7 @@ state_ownership:
     adr: docs/architecture/adr-0009-item-action-data-validation-inventory-transfers-and-tool-use-transactions.md
     interface: "definition(item_id) -> detached ItemDefinition; validated action/profile/tool/resolver references"
     referenced_by: []
-    notes: "Proposed source; data rows/Resource import only, no mutable stack fields or cached Resource aliases; unknown/missing fields refuse, table defaults only where GDD permits."
+    notes: "Accepted source; data rows/Resource import only, no mutable stack fields or cached Resource aliases; unknown/missing fields refuse, table defaults only where GDD permits."
     added: 2026-11-18
     revised: ""
   - state: inventory_stacks_containers_wetness_durability_and_loss
@@ -189,7 +191,7 @@ state_ownership:
     adr: docs/architecture/adr-0009-item-action-data-validation-inventory-transfers-and-tool-use-transactions.md
     interface: "add_or_pile; consume; use_tool; prepare_transfer; validate_plan; commit_plan with consequence_id; detached load/stack snapshots"
     referenced_by: []
-    notes: "Proposed source; unique conserved stack IDs/containers, partial fit and overflow pile, mass-weighted wetness, I4 once/minute, I5 one use/completion; consumption/drop not loss, break/lost tool is loss."
+    notes: "Accepted source; unique conserved stack IDs/containers, partial fit and overflow pile, mass-weighted wetness, I4 once/minute, I5 one use/completion; consumption/drop not loss, break/lost tool is loss."
     added: 2026-11-18
     revised: ""
 
@@ -199,7 +201,7 @@ state_ownership:
     adr: docs/architecture/adr-0011-fire-stage-machine-material-consumption-and-heat-light-publication.md
     interface: "prepare_fire_action; step_minute; snapshot; exact Thermal source/warm_radius, light snapshot, unattended loss"
     referenced_by: []
-    notes: "Proposed source; Inventory-owned escrow container, atomic consumption, Clock-minute windows, no direct wake; exact authority versus >0.1 cosmetic threshold needs confirmation."
+    notes: "Accepted source; Inventory-owned escrow container, atomic consumption, Clock-minute windows, no direct wake; O3 resolved: exact authoritative publication each minute; >0.1 threshold visual-only."
     added: 2026-11-18
     revised: ""
 
@@ -209,7 +211,7 @@ state_ownership:
     adr: docs/architecture/adr-0012-morale-event-ordering-strain-integration-and-relief-limits.md
     interface: "enqueue_event; step_minute; snapshot; state_changed/strain_spike/tap_out_offer"
     referenced_by: []
-    notes: "Proposed source; loss/failure/success/comfort/rival-medical order, timestamped120min streaks distinct from fumble guards, one state step, bounded rituals/wind/offers; H/P/R derived, no HUD or terminal authority."
+    notes: "Accepted source; loss/failure/success/comfort/rival-medical order, timestamped120min streaks distinct from fumble guards, one state step, bounded rituals/wind/offers; H/P/R derived, no HUD or terminal authority."
     added: 2026-11-18
     revised: ""
 
@@ -219,7 +221,7 @@ state_ownership:
     adr: docs/architecture/adr-0013-camera-framing-arbitration-collision-and-projection-ports.md
     interface: "request_framing/release_framing; early yaw_snapshot; final project_world and orientation snapshots"
     referenced_by: []
-    notes: "Proposed source; highest/newest token, cinematic input break, chosen zoom preserved, <=12 visual occluders and fixed-pitch clearance; never moves survivor/locks input; QQ-04 remains open."
+    notes: "Accepted source; highest/newest token, cinematic input break, chosen zoom preserved, <=12 visual occluders and fixed-pitch clearance; never moves survivor/locks input; QQ-04 remains open."
     added: 2026-11-18
     revised: ""
 
@@ -229,7 +231,7 @@ state_ownership:
     adr: docs/architecture/adr-0014-read-only-emotional-feedback-layers-and-warm-hue-safe-grade.md
     interface: "posture/beat requests; owned Camera tokens; detached grade parameters; set_mix targets; reduced-effects hooks"
     referenced_by: []
-    notes: "Proposed source; gameplay read-only, Body>Needs>Morale, cause-first single beat/20s cooldown, warm hue15-55 saturation protected, Resource Compositor/Effect, sparse score not continuous music."
+    notes: "Accepted source; gameplay read-only, Body>Needs>Morale, cause-first single beat/20s cooldown, warm hue15-55 saturation protected, Resource Compositor/Effect, sparse score not continuous music."
     added: 2026-11-18
     revised: ""
 
@@ -239,7 +241,7 @@ state_ownership:
     adr: docs/architecture/adr-0015-audio-buses-survivor-listener-and-prioritized-voice-pool.md
     interface: "on_footfall(event,surface); on_cause(event); set_mix(request); presentation-only cause_started ack"
     referenced_by: []
-    notes: "Proposed source; survivor-head listener/Camera orientation, <=24 total active streams incl loops/music/UI, protected cause pre-roll, real-time skip scheduling, explicit area_mask, no gameplay RNG; QQ-03 owner-only."
+    notes: "Accepted source; survivor-head listener/Camera orientation, <=24 total active streams incl loops/music/UI, protected cause pre-roll, real-time skip scheduling, explicit area_mask, no gameplay RNG; QQ-03 owner-only."
     added: 2026-11-18
     revised: ""
 
@@ -249,7 +251,7 @@ state_ownership:
     adr: docs/architecture/adr-0016-non-numeric-hud-and-mvp-inventory-facade-contracts.md
     interface: "render_snapshot; set_visibility_context; stable-ID owner commands; InputRouter context/pause requests only"
     referenced_by: []
-    notes: "Proposed source; no numbers/morale meter/model writes, <=3icons,18px/720p and5% safe area, final Camera projection40px survivor clearance; resolved QQ-08 backpack nonpause, explicit pause token."
+    notes: "Accepted source; no numbers/morale meter/model writes, <=3icons,18px/720p and5% safe area, final Camera projection40px survivor clearance; resolved QQ-08 backpack nonpause, explicit pause token."
     added: 2026-11-18
     revised: ""
 
@@ -290,7 +292,7 @@ interfaces:
     referenced_by:
       - docs/architecture/adr-0002-input-routing-contexts-and-ui-pause-requests.md
       - docs/architecture/adr-0003-ordered-clock-dispatch-typed-events-and-run-randomness.md
-    notes: "Proposed source; not an Accepted stance."
+    notes: "Accepted source; owner acceptance recorded 2026-11-19."
     added: 2026-11-18
     revised: ""
   - contract: ui_context_and_pause_requests
@@ -302,7 +304,7 @@ interfaces:
     interface: "request_ui_context(source, open); request_pause(source) -> PauseToken; release_pause(token)"
     referenced_by:
       - docs/architecture/adr-0003-ordered-clock-dispatch-typed-events-and-run-randomness.md
-    notes: "Proposed ADR; Scott decided QQ-08 backpack UI does not pause simulation/actions; explicit pause menu does. Loading/disconnect safety gates remain. GDD sync checked: consistent with updated Time Rule 8 after origin/main merge."
+    notes: "Accepted ADR; Scott decided QQ-08 backpack UI does not pause simulation/actions; explicit pause menu does. Loading/disconnect safety gates remain. GDD sync checked: consistent with updated Time Rule 8 after origin/main merge."
     added: 2026-11-18
     revised: ""
   - contract: ordered_minute_dispatch
@@ -313,7 +315,7 @@ interfaces:
     adr: docs/architecture/adr-0003-ordered-clock-dispatch-typed-events-and-run-randomness.md
     interface: "step_minute(context) staged synchronously; public GDD minute_tick/boundary signals notify only, never a second integration path"
     referenced_by: []
-    notes: "Proposed ADR; pre-step activity, Thermal, Fire, Inventory, Body, Needs, terminal arbitration, Morale, publication; run-tagged typed events; C4/C5 must ratify exact consumer boundaries."
+    notes: "Accepted ADR; pre-step activity, Thermal, Fire, Inventory, Body, Needs, terminal arbitration, Morale, publication; run-tagged typed events; C4/C5 must ratify exact consumer boundaries."
     added: 2026-11-18
     revised: ""
 
@@ -325,7 +327,7 @@ interfaces:
     adr: docs/architecture/adr-0006-thermal-spatial-queries-and-source-registration.md
     interface: "register_heat_source; update_heat_source; unregister_heat_source; begin_minute then Fire publication then seal_sources before Body"
     referenced_by: []
-    notes: "Proposed source; run/owner/revision validation, disabled retained at heat0, invalid source contributes0; Fire warm_radius equals registered radius; no Core concrete Fire import."
+    notes: "Accepted source; run/owner/revision validation, disabled retained at heat0, invalid source contributes0; Fire warm_radius equals registered radius; no Core concrete Fire import."
     added: 2026-11-18
     revised: ""
 
@@ -337,7 +339,7 @@ interfaces:
     adr: docs/architecture/adr-0007-timed-action-transactions-seeded-mishaps-and-simultaneous-death-precedence.md
     interface: "validate_plan; commit_plan with consequence_id; submit_terminal_candidate; forced cancel before completion checkpoint"
     referenced_by: []
-    notes: "Proposed source; non-yielding owner commits, cause before result, exactly one terminal; hypothermia > dehydration, death > collapse/immersion; Rule7 immersion already resolved."
+    notes: "Accepted source; non-yielding owner commits, cause before result, exactly one terminal; hypothermia > dehydration, death > collapse/immersion; Rule7 immersion already resolved."
     added: 2026-11-18
     revised: ""
 
@@ -349,7 +351,7 @@ interfaces:
     adr: docs/architecture/adr-0008-body-needs-minute-integration-sleep-and-terminal-candidate-ports.md
     interface: "MinuteStart -> BodyStepResult -> NeedsStepResult -> C4 terminal gate -> coalesced wake and Clock normal/sleep/wait arbitration"
     referenced_by: []
-    notes: "Proposed source; captured sleep/fullness/stages, post-Body shiver/stage, per-minute integration even in skip; normal wins before next tick, no Fire low alarm; no duplicate public terminal."
+    notes: "Accepted source; captured sleep/fullness/stages, post-Body shiver/stage, per-minute integration even in skip; normal wins before next tick, no Fire low alarm; no duplicate public terminal."
     added: 2026-11-18
     revised: ""
 
@@ -361,7 +363,7 @@ interfaces:
     adr: docs/architecture/adr-0009-item-action-data-validation-inventory-transfers-and-tool-use-transactions.md
     interface: "prepare all success/failure branches -> validate owner revisions -> non-yielding commit -> queued notifications"
     referenced_by: []
-    notes: "Proposed source; no mutation/RNG on preflight refusal; accepted use may break tool without cancelling own result; stale/duplicate plans inert, no foreign writes."
+    notes: "Accepted source; no mutation/RNG on preflight refusal; accepted use may break tool without cancelling own result; stale/duplicate plans inert, no foreign writes."
     added: 2026-11-18
     revised: ""
 
@@ -373,7 +375,7 @@ interfaces:
     adr: docs/architecture/adr-0010-gathering-resolver-depletion-and-overflow-transactions.md
     interface: "prepare_gather -> revision-validated Map depletion and Inventory add_or_pile plans -> once-only commit"
     referenced_by: []
-    notes: "Proposed source; G1 success depletes attempted, failure partial yield leaves node unchanged; wetness recipes, no extra wear/roll; bonus failure interpretation awaits confirmation."
+    notes: "Accepted source; G1 success depletes attempted, failure partial yield leaves node unchanged; wetness recipes, no extra wear/roll; O2 resolved: floor each failed output independently; one bonus grass becomes zero; reserves unchanged."
     added: 2026-11-18
     revised: ""
 
@@ -441,7 +443,7 @@ api_decisions:
     api: InputMap-and-typed-InputEvent-router
     not: per-consumer-raw-input-or-device-zero-detection
     adr: docs/architecture/adr-0002-input-routing-contexts-and-ui-pause-requests.md
-    reason: "Proposed ADR; sole raw reader, unchanged authored actions; 4.7 keyboard/mouse device IDs are not zero."
+    reason: "Accepted ADR; sole raw reader, unchanged authored actions; 4.7 keyboard/mouse device IDs are not zero."
     referenced_by: []
     added: 2026-11-18
     revised: ""
@@ -450,7 +452,7 @@ api_decisions:
     api: run-owned-RandomNumberGenerator-adapter
     not: global-or-per-consumer-gameplay-RNG
     adr: docs/architecture/adr-0003-ordered-clock-dispatch-typed-events-and-run-randomness.md
-    reason: "Proposed ADR; deterministic same-pin draw order and seed/state/position restore; exact engine state APIs require runtime verification."
+    reason: "Accepted ADR; deterministic same-pin draw order and seed/state/position restore; exact engine state APIs require runtime verification."
     referenced_by: []
     added: 2026-11-18
     revised: ""
@@ -460,7 +462,7 @@ api_decisions:
     api: built-in-heightmap-mesh-HeightMapShape3D-Jolt-and-dirty-chunk-trail-renderer
     not: unapproved-terrain-addon-or-expiring-authoritative-marks
     adr: docs/architecture/adr-0004-authored-map-jolt-terrain-snow-grid-and-persistent-trail-representation.md
-    reason: "Proposed source; no addon cost/license approval; exact collision/render adapters, full-run memory and frame costs require spike evidence."
+    reason: "Accepted source; no addon cost/license approval; exact collision/render adapters, full-run memory and frame costs require spike evidence."
     referenced_by: []
     added: 2026-11-18
     revised: ""
@@ -470,7 +472,7 @@ api_decisions:
     api: CharacterBody3D-AnimationTree-AnimationMixer-SkeletonModifier3D-TwoBoneIK-adapter
     not: custom-contact-solver-or-root-motion-gameplay-authority
     adr: docs/architecture/adr-0005-survivor-locomotion-humanoid-retargeting-and-animation-ik-layers.md
-    reason: "Proposed source; C7 effort loops at0.85-1.15 with authoritative deadline; exact step/IK setup unverified; QQ-02 clip sourcing/cap remains owner-only."
+    reason: "Accepted source; C7 effort loops at0.85-1.15 with authoritative deadline; exact step/IK setup unverified; QQ-02 clip sourcing/cap remains owner-only."
     referenced_by: []
     added: 2026-11-18
     revised: ""
@@ -503,7 +505,7 @@ forbidden_patterns:
   - pattern: global_mutable_gameplay_or_foreign_owner_writes
     status: active
     adr: docs/architecture/adr-0001-run-scene-composition-and-service-lifecycle.md
-    reason: "Proposed ADR; gameplay autoloads, mutable shared definition Resources and cross-owner state writes defeat run isolation."
+    reason: "Accepted ADR; gameplay autoloads, mutable shared definition Resources and cross-owner state writes defeat run isolation."
     alternative: explicit-run-owned-ports-and-detached-snapshots
     referenced_by:
       - docs/architecture/adr-0002-input-routing-contexts-and-ui-pause-requests.md
@@ -513,7 +515,7 @@ forbidden_patterns:
   - pattern: ui_context_implies_simulation_pause
     status: active
     adr: docs/architecture/adr-0002-input-routing-contexts-and-ui-pause-requests.md
-    reason: "Proposed ADR; violates Scott's QQ-08 backpack exception."
+    reason: "Accepted ADR; violates Scott's QQ-08 backpack exception."
     alternative: separate-context-sources-and-coordinator-pause-tokens
     referenced_by:
       - docs/architecture/adr-0003-ordered-clock-dispatch-typed-events-and-run-randomness.md
@@ -522,7 +524,7 @@ forbidden_patterns:
   - pattern: unordered_or_duplicate_survival_integration
     status: active
     adr: docs/architecture/adr-0003-ordered-clock-dispatch-typed-events-and-run-randomness.md
-    reason: "Proposed ADR; independent survival clocks, signal connection order, skipped debt and double integration invalidate reproducibility."
+    reason: "Accepted ADR; independent survival clocks, signal connection order, skipped debt and double integration invalidate reproducibility."
     alternative: one-clock-and-staged-once-only-coordinator-dispatch
     referenced_by: []
     added: 2026-11-18

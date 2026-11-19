@@ -1,7 +1,9 @@
 # ADR-0010: Gathering resolver/depletion and overflow transactions
 
 ## Status
-Proposed
+Accepted
+
+Accepted by Scott (owner) on 2026-11-19: “Accept all 16” (ADR-0001–ADR-0016). Acceptance records the architecture decision, not runtime verification or resolution of open QQ items.
 
 ## Date
 2026-11-18
@@ -10,7 +12,7 @@ Proposed
 2026-11-18 — GDD/registry/engine-reference audit only; no runtime or visual check.
 
 ## Decision Makers
-Scott (owner), Devin (author and inline godot-specialist reviewer); no acceptance or independent approval claimed.
+Scott (owner), Devin (author and inline godot-specialist reviewer); Owner acceptance: Scott, 2026-11-19. No independent review approval is claimed.
 
 ## Summary
 Gathering must grant approved produce without double-depleting finite Map nodes or losing backpack overflow. Propose a stateless GatheringResolver that prepares G1/G2 yield batches and commits once through Map/Inventory owner plans, leaving action timing, wear and rolls to C4.
@@ -29,7 +31,7 @@ Gathering must grant approved produce without double-depleting finite Map nodes 
 ## ADR Dependencies
 | Field | Value |
 |-------|-------|
-| **Depends On** | ADR-0001, ADR-0004, ADR-0007, ADR-0009 (all Proposed; acceptance required before implementation) |
+| **Depends On** | ADR-0001, ADR-0004, ADR-0007, ADR-0009 (all Accepted; acceptance required before implementation) |
 | **Enables** | ADR-0011, ADR-0014, ADR-0015 (fuel and gathering presentation) |
 | **Blocks** | GatheringResolver implementation; no story files exist |
 | **Ordering Note** | Feature resolver consumes Core ports, never owns Map yields or Inventory stacks. |

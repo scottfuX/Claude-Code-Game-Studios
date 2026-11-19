@@ -1,7 +1,9 @@
 # ADR-0006: Thermal spatial queries and source registration
 
 ## Status
-Proposed
+Accepted
+
+Accepted by Scott (owner) on 2026-11-19: “Accept all 16” (ADR-0001–ADR-0016). Acceptance records the architecture decision, not runtime verification or resolution of open QQ items.
 
 ## Date
 2026-11-18
@@ -10,7 +12,7 @@ Proposed
 2026-11-18 — GDD and engine-reference review only; no engine/query profiling or visual check.
 
 ## Decision Makers
-Scott (owner) and Devin (authoring agent, inline godot-specialist review). No acceptance or independent approval claimed.
+Scott (owner) and Devin (authoring agent, inline godot-specialist review). Owner acceptance: Scott, 2026-11-19. No independent review approval is claimed.
 
 ## Summary
 ThermalField must answer deterministic felt-temperature queries without a frame-dependent Area3D overlap cache or a concrete Fire dependency. Propose exact polygon/boundary evaluation behind a coarse index, typed owner-registered source records and an explicit same-minute Fire publication barrier before Body samples.
@@ -31,7 +33,7 @@ ThermalField must answer deterministic felt-temperature queries without a frame-
 
 | Field | Value |
 |-------|-------|
-| **Depends On** | ADR-0001, ADR-0003, ADR-0004 (all Proposed; acceptance required before implementation) |
+| **Depends On** | ADR-0001, ADR-0003, ADR-0004 (all Accepted; acceptance required before implementation) |
 | **Enables** | ADR-0008, ADR-0011, ADR-0014, ADR-0015 (Body/Fire and feedback/audio adapters) |
 | **Blocks** | ThermalField implementation pending acceptance; no story files exist |
 | **Ordering Note** | Map is a value-data provider; Fire publishes source values after Thermal establishes this minute's air/wind inputs. No Core import of Feature FireController. |

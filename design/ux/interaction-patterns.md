@@ -2,7 +2,7 @@
 
 > **Status**: In Design — draft, no implementation approval
 > **Author**: Devin (ux-designer), for Scott's review
-> **Last Updated**: 2026-11-18
+> **Last Updated**: 2026-11-19
 > **Version**: 0.1
 > **Engine / UI**: Godot 4.7 / Control nodes, Theme, CanvasLayer
 > **Template**: Interaction Pattern Library
@@ -14,7 +14,7 @@ Reusable paper-and-ink behaviors for Lonefire's small survival interface. No per
 
 All patterns use named InputMap actions, localization keys and current-device glyphs. Keyboard/mouse is primary; gamepad is partial on macOS/Windows PC. No touch or console behavior is promised. Noninteractive HUD controls ignore focus/input. Keyboard/gamepad focus and mouse hover are independent; raw event handling never dispatches an owner command twice.
 
-The provisional accessibility target is **Standard**, not yet confirmed by Scott; see Own Calls A1–A6 in the accessibility document. All 16 ADRs stay **Proposed**; ADR-0002/0014/0016 supply proposed implementation contracts, not accepted architecture. QQ-08 is owner-decided; QQ-01–QQ-07, QQ-09 and QQ-10 remain open. O1–O4 were resolved by Scott on 2026-11-19; O4 profiling remains pending.
+The provisional accessibility target is **Standard**, not yet confirmed by Scott; see Own Calls A1–A6 in the accessibility document. All 16 ADRs were **Accepted** by Scott (owner) on 2026-11-19; ADR-0002/0014/0016 supply Accepted implementation contracts, not proof of runtime/UI validation. QQ-08 is owner-decided; QQ-01–QQ-07, QQ-09 and QQ-10 remain open. O1–O4 were resolved by Scott on 2026-11-19; O4 profiling remains pending.
 
 ## Pattern Catalog
 
@@ -131,7 +131,7 @@ Input routes Use/Eat/Drop to existing action/transaction owners with stable stac
 | Calm | Warm, no trend/warning/prompt for eight real seconds → alpha 0.35 over 1.5 s. Warning/trend/stage/prompt → full alpha within 0.5 s. |
 | Needs | First warning normal ink; urgent bold with authored 1 Hz/10% pulse, at most three. A2 proposes static bold alternative; no extra hunger/energy bars. |
 | Day/night | Sun/moon along H5 arc, no hour/day numbers. |
-| Ritual/sleep/end | Ritual/sleep hides all except band 0.35; end hides all. Critical versus ritual/sleep combined visibility is a proposed ADR-0016 precedence, not accepted owner clarification; record fixture gap below. |
+| Ritual/sleep/end | Ritual/sleep hides all except band 0.35; end hides all. Critical versus ritual/sleep combined visibility is an Accepted ADR-0016 precedence; combined-state fixture validation remains pending; record fixture gap below. |
 
 Paper/ink, no low-poly widgets/glow/gradients. Text ≥18 px at 720p, 5% safe inset; ultrawide centered 16:9 safe rectangle then inset. No morale/Resolve, thermometer, minimap/markers, numeric temperature/hunger/mass/day/time/counts or damage numbers. Empty optional warnings hide; invalid band/arc snapshot logs and holds last valid state (never NaN). No UI audio in play. Read-only detached snapshots, no gameplay queries during drawing.
 
@@ -320,7 +320,7 @@ Actual assets, licensing, sparse music stems and rumble remain QQ-03/QQ-10 open.
 - Player journey absent: author `design/player-journey.md` from `.claude/docs/templates/player-journey.md` before claiming researched emotional arrival states.
 - Full inventory grid/counts/load gauge, settings/remapping, save/load, kit selection, diary, radio/results and captions need screen specs in their actual milestones. QQ-09/QQ-10 gate expansion.
 - Preserve Interaction's optional thin progress arc as an Alpha accessibility hook, never a mandatory MVP work bar. Deferred settings also include camera default zoom/45°–90° turn-step, reduce camera motion/effects, HUD scale/off/high-contrast, and per-action keyboard/gamepad remap columns/conflict warnings. Diary mood words and weigh-in/body-weight information are VS screen requirements, not extra HUD elements.
-- Critical × sleep/ritual/end visibility and disconnect while backpack UI is active need explicit owner-reviewed fixtures against proposed ADR-0016/0002; not resolved here.
+- Critical × sleep/ritual/end visibility and disconnect while backpack UI is active need explicit owner-reviewed fixtures against Accepted ADR-0016/0002; not resolved here.
 - A1–A6 accessibility targets need Scott confirmation; Standard requirements not implemented in MVP are gaps, not a compliance claim. Screen reader/live announcement support needs platform spike.
 - Ability icons, damage numbers, generic numeric health/resource bars and dialogue UI are deliberately not applicable, not missing MVP features.
 
@@ -349,6 +349,6 @@ Actual assets, licensing, sparse music stems and rumble remain QQ-03/QQ-10 open.
 | O3 | Fire threshold: exact Thermal/Body publication every minute; >0.1 visual-only. | Scott; heat contract acceptance | Resolved by Scott 2026-11-19 |
 | O4 | Body/Thermal: keep Body ≤0.02 ms; profile full path then tighten query budget, number pending. | Scott/technical director; performance acceptance | Resolved by Scott 2026-11-19; profiling pending |
 | UX-01 | Full inventory counts/load gauge versus proposed qualitative facade? Recommend minimal MVP, separate full-screen decision in QQ-09. | Scott; inventory screen scope | Open |
-| UX-02 | Combined Critical/sleep/ritual visibility and backpack disconnect? Recommend fixture-led review of proposed ADR precedence/router safety, no independent UI exception. | Scott/input/UI; first HUD acceptance | Open |
+| UX-02 | Combined Critical/sleep/ritual visibility and backpack disconnect? Recommend fixture-led review of Accepted ADR precedence/router safety, no independent UI exception. | Scott/input/UI; first HUD acceptance | Open |
 
 **Handoff**: Documents are drafted, not approved or visually validated. Run `/ux-review` before implementation; at standard workflow this is recommended for key screens before `/gate-check production`. Stop after requested authoring/commit/push; no implementation, gate pass, ADR acceptance or PR creation is implied.

@@ -1,7 +1,9 @@
 # ADR-0008: Body/Needs minute integration, sleep and terminal candidate ports
 
 ## Status
-Proposed
+Accepted
+
+Accepted by Scott (owner) on 2026-11-19: “Accept all 16” (ADR-0001–ADR-0016). Acceptance records the architecture decision, not runtime verification or resolution of open QQ items.
 
 ## Date
 2026-11-18
@@ -10,7 +12,7 @@ Proposed
 2026-11-18 — full Body/Needs contract/formula audit and inline engine-reference review; no simulation or playtest executed.
 
 ## Decision Makers
-Scott (owner) and Devin (authoring agent, inline godot-specialist review). No acceptance or independent approval claimed.
+Scott (owner) and Devin (authoring agent, inline godot-specialist review). Owner acceptance: Scott, 2026-11-19. No independent review approval is claimed.
 
 ## Summary
 Body and Needs have coupled minute inputs and wake/death outcomes but must retain separate state ownership. Propose an immutable pre-step activity/sleep boundary, post-Body stage inputs to Needs, end-of-minute wake/mode arbitration and terminal candidates resolved once by C4's Coordinator gate.
@@ -31,7 +33,7 @@ Body and Needs have coupled minute inputs and wake/death outcomes but must retai
 
 | Field | Value |
 |-------|-------|
-| **Depends On** | ADR-0001, ADR-0003, ADR-0005, ADR-0006, ADR-0007 (all Proposed; acceptance required before implementation) |
+| **Depends On** | ADR-0001, ADR-0003, ADR-0005, ADR-0006, ADR-0007 (all Accepted; acceptance required before implementation) |
 | **Enables** | ADR-0009, ADR-0012, ADR-0014, ADR-0016 (consumable plans and Morale/presentation) |
 | **Blocks** | BodyThermoregulation/NeedsModel implementation until acceptance; no production story files exist |
 | **Ordering Note** | Refines F3's explicit pre-step audit obligation and C4 terminal ports. Body/Needs exchange snapshots, not mutable peer references; C6 consumption adapter must satisfy this port, not create a reverse ADR dependency. |

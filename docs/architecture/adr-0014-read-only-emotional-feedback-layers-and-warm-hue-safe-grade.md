@@ -1,7 +1,9 @@
 # ADR-0014: Read-only emotional feedback layers and warm-hue-safe grade
 
 ## Status
-Proposed
+Accepted
+
+Accepted by Scott (owner) on 2026-11-19: “Accept all 16” (ADR-0001–ADR-0016). Acceptance records the architecture decision, not runtime verification or resolution of open QQ items.
 
 ## Date
 2026-11-18
@@ -10,7 +12,7 @@ Proposed
 2026-11-18 — GDD/engine-reference/registry audit only; Compositor/visuals/audio not exercised.
 
 ## Decision Makers
-Scott (owner), Devin (author/inline godot-specialist reviewer); no acceptance or independent approval.
+Scott (owner), Devin (author/inline godot-specialist reviewer); Owner acceptance: Scott, 2026-11-19. No independent review approval is claimed.
 
 ## Summary
 Emotional feedback must communicate survival and mental state without changing gameplay or washing warmth out of the fire. Propose a read-only EmotionPresenter with layered pose/beat arbitration, breakable camera requests, a warm-hue-masked Compositor resource pass and sparse score/mix targets.
@@ -29,7 +31,7 @@ Emotional feedback must communicate survival and mental state without changing g
 ## ADR Dependencies
 | Field | Value |
 |-------|-------|
-| **Depends On** | ADR-0001, ADR-0002, ADR-0005, ADR-0007, ADR-0008, ADR-0011, ADR-0012, ADR-0013 (all Proposed; acceptance required) |
+| **Depends On** | ADR-0001, ADR-0002, ADR-0005, ADR-0007, ADR-0008, ADR-0011, ADR-0012, ADR-0013 (all Accepted; acceptance required) |
 | **Enables** | ADR-0015, ADR-0016 (mix/presentation consumers) |
 | **Blocks** | EmotionPresenter/grade implementation; no story files exist |
 | **Ordering Note** | Sends abstract mix requests to future Audio adapter without depending on its concrete implementation. No gameplay write-back or new state authority. |

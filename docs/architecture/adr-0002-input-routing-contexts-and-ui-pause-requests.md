@@ -1,7 +1,9 @@
 # ADR-0002: Input routing, contexts and UI pause requests
 
 ## Status
-Proposed
+Accepted
+
+Accepted by Scott (owner) on 2026-11-19: “Accept all 16” (ADR-0001–ADR-0016). Acceptance records the architecture decision, not runtime verification or resolution of open QQ items.
 
 ## Date
 2026-11-18
@@ -10,7 +12,7 @@ Proposed
 2026-11-18 — reference/design review only; device and runtime checks remain outstanding.
 
 ## Decision Makers
-Scott (owner; explicitly decided QQ-08) and Devin (authoring agent and inline godot-specialist reviewer). No ADR acceptance or independent approval is claimed.
+Scott (owner; explicitly decided QQ-08) and Devin (authoring agent and inline godot-specialist reviewer). Owner acceptance: Scott, 2026-11-19. No independent review approval is claimed.
 
 ## Summary
 Lonefire needs a single input boundary that prevents gameplay leakage through UI while preserving real-time press timing and disconnect recovery. Propose one run-owned InputRouter with validated named actions, exclusive Gameplay/UI/Locked contexts and separate UI-context versus pause requests; Scott's QQ-08 decision keeps backpack simulation and action timers running.
@@ -31,7 +33,7 @@ Lonefire needs a single input boundary that prevents gameplay leakage through UI
 
 | Field | Value |
 |-------|-------|
-| **Depends On** | ADR-0001 (Proposed; must be Accepted before implementation) |
+| **Depends On** | ADR-0001 (Accepted; must be Accepted before implementation) |
 | **Enables** | ADR-0005, ADR-0007, ADR-0013, ADR-0016; deferred screen/settings input adapters |
 | **Blocks** | Input/context/pause adapter implementation until Accepted; no story files found under production |
 | **Ordering Note** | No dependency on ADR-0003: this defines abstract pause/context requests, not clock implementation. Integrated pause tests require ADR-0003; QQ-08 is resolved by Scott and checked consistent with updated Time Rule 8. |

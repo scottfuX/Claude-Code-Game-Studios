@@ -1,7 +1,9 @@
 # ADR-0015: Audio buses, survivor listener and prioritized voice pool
 
 ## Status
-Proposed
+Accepted
+
+Accepted by Scott (owner) on 2026-11-19: “Accept all 16” (ADR-0001–ADR-0016). Acceptance records the architecture decision, not runtime verification or resolution of open QQ items.
 
 ## Date
 2026-11-18
@@ -10,7 +12,7 @@ Proposed
 2026-11-18 — GDD/registry/engine-reference audit; no playback/listening or profiling.
 
 ## Decision Makers
-Scott (owner), Devin (author/inline godot-specialist reviewer); no acceptance or independent approval.
+Scott (owner), Devin (author/inline godot-specialist reviewer); Owner acceptance: Scott, 2026-11-19. No independent review approval is claimed.
 
 ## Summary
 Lonefire needs readable snow, work and failure causes even with a far camera and a strict voice cap. Propose a survivor-head listener, explicit bus topology and one prioritized pool covering all concurrent audio, with cause-before-result sequencing and real-time cosmetic scheduling independent of survival skips.
@@ -29,7 +31,7 @@ Lonefire needs readable snow, work and failure causes even with a far camera and
 ## ADR Dependencies
 | Field | Value |
 |-------|-------|
-| **Depends On** | ADR-0001, ADR-0002, ADR-0003, ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0011, ADR-0013, ADR-0014 (all Proposed; acceptance required) |
+| **Depends On** | ADR-0001, ADR-0002, ADR-0003, ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0011, ADR-0013, ADR-0014 (all Accepted; acceptance required) |
 | **Enables** | ADR-0016 (menu paper/ink and context integration) |
 | **Blocks** | SurvivalAudio implementation; no story files exist |
 | **Ordering Note** | Audio consumes physical snapshots/ordered cues and Feedback mix; cosmetic randomness never uses F3 gameplay RNG. |

@@ -1,7 +1,9 @@
 # ADR-0003: Ordered clock dispatch, typed events and run randomness
 
 ## Status
-Proposed
+Accepted
+
+Accepted by Scott (owner) on 2026-11-19: “Accept all 16” (ADR-0001–ADR-0016). Acceptance records the architecture decision, not runtime verification or resolution of open QQ items.
 
 ## Date
 2026-11-18
@@ -10,7 +12,7 @@ Proposed
 2026-11-18 — engine-reference/design review; no runtime, replay or performance evidence claimed.
 
 ## Decision Makers
-Scott (owner; QQ-08 exception explicitly supplied) and Devin (authoring agent and inline godot-specialist reviewer). This Proposed ADR has not received owner acceptance or independent approval.
+Scott (owner; QQ-08 exception explicitly supplied) and Devin (authoring agent and inline godot-specialist reviewer). Owner acceptance: Scott, 2026-11-19. No independent review approval is claimed.
 
 ## Summary
 Lonefire needs every survival minute, action outcome and random draw to be reproducible without relying on Godot node or signal connection order. Propose a single run Clock feeding staged synchronous Coordinator dispatch, typed run-tagged events and an isolated authoritative RNG stream with restorable state; keep real-time input/action durations distinct from survival time.
@@ -31,7 +33,7 @@ Lonefire needs every survival minute, action outcome and random draw to be repro
 
 | Field | Value |
 |-------|-------|
-| **Depends On** | ADR-0001 (Proposed; must be Accepted before implementation) |
+| **Depends On** | ADR-0001 (Accepted; must be Accepted before implementation) |
 | **Enables** | ADR-0006, ADR-0007, ADR-0008, ADR-0011, ADR-0012; other clock/event consumers |
 | **Blocks** | Ordered Clock/event/RNG implementation until Accepted; no story files found under production |
 | **Ordering Note** | No ADR-0002 dependency cycle: Coordinator pause port is consumed abstractly. Integrated input/pause needs both records; C4/C5 must pin action/Body/Needs transaction boundaries before those consumers are implemented. |

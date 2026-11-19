@@ -1,7 +1,9 @@
 # ADR-0004: Authored map, Jolt terrain/snow grid and persistent trail representation
 
 ## Status
-Proposed
+Accepted
+
+Accepted by Scott (owner) on 2026-11-19: “Accept all 16” (ADR-0001–ADR-0016). Acceptance records the architecture decision, not runtime verification or resolution of open QQ items.
 
 ## Date
 2026-11-18
@@ -10,7 +12,7 @@ Proposed
 2026-11-18 — checked against engine references and GDD contracts; no terrain spike or measurements performed.
 
 ## Decision Makers
-Scott (owner) and Devin (authoring agent, also performing inline godot-specialist review). No owner acceptance or independent approval claimed.
+Scott (owner) and Devin (authoring agent, also performing inline godot-specialist review). Owner acceptance: Scott, 2026-11-19. No independent review approval is claimed.
 
 ## Summary
 Lonefire needs deterministic surface queries, finite seeded resource placement and trails that survive a whole run without an addon dependency. Propose an authored heightmap/Jolt collision adapter, packed authoritative snow cells and persistent footprint records feeding a dirty-region trail renderer, with WorldMap solely owning node yields.
@@ -31,7 +33,7 @@ Lonefire needs deterministic surface queries, finite seeded resource placement a
 
 | Field | Value |
 |-------|-------|
-| **Depends On** | ADR-0001 and ADR-0003, both Proposed; must be Accepted before implementation |
+| **Depends On** | ADR-0001 and ADR-0003, both Accepted; must be Accepted before implementation |
 | **Enables** | ADR-0005, ADR-0006, ADR-0007, ADR-0010, ADR-0011, ADR-0013, ADR-0015 |
 | **Blocks** | Map/Terrain implementation until Accepted; no production story files exist |
 | **Ordering Note** | Terrain format and Map content are co-designed here, not mutually dependent ADRs. Consumer ports do not depend on future consumer ADR acceptance to define this data boundary. |

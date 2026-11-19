@@ -1,7 +1,9 @@
 # ADR-0005: Survivor locomotion, humanoid retargeting and animation/IK layers
 
 ## Status
-Proposed
+Accepted
+
+Accepted by Scott (owner) on 2026-11-19: “Accept all 16” (ADR-0001–ADR-0016). Acceptance records the architecture decision, not runtime verification or resolution of open QQ items.
 
 ## Date
 2026-11-18
@@ -10,7 +12,7 @@ Proposed
 2026-11-18 — document/reference review; existing rig-spike evidence read, no new engine run or playtest.
 
 ## Decision Makers
-Scott (owner) and Devin (authoring agent, inline godot-specialist review). No acceptance or independent approval claimed.
+Scott (owner) and Devin (authoring agent, inline godot-specialist review). Owner acceptance: Scott, 2026-11-19. No independent review approval is claimed.
 
 ## Summary
 Propose CharacterBody3D locomotion over C1's static collision, a retargetable humanoid rig, AnimationTree layers and SkeletonModifier3D foot IK. SurvivorController owns movement/pose only: ActionRunner owns action completion, Terrain owns compaction, and Body/Needs own activity consequences.
@@ -31,7 +33,7 @@ Propose CharacterBody3D locomotion over C1's static collision, a retargetable hu
 
 | Field | Value |
 |-------|-------|
-| **Depends On** | ADR-0001, ADR-0002, ADR-0003, ADR-0004 (all Proposed) |
+| **Depends On** | ADR-0001, ADR-0002, ADR-0003, ADR-0004 (all Accepted) |
 | **Enables** | ADR-0007, ADR-0013, ADR-0014, ADR-0015 (action pose and presentation adapters) |
 | **Blocks** | SurvivorController production implementation until acceptance; no story files to unblock |
 | **Ordering Note** | Body/Needs/Inventory are consumer snapshot ports, not duplicated owners. Later C4/C5/C6 ratify transactions/integration without making animation the completion authority. |

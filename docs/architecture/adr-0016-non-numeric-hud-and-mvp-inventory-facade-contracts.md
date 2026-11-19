@@ -1,7 +1,9 @@
 # ADR-0016: Non-numeric HUD and MVP inventory facade contracts
 
 ## Status
-Proposed
+Accepted
+
+Accepted by Scott (owner) on 2026-11-19: “Accept all 16” (ADR-0001–ADR-0016). Acceptance records the architecture decision, not runtime verification or resolution of open QQ items.
 
 ## Date
 2026-11-18
@@ -10,7 +12,7 @@ Proposed
 2026-11-18 — GDD/registry/engine-reference audit only; HUD not rendered or visually verified.
 
 ## Decision Makers
-Scott (owner, QQ-08 already resolved), Devin (author/inline godot-specialist reviewer); no acceptance or independent approval.
+Scott (owner, QQ-08 already resolved), Devin (author/inline godot-specialist reviewer); Owner acceptance: Scott, 2026-11-19. No independent review approval is claimed.
 
 ## Summary
 The HUD must communicate warmth, needs and available actions without numbers or UI leaking gameplay input. Propose a read-only SurvivalHud snapshot renderer and minimal Inventory command facade, with device glyph/context ownership in InputRouter, final Camera projection and backpack UI explicitly independent of pause.
@@ -29,7 +31,7 @@ The HUD must communicate warmth, needs and available actions without numbers or 
 ## ADR Dependencies
 | Field | Value |
 |-------|-------|
-| **Depends On** | ADR-0001, ADR-0002, ADR-0003, ADR-0007, ADR-0008, ADR-0009, ADR-0011, ADR-0013, ADR-0014, ADR-0015 (all Proposed; acceptance required) |
+| **Depends On** | ADR-0001, ADR-0002, ADR-0003, ADR-0007, ADR-0008, ADR-0009, ADR-0011, ADR-0013, ADR-0014, ADR-0015 (all Accepted; acceptance required) |
 | **Enables** | None within this allocated backlog; deferred full inventory/settings/screens remain unallocated scope |
 | **Blocks** | SurvivalHud and MVP inventory facade implementation; no story files exist |
 | **Ordering Note** | UI sends commands to existing owners and requests contexts, never edits gameplay state or constructs another pause clock. |

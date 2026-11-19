@@ -1,3 +1,6 @@
+# ADR coverage status: ADR-0001–ADR-0016 accepted by Scott (owner), 2026-11-19.
+# Requirement status remains active (not an ADR status); see requirements-traceability.md
+# for 519 Accepted-covered rows and 2 Partial rows awaiting O4 profiling.
 # Technical Requirement ID Registry
 #
 # PURPOSE: Persistent, stable IDs for every GDD technical requirement.

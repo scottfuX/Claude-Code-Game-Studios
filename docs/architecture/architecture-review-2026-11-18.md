@@ -1,6 +1,10 @@
 # Architecture Review Report — Lonefire
 
-## Owner resolution update — 2026-11-19
+## Owner acceptance update — 2026-11-19
+
+Scott explicitly answered “Accept all 16” on 2026-11-19. ADR-0001–ADR-0016 are now **Accepted**, in prerequisite order, without decision-content changes. Current traceability is **519 Accepted-covered, 2 Partial (O4 profiling), 0 gaps, 0 Proposed-covered**. All Foundation requirements have Accepted ADR coverage. This dated status update supersedes the review-time statements below about Proposed-only coverage and unaccepted prerequisites; it is not a new full review or runtime validation. QQ-01–07/09/10 remain open at the same defaults; QQ-08 and O1–O4 remain decided. Original verdict, counts, hashes and findings are retained as historical evidence.
+
+## Owner resolution update — 2026-11-19 (before ADR acceptance)
 
 Scott resolved O1–O4. This dated note supersedes all historical references below to those items being open, awaiting confirmation or blocking owner reconciliation. The original **CONCERNS verdict and review-time counts are unchanged**, not a new full review or ADR acceptance.
 
@@ -9,7 +13,7 @@ Scott resolved O1–O4. This dated note supersedes all historical references bel
 - **O3 resolved:** >0.1 heat/radius threshold is visual-only; exact authoritative values reach Thermal and Body every minute.
 - **O4 resolved (decision), follow-up pending profiling:** profile full Body path, retain inclusive 0.02 ms budget, then tighten Thermal's per-query allocation. No new query number approved.
 - Stale ADR audit refreshed in architecture.md; canonical ADR-0013 Camera and ADR-0006 Thermal names/signatures adopted. No runtime adapter verification is implied.
-- Current index: 519 Covered (Proposed), 2 Partial (O4 profiling), 0 gaps; all 16 ADRs remain Proposed. QQ-01–07/09/10 defaults unchanged; QQ-08 remains decided.
+- Index at the O1–O4 update: 519 Covered (Proposed), 2 Partial (O4 profiling), 0 gaps; all 16 ADRs were then Proposed. Superseded by the owner acceptance update above. QQ-01–07/09/10 defaults unchanged; QQ-08 remains decided.
 
 The original input hashes below are historical receipts and were not restamped after these source changes; a future review must detect them as changed.
 

@@ -1,7 +1,9 @@
 # ADR-0012: Morale event ordering, strain integration and relief limits
 
 ## Status
-Proposed
+Accepted
+
+Accepted by Scott (owner) on 2026-11-19: “Accept all 16” (ADR-0001–ADR-0016). Acceptance records the architecture decision, not runtime verification or resolution of open QQ items.
 
 ## Date
 2026-11-18
@@ -10,7 +12,7 @@ Proposed
 2026-11-18 — GDD/registry/reference audit; no runtime simulation or playtest.
 
 ## Decision Makers
-Scott (owner), Devin (author/inline godot-specialist reviewer); no acceptance or independent approval.
+Scott (owner), Devin (author/inline godot-specialist reviewer); Owner acceptance: Scott, 2026-11-19. No independent review approval is claimed.
 
 ## Summary
 Morale must accumulate believable strain and bounded relief without event-order exploits or taking control from the player. Propose one minute-owned MoraleModel with ordered deduplicated events, timestamped action streaks, derived H/P/Resolve and capped rituals/second wind followed by one hysteretic state step.
@@ -29,7 +31,7 @@ Morale must accumulate believable strain and bounded relief without event-order 
 ## ADR Dependencies
 | Field | Value |
 |-------|-------|
-| **Depends On** | ADR-0001, ADR-0003, ADR-0007, ADR-0008, ADR-0009, ADR-0011 (all Proposed; acceptance required) |
+| **Depends On** | ADR-0001, ADR-0003, ADR-0007, ADR-0008, ADR-0009, ADR-0011 (all Accepted; acceptance required) |
 | **Enables** | ADR-0013, ADR-0014, ADR-0015 (read-only mood presentation) |
 | **Blocks** | MoraleModel implementation; no story files exist |
 | **Ordering Note** | Final Body/Needs snapshots and committed losses/outcomes feed the F3 Morale stage, not per-signal integration. |

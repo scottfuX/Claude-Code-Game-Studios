@@ -1,7 +1,9 @@
 # ADR-0001: Run scene composition and service lifecycle
 
 ## Status
-Proposed
+Accepted
+
+Accepted by Scott (owner) on 2026-11-19: “Accept all 16” (ADR-0001–ADR-0016). Acceptance records the architecture decision, not runtime verification or resolution of open QQ items.
 
 ## Date
 2026-11-18
@@ -10,7 +12,7 @@ Proposed
 2026-11-18 — checked against the pinned engine reference and current architecture/GDD contracts; not runtime-validated.
 
 ## Decision Makers
-Scott (owner; QQ-08 decision supplied for this run) and Devin (authoring agent, including inline godot-specialist review). Scott has not approved this ADR; authoring is not acceptance.
+Scott (owner; QQ-08 decision supplied for this run) and Devin (authoring agent, including inline godot-specialist review). Owner acceptance: Scott, 2026-11-19. No independent review approval is claimed.
 
 ## Summary
 Lonefire needs one restart-safe composition root so its eighteen MVP systems cannot retain state or subscriptions from an earlier run. Propose a RunCoordinator-owned scene subtree with explicit dependency injection, owner-only writes, detached value snapshots and tracked subscription teardown instead of gameplay autoloads.
@@ -133,5 +135,5 @@ No production run implementation exists to migrate; prototypes remain untouched.
 
 ## Related
 - [Master architecture](architecture.md), especially Module Ownership, Initialization order, ADR Audit, Required ADRs and QQ-01–10; ranges are provisional, no permanent TR allocation or RTM generated.
-- [ADR-0002](adr-0002-input-routing-contexts-and-ui-pause-requests.md) and [ADR-0003](adr-0003-ordered-clock-dispatch-typed-events-and-run-randomness.md), both Proposed downstream decisions.
+- [ADR-0002](adr-0002-input-routing-contexts-and-ui-pause-requests.md) and [ADR-0003](adr-0003-ordered-clock-dispatch-typed-events-and-run-randomness.md), both Accepted downstream decisions.
 - Autonomous/standard/balanced run; no owner-only cost/hardware/scope/design call was settled. Acceptance must be explicit via `/architecture-decision accept ADR-0001`.

@@ -1,7 +1,9 @@
 # ADR-0007: Timed-action transactions, seeded mishaps and simultaneous-death precedence
 
 ## Status
-Proposed
+Accepted
+
+Accepted by Scott (owner) on 2026-11-19: “Accept all 16” (ADR-0001–ADR-0016). Acceptance records the architecture decision, not runtime verification or resolution of open QQ items.
 
 ## Date
 2026-11-18
@@ -10,7 +12,7 @@ Proposed
 2026-11-18 — GDD/reference/registry audit; no transaction, replay or presentation runtime test executed.
 
 ## Decision Makers
-Scott (owner) and Devin (authoring agent, inline godot-specialist review). No acceptance or independent approval claimed.
+Scott (owner) and Devin (authoring agent, inline godot-specialist review). Owner acceptance: Scott, 2026-11-19. No independent review approval is claimed.
 
 ## Summary
 ActionRunner needs one completion authority that cannot grant results after cancellation or race simultaneous deaths. Propose run-tagged tokens, prepared owner commits, one injected seeded stream and a Coordinator checkpoint that forces cancellation/arbitrates terminal candidates before committing eligible work and publishing cause-before-result events.
@@ -31,7 +33,7 @@ ActionRunner needs one completion authority that cannot grant results after canc
 
 | Field | Value |
 |-------|-------|
-| **Depends On** | ADR-0001, ADR-0002, ADR-0003, ADR-0004, ADR-0005, ADR-0006 (all Proposed); acceptance required before implementation |
+| **Depends On** | ADR-0001, ADR-0002, ADR-0003, ADR-0004, ADR-0005, ADR-0006 (all Accepted); acceptance required before implementation |
 | **Enables** | ADR-0008, ADR-0009, ADR-0010, ADR-0011, ADR-0012, ADR-0014, ADR-0015 (terminal/owner plans and result presentation) |
 | **Blocks** | ActionRunner/MishapResolver transaction implementation until acceptance; no story files exist |
 | **Ordering Note** | Layer Core comes from ActionRunner/Interaction in the layer map; Feature MishapResolver is an injected collaborator, not a new layer value. C5/C6 refine owner ports, not a reverse dependency cycle. |
