@@ -1,0 +1,30 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/run/run_coordinator.gd" id="1"]
+[ext_resource type="Script" path="res://src/foundation/input_router.gd" id="2"]
+[ext_resource type="Script" path="res://src/core/world_map.gd" id="3"]
+[ext_resource type="PackedScene" path="res://src/core/survivor_controller.tscn" id="4"]
+[ext_resource type="Script" path="res://src/presentation/survival_camera.gd" id="5"]
+[ext_resource type="Script" path="res://src/presentation/survival_hud.gd" id="6"]
+
+[node name="RunCoordinator" type="Node3D"]
+script = ExtResource("1")
+
+[node name="InputRouter" type="Node" parent="."]
+script = ExtResource("2")
+
+[node name="WorldMap" type="Node3D" parent="."]
+script = ExtResource("3")
+
+[node name="Survivor" parent="." instance=ExtResource("4")]
+
+[node name="SurvivalCamera" type="Node3D" parent="."]
+script = ExtResource("5")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+
+[node name="SurvivalHud" type="CanvasLayer" parent="."]
+script = ExtResource("6")
