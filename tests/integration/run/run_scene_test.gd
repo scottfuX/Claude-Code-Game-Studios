@@ -16,7 +16,7 @@ func test_survivor_capsule_and_camera_read_custom_playfield_tuning() -> void:
 	survivor.tuning = tuning
 	add_child(survivor)
 	var collision := survivor.get_child(0) as CollisionShape3D
-	assert_float((collision.shape as CapsuleShape3D).radius).is_equal(0.4)
+	assert_float((collision.shape as CapsuleShape3D).radius).is_equal_approx(0.4, 0.0001)
 	assert_float((collision.shape as CapsuleShape3D).height).is_equal(2.0)
 	assert_float(collision.position.y).is_equal(1.0)
 	var camera: SurvivalCamera = auto_free(SurvivalCamera.new())
