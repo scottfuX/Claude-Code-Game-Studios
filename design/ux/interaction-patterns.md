@@ -10,7 +10,7 @@
 
 ## Overview
 
-Reusable paper-and-ink behaviors for Lonefire's small survival interface. No per-screen UX specs exist yet; this initial catalog is derived from GDD requirements, not an audit of implemented components. Player journey is absent; expected context is cold, pressured work, inferred from the concept rather than user research. The backpack is a **real-time overlay**: time and active work continue. Only the explicit pause menu requests player-initiated pause; disconnect safety is a separate InputRouter-owned recovery gate.
+Reusable paper-and-ink behaviors for Lonefire's small survival interface. This catalog is derived from GDD requirements, not an audit of implemented components. Dedicated drafts now cover [gameplay HUD](hud.md), [backpack](inventory.md), [pause](pause-menu.md), [main menu](main-menu.md) and [death](death-screen.md). Main-menu/terminal navigation remains future planning scope; dawn stays an in-world ritual rather than a separate survived screen. Player journey is absent; expected context is cold, pressured work, inferred from the concept rather than user research. The backpack is a **real-time overlay**: time and active work continue. Only the explicit pause menu requests player-initiated pause; disconnect safety is a separate InputRouter-owned recovery gate.
 
 All patterns use named InputMap actions, localization keys and current-device glyphs. Keyboard/mouse is primary; gamepad is partial on macOS/Windows PC. No touch or console behavior is promised. Noninteractive HUD controls ignore focus/input. Keyboard/gamepad focus and mouse hover are independent; raw event handling never dispatches an owner command twice.
 
@@ -32,7 +32,7 @@ The provisional accessibility target is **Standard**, not yet confirmed by Scott
 | Real-time Backpack | Overlay | Live inventory commands | MVP |
 | Pause Stack | Navigation | Explicit pause over gameplay/backpack | MVP contract |
 | Reconnect Recovery | Overlay | Active controller disconnect | MVP safety contract |
-| Screen Push / Pop / Replace | Navigation | Nested screens | Scaffold; screen specs still needed |
+| Screen Push / Pop / Replace | Navigation | Nested screens | Dedicated screen drafts linked above; future lifecycle ports still needed |
 | Focus Management | Navigation | Every interactive screen | Required |
 | Escape / Cancel | Navigation | Back vs work cancellation | Required |
 | Loading State / Empty State / Error State | Feedback | Data and async screens | Required where applicable |
