@@ -1,9 +1,10 @@
 # Accessibility Requirements
 
-> **Status**: In Design — provisional target, not owner-approved or audited
+> **Status**: Committed
+> **Tier Confirmation**: Scott (owner), 2026-11-19 — tier commitment only, not an implementation audit or approval of A2–A6
 > **Author**: Devin (ux-designer), for Scott's review
 > **Last Updated**: 2026-11-19
-> **Accessibility Tier Target**: Standard — Own Call A1, pending Scott's confirmation
+> **Accessibility Tier Target**: Standard
 > **Platforms**: PC — macOS and Windows (Steam); keyboard/mouse primary, partial gamepad; no touch
 > **External Standards Targeted**: WCAG 2.1 AA principles for UI, not whole-game conformance; Game Accessibility Guidelines; XAG as reference only. No console certification or mobile standard claimed. CVAA applicability requires review if communication features are added.
 > **Accessibility Consultant**: None engaged
@@ -17,15 +18,15 @@
 | Tier | Core commitment |
 |---|---|
 | Basic | Readable critical text, no color-only information, separate music/SFX/voice volume, photosensitivity safety. |
-| Standard | Basic plus full remapping, adjustable text, colorblind support, speaker-identified subtitles, and extendable or toggle alternatives to timed input. |
+| Standard | Basic plus full remapping, adjustable text, at least one colorblind mode, speaker-identified subtitles, and extendable or toggle alternatives to timed input. |
 | Comprehensive | Standard plus menu screen reader support, mono, difficulty assists, HUD repositioning, reduced motion and visual equivalents for critical audio. |
 | Exemplary | Comprehensive plus full subtitle customization, high contrast, cognitive assists, tactile alternatives and external audit. |
 
 ### This Project's Commitment
 
-**Target Tier: Standard, provisional Own Call A1 pending Scott.** Lonefire's cold, low-contrast snow, small contextual prompts and deliberate repeated work create visual and motor barriers even without twitch combat. Basic would leave remapping, readable scaling and time-dependent confirmation insufficiently addressed. Standard is the most defensible planning baseline for the PC survival loop without promising unbudgeted narration, a screen reader or difficulty redesign. No audience research or specialist audit has been performed; this recommendation does not claim their endorsement.
+**Target Tier: Standard — committed by Scott (owner), 2026-11-19; A1 resolved.** Lonefire's cold, low-contrast snow, small contextual prompts and deliberate repeated work create visual and motor barriers even without twitch combat. Basic would leave remapping, readable scaling and time-dependent confirmation insufficiently addressed. Standard is the committed baseline for the PC survival loop without promising unbudgeted narration, a screen reader or difficulty redesign. No audience research or specialist audit has been performed; owner confirmation does not claim their endorsement.
 
-This is a requirements draft, not a committed tier for the Technical Setup → Pre-Production gate. Scott must confirm the tier. Its implementation schedule must retain the existing MVP/Alpha split: MVP scale remains 100%, remapping UI and settings remain Alpha/dependent on QQ-09; unmet release-target features stay visible as gaps, not silently waived.
+The tier is committed for the Technical Setup → Pre-Production gate; this does not rerun or pass the whole gate. Detailed proposals A2–A6 and delivery schedule S1 remain open. The implementation schedule must retain the existing MVP/Alpha split: MVP scale remains 100%, remapping UI and settings remain Alpha/dependent on QQ-09; unmet Standard release-target features stay visible as gaps, not silently waived.
 
 **Beyond-baseline proposals (A2)**: reduced motion/static urgent icons, mono output and qualitative captions for critical sound, because posture, breath and directional foley carry survival information. Pending scope confirmation under QQ-09/QQ-10; none is an MVP addition authorized here.
 
@@ -38,7 +39,7 @@ This is a requirements draft, not a committed tier for the Technical Setup → P
 | Text size | Standard; all UI | Designed floor; untested | Preserve HUD GDD ≥18 px at 720p (27 px proportional at 1080p). Proposed menu floor 24 px and caption floor 32 px at 1080p (A3); do not shrink critical HUD below its stronger GDD floor. Localized strings wrap without clipping. |
 | Text resizing | Standard; release menus/captions | Pending QQ-09 | Target 100–200% text with reflow (A3). HUD's separate authored 80–140% Alpha scale cannot make critical text smaller than its floor; MVP remains 100%. A general UI scale does not substitute for text resizing. |
 | Contrast | Basic/Standard; UI | Not tested | Target 4.5:1 ordinary text, 3:1 large text/meaningful control edges; captions target 7:1 on opaque backing (A3). Measure composited paper/ink over snow, night and fire, including 35% calm alpha. |
-| Colorblind support | Standard; band and state cues | Design present; not validated | Snowflake/flame, tick marks and fill direction duplicate blue/orange. Validate protanopia/deuteranopia/tritanopia and grayscale. A color-safe ink preset is proposed for Alpha (A3), retaining warm-fire hue protection; no global palette shift that turns safety cold. |
+| Colorblind support | Standard; band and state cues | Required for release; not validated | Snowflake/flame, tick marks and fill direction duplicate blue/orange. At least one colorblind mode is required by Standard; the exact color-safe ink preset is an Alpha proposal (A3), retaining warm-fire hue protection. Validate protanopia/deuteranopia/tritanopia and grayscale; no global palette shift that turns safety cold. |
 | High contrast | Above baseline; Alpha HUD GDD | Pending QQ-09 | High-contrast ink/background treatment; keep bands qualitative. Do not bypass calm/hide rules without Scott's decision. |
 | Motion/flash reduction | A2 above baseline | Proposed | Replace urgent 1 Hz/10% scale pulse with static bold icon; remove shake/breathing camera and transition movement where possible. Keep necessary movement/posture cues. No new flashes; test fire, damage and grading transitions for >3 flashes/s risks. Warning text alone is not mitigation. |
 | Brightness calibration | Basic; release | Pending settings scope | Propose reference snow/ink/night image before graphics adjustment. No arbitrary gamma values or visibility guarantee until QQ-04 camera/readability testing. |
@@ -91,8 +92,8 @@ Godot 4.7 Control nodes should expose semantic name, role, state and logical foc
 
 | Platform | Integration / evidence required | Status |
 |---|---|---|
-| macOS | VoiceOver menu spike, keyboard focus, scale/contrast and reconnect checks on exported build | Not tested; narration beyond provisional Standard |
-| Windows | Narrator/NVDA menu spike, keyboard focus, scale/contrast and reconnect checks on exported build | Not tested; narration beyond provisional Standard |
+| macOS | VoiceOver menu spike, keyboard focus, scale/contrast and reconnect checks on exported build | Not tested; narration beyond committed Standard |
+| Windows | Narrator/NVDA menu spike, keyboard focus, scale/contrast and reconnect checks on exported build | Not tested; narration beyond committed Standard |
 | Console/mobile | No certification, touch or platform API work committed | Out of current targets |
 
 ## Per-Feature Accessibility Matrix
@@ -173,7 +174,8 @@ Interaction's optional thin progress arc is an Alpha accessibility hook, not a d
 
 | Date | Auditor | Type | Scope | Findings / status |
 |---|---|---|---|---|
-| 2026-11-18 | Devin, author | Document cross-reference only | 18 MVP UI requirement sections, proposed ADR-0002/0014/0016, architecture review | Draft requirements; tier/scope pending; no runtime, visual, assistive-tech or independent audit |
+| 2026-11-18 | Devin, author | Document cross-reference only | 18 MVP UI requirement sections, proposed ADR-0002/0014/0016, architecture review | Historical draft audit; no runtime, visual, assistive-tech or independent audit; A1 subsequently resolved below |
+| 2026-11-19 | Scott (owner), recorded by Devin | Tier decision | A1 | Standard confirmed and committed; A2–A6 and delivery scope remain open; no runtime audit implied |
 
 ## External Resources
 
@@ -190,11 +192,11 @@ Interaction's optional thin progress arc is an Alpha accessibility hook, not a d
 
 ### Own Calls and Scott-only decisions
 
-All values below are proposals, not owner approval or authorization to expand MVP.
+A1 is owner-confirmed. A2–A6 remain proposals, not owner approval or authorization to expand MVP; S1–S3 remain open.
 
 | ID | Question / recommended default | Owner / deadline | Resolution |
 |---|---|---|---|
-| A1 | Confirm Standard tier? Recommend Standard with clearly recorded release gaps, not Basic or an unbudgeted Comprehensive promise. | Scott; before tier gate | Provisional Own Call |
+| A1 | Accessibility tier: Standard | Scott (owner); resolved 2026-11-19 | Confirmed and committed; no implementation compliance claim or approval of A2–A6 |
 | A2 | Add reduced motion, mono and qualitative critical-audio captions beyond baseline? Recommend release targets after scoped estimate, not extra MVP screens. | Scott; QQ-09/QQ-10 scope review | Provisional Own Call |
 | A3 | Approve proposed text/reflow/contrast and color-safe ink targets? Recommend the Visual Accessibility values, preserve stronger HUD floor and authored scale phases. | Scott + art/UI; before UI implementation | Provisional Own Call |
 | A4 | Default captions on? Recommend on with a clearly available toggle; future speech uses speaker identification. | Scott; before onboarding/settings spec | Provisional Own Call |
@@ -206,7 +208,7 @@ All values below are proposals, not owner approval or authorization to expand MV
 
 ### Architecture decisions explicitly preserved
 
-All 16 ADRs were **Accepted** separately by Scott (owner) on 2026-11-19. That decision does not confirm this draft's accessibility tier/scope or resolve the following [architecture-review owner register](../docs/architecture/architecture-review-2026-11-18.md#owner-decision-register--recommendations-not-decisions). Recommendations below are inherited, not new decisions.
+All 16 ADRs were **Accepted** separately by Scott (owner) on 2026-11-19. Standard was subsequently confirmed separately under A1; neither decision approves A2–A6/delivery scope or resolves the following [architecture-review owner register](../docs/architecture/architecture-review-2026-11-18.md#owner-decision-register--recommendations-not-decisions). Recommendations below are inherited, not new decisions.
 
 | ID | Dependency / recommended default for Scott | Status |
 |---|---|---|
@@ -225,4 +227,4 @@ All 16 ADRs were **Accepted** separately by Scott (owner) on 2026-11-19. That de
 | O3 | Fire threshold: exact authoritative heat/radius each minute, >0.1 threshold cosmetic only. No UI-owned heat inference. | Resolved by Scott 2026-11-19 |
 | O4 | Inclusive Body/Thermal cost: keep Body ≤0.02 ms; profile full path, then tighten query sub-budget (number pending profiling); no compliance claim. | Resolved by Scott 2026-11-19; profiling pending |
 
-**Handoff**: Run `/ux-review` before implementation; independent audit and Scott's tier/scope confirmations remain outstanding. At standard workflow, review of key screen specs is recommended before `/gate-check production`; this project-wide draft is not a substitute for those specs.
+**Handoff**: Standard is committed; run `/ux-review` against that tier before implementation. Independent audit, A2–A6 and delivery-scope decisions remain outstanding. At standard workflow, review of key screen specs is recommended before `/gate-check production`; this project-wide commitment is not a substitute for those specs.

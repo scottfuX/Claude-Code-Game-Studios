@@ -1,11 +1,11 @@
 # HUD Design: Lonefire
 
-> **Status**: In Review — no implementation or visual approval
+> **Status**: Approved — scoped MVP design review; implementation and visual verification pending
 > **Author**: Devin (ux-designer), owner-requested non-interactive draft
 > **Last Updated**: 2026-11-19
 > **Template**: HUD Design
 > **Platform Target**: PC macOS / Windows; keyboard/mouse primary, partial gamepad; no touch
-> **Accessibility Tier**: Standard, provisional pending Scott (A1)
+> **Accessibility Tier**: Standard — confirmed and committed by Scott (owner), 2026-11-19 (A1 resolved)
 > **Related**: [HUD GDD](../gdd/hud.md), [systems index](../gdd/systems-index.md), [accessibility](../accessibility-requirements.md), [patterns](interaction-patterns.md), [backpack](inventory.md), [pause](pause-menu.md), [death](death-screen.md)
 > **Architecture**: Accepted ADR-0002, ADR-0016; ADR-0007 terminal ownership, ADR-0013 projection, ADR-0014 emotional feedback; [control manifest](../../docs/architecture/control-manifest.md)
 > **Traceability**: TR-hud-001…024 under ADR-0016, with Input/Body/Needs/Time sources owned by their existing ADRs; no new TR allocation
@@ -81,7 +81,7 @@ Hide a prompt if behind camera, no target, invisible projection or no safe place
 
 ## 4. HUD Element Specifications
 
-Each source is a detached end-of-update snapshot, not a live mutable model. UI never owns survival state or queries gameplay from draw callbacks. Every element ignores pointer input and keyboard/gamepad focus. Device switching changes glyphs, not commands.
+Each source is a detached end-of-update snapshot, not a live mutable model. UI never owns survival state or queries gameplay from draw callbacks. Passive gameplay HUD elements ignore pointer input and keyboard/gamepad focus; the separate router-owned recovery overlay handles its deliberate Resume control. Device switching changes glyphs, not commands.
 
 | Element | Content / zone | Trigger / update source | Priority / timing |
 |---|---|---|---|
@@ -145,7 +145,7 @@ macOS and Windows PC share zones and semantic InputMap actions. Text ≥18 px at
 
 ## 10. Accessibility
 
-Follow [project accessibility requirements](../accessibility-requirements.md), A1/A2/A3 and QQ-09; Standard remains provisional. All text targets 4.5:1 ordinary / 3:1 large text and meaningful edges over snow, night and fire, including composited 35% calm state. Ratios have NOT been measured. Paper backing/ink contrast must meet target without raising authored calm opacity or adding numerical readings. No color-only information: endpoints+fill/ticks, directional arrows, distinct needs/boldness, sun/moon shapes, words plus droplet for inventory. Validate grayscale and protanopia/deuteranopia/tritanopia; no global hue shift that makes warm fire cold.
+Follow [project accessibility requirements](../accessibility-requirements.md): Standard was confirmed and committed by Scott (owner), 2026-11-19; A1 is resolved. A2–A6 proposals and QQ-09 delivery scope remain open. Standard release requirements for adjustable text, colorblind support, remapping and applicable subtitles are not waived by the MVP/Alpha split. This is a screen design review, not an implementation compliance audit. All text targets 4.5:1 ordinary / 3:1 large text and meaningful edges over snow, night and fire, including composited 35% calm state. Ratios have NOT been measured. Paper backing/ink contrast must meet target without raising authored calm opacity or adding numerical readings. No color-only information: endpoints+fill/ticks, directional arrows, distinct needs/boldness, sun/moon shapes, words plus droplet for inventory. Validate grayscale and protanopia/deuteranopia/tritanopia; no global hue shift that makes warm fire cold.
 
 ### 10.1 Colorblind Modes
 Alpha color-safe/high-contrast ink proposal pending A3/QQ-09; MVP fixed redundant shape cues. Test default cues, not just a hypothetical filter.
@@ -196,7 +196,7 @@ Unexecuted implementation criteria, not evidence that a game UI exists.
 
 | ID | Decision / gap | Owner / deadline | Resolution |
 |---|---|---|---|
-| A1 | Standard is provisional | Scott; before tier gate | Accessibility review NOT ASSESSED until committed, not a documentation pass |
+| A1 | Standard tier confirmed and committed | Scott (owner); resolved 2026-11-19 | Tier criterion available for UX review; implementation compliance and A2–A6 not approved by this decision |
 | J1 | No player journey | Design; before UI implementation | Author from `.claude/docs/templates/player-journey.md`; arrival context inferred |
 | H1 | Nine groups / 12% budget and proposed zone dimensions | Scott + art/UI; before visual design | Planning default, preserve authored band/needs before budget |
 | H2 | No dawn/survived modal | Time and Emotional Feedback existing rules | Sunrise ritual stays in-world; future Results needs its own GDD/spec |

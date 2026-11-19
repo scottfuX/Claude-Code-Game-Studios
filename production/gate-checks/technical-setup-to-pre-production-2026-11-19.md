@@ -31,8 +31,8 @@ This is the Technical Setup gate, not the later Production gate. A playable vert
 
 - Art bible: `design/art/art-bible.md` has substantive sections 1–4 and later sections. No visual-asset stories exist, so its Standard conditional requirement does not trigger; the document is present anyway.
 - Traceability index: present, 521 registered rows; **519 Accepted-covered, 2 Partial, 0 gaps, 0 Proposed-covered**. All 57 Input/Time rows have Accepted Foundation coverage. The two Partial rows are `TR-body-temperature-029` and `TR-thermal-environment-029` (O4 profiling).
-- Accessibility requirements and interaction-pattern library: present as drafts. Accessibility's Standard target is defined but not owner-committed (A1); acceptance of ADRs does not confirm A1–A6 or UX fixture/scope decisions.
-- Screen UX specs started: no dedicated screen specs under `design/ux/`; the pattern library is not a substitute. Recommended at Standard; create key screen specs during Pre-Production.
+- Accessibility requirements and interaction-pattern library: present. **Subsequent owner update, 2026-11-19:** Scott confirmed and committed Standard (A1 resolved); A2–A6 and UX fixture/delivery-scope decisions remain open. This annotation does not rerun the historical gate or imply runtime compliance.
+- Screen UX specs: subsequently added in merged PR #13 at `design/ux/hud.md`, `inventory.md`, `pause-menu.md`, `main-menu.md` and `death-screen.md`; the pattern library is not a substitute. Recommended at Standard; future title/result lifecycle inputs and runtime validation remain open.
 - Regenerated control manifest: Accepted ADRs 0001–0016, version/Last Updated 2026-11-19; TD-MANIFEST skipped — Lean mode. Foundation 47/6/9, Core 87/12/18, Feature 33/6/9, Presentation 45/8/12 (required/forbidden/guardrails). Global: 7 naming conventions, 20 scoped API/pattern prohibitions, 0 approved libraries. No ADR omitted.
 
 ## Quality and engine checks
