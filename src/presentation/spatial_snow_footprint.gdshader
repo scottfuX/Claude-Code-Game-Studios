@@ -5,7 +5,7 @@ render_mode cull_disabled;
 const float SOLE_LENGTH = 0.4;
 const float SOLE_EDGE = 0.95;
 const vec3 CENTRE = vec3(0.34, 0.43, 0.53);
-const vec3 RIM = vec3(0.69, 0.77, 0.83);
+const vec3 SOLE_RIM = vec3(0.69, 0.77, 0.83);
 
 void fragment() {
 	vec2 p = UV * 2.0 - 1.0;
@@ -13,6 +13,6 @@ void fragment() {
 	if (edge > SOLE_EDGE) {
 		discard;
 	}
-	ALBEDO = mix(CENTRE, RIM, smoothstep(0.55, SOLE_EDGE, edge));
+	ALBEDO = mix(CENTRE, SOLE_RIM, smoothstep(0.55, SOLE_EDGE, edge));
 	ROUGHNESS = 1.0;
 }

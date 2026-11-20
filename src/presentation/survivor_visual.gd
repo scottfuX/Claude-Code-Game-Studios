@@ -1,6 +1,9 @@
 class_name SurvivorVisual extends Node3D
 
 signal foot_contact(where: Vector3, foot: int)
+const SWING: Array[StringName] = [&"chop_log", &"strip_bark"]
+const STRIKE: Array[StringName] = [&"strike", &"blow_embers", &"arrange_tinder"]
+const CROUCH: Array[StringName] = [&"gather_sticks", &"gather_grass", &"clear_snow", &"arrange_tinder", &"strike", &"blow_embers", &"add_fuel"]
 const MODEL: PackedScene = preload("res://assets/models/survivor_rigged.glb")
 var tuning: SurvivorVisualTuning = preload("res://assets/data/survivor_visual_defaults.tres")
 var controller: SurvivorController
@@ -47,8 +50,8 @@ func _ready() -> void:
 	idle.animation = &"idle"
 	var walking := AnimationNodeAnimation.new()
 	walking.animation = &"walk"
-	locomotion.add_blend_point(idle, 0.0)
-	locomotion.add_blend_point(walking, 1.0)
+	locomotion.add_blend_point(idle, 0.0, -1, &"idle")
+	locomotion.add_blend_point(walking, 1.0, -1, &"walk")
 	_action_node = AnimationNodeAnimation.new()
 	_action_node.animation = &"idle"
 	blend.add_node(&"locomotion", locomotion)
@@ -89,11 +92,11 @@ func _process(delta: float) -> void:
 	rotation.y = lerp_angle(rotation.y, desired_yaw, 1.0 - exp(-tuning.blend_response * delta))
 	var action := sim.actions.action
 	if action != _last_action:
-		_action_node.animation = &"chop" if action in [&"chop_log", &"strip_bark"] else (&"strike" if action in [&"strike", &"blow_embers", &"arrange_tinder"] else &"idle")
+		_action_node.animation = &"chop" if action in SWING else (&"strike" if action in STRIKE else &"idle")
 		_last_action = action
 	_action_weight = move_toward(_action_weight, 0.0 if action == &"" else 1.0, delta * tuning.blend_response)
 	_tree.set("parameters/priority/blend_amount", _action_weight)
-	crouch = move_toward(crouch, 1.0 if action in [&"gather_sticks", &"gather_grass", &"clear_snow", &"arrange_tinder", &"strike", &"blow_embers", &"add_fuel"] else 0.0, delta * tuning.blend_response)
+	crouch = move_toward(crouch, 1.0 if action in CROUCH else 0.0, delta * tuning.blend_response)
 	var near := false
 	for fire: FireController in sim.fires:
 		if fire.stage == &"Burning" and fire.position.distance_to(controller.global_position) < tuning.warming_distance:

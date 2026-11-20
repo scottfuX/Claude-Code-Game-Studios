@@ -39,3 +39,22 @@ func test_visual_contacts_alternate_and_pause_blocks_them() -> void:
 	assert_int(contacts[1]).is_equal(1)
 	assert_str(run.simulation.actions.action).is_empty()
 	assert_int(run.simulation.rng.draw_count).is_zero()
+
+func test_crouch_respects_imported_skeleton_basis_and_leaves_physics_root_alone() -> void:
+	var shell: Node = auto_free(preload("res://src/run/app_shell.tscn").instantiate())
+	shell.process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(shell)
+	var run := shell.get_child(0) as RunCoordinator
+	var visual: SurvivorVisual = run.get("_survivor_visual")
+	var skeleton: Skeleton3D = visual.get("_skeleton")
+	var pose: SurvivorPose = skeleton.get_child(skeleton.get_child_count() - 1)
+	var hips := skeleton.find_bone(&"Hips")
+	var before := skeleton.to_global(skeleton.get_bone_global_pose(hips).origin)
+	var root_position := run.survivor.global_position
+	visual.crouch = 1.0
+	pose.call("_process_modification")
+	var after := skeleton.to_global(skeleton.get_bone_global_pose(hips).origin)
+	assert_float(after.y).is_less(before.y - 0.3)
+	assert_float(after.x).is_equal_approx(before.x, 0.001)
+	assert_float(after.z).is_equal_approx(before.z, 0.001)
+	assert_vector(run.survivor.global_position).is_equal(root_position)

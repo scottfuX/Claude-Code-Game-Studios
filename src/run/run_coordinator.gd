@@ -18,6 +18,7 @@ var _site_fires: Dictionary[StringName, FireController] = {}
 var _gather_query: Callable
 var _verbs: Array[StringName] = []
 var _pause_token: int = 0
+var _atmosphere: WinterAtmosphere
 var _environment: Environment
 var _demo: bool = false
 var _demo_end: bool = false
@@ -72,6 +73,16 @@ func _ready() -> void:
 	_environment.fog_enabled = true
 	_environment.fog_density = 0.007
 	environment_node.environment = _environment
+	_atmosphere = WinterAtmosphere.new()
+	sun.directional_shadow_max_distance = _atmosphere.tuning.sun_shadow_distance
+	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
+	sun.shadow_opacity = _atmosphere.tuning.sun_shadow_opacity
+	_atmosphere.simulation = simulation
+	_atmosphere.survivor = survivor
+	_atmosphere.sunlight = sun
+	_atmosphere.environment = _environment
+	add_child(_atmosphere)
+	_survivor_visual.foot_contact.connect(_atmosphere.footstep)
 	if _demo:
 		_demo_driver = FirstNightDemo.new(self, _time_scale)
 	if _demo_end:
@@ -288,3 +299,4 @@ func _update_lighting() -> void:
 	_environment.background_color = Color(0.02, 0.04, 0.10).lerp(Color(0.6939, 0.7835, 0.8963), daylight)
 	_environment.fog_light_color = _environment.background_color
 	_environment.fog_light_energy = lerpf(0.45, 1.0, daylight)
+	_atmosphere.set_daylight(daylight)

@@ -20,18 +20,13 @@ func _draw() -> void:
 	if view.get(&"context", &"") in [&"ritual", &"sleep"]:
 		return
 	var energy: int = view.get(&"energy_level", 0)
-	if energy >= 0:
-		var pulse := 1.0 + 0.1 * sin(TAU * float(view.get(&"elapsed_s", 0.0))) if energy == 2 else 1.0
-		draw_set_transform(anchor + Vector2(7, -47), 0, Vector2.ONE * pulse)
-		var width := 4.0 if energy == 2 else 2.5
-		_stroke(PackedVector2Array([Vector2(-15, 5), Vector2(-8, 2), Vector2(-5, -9), Vector2(2, -12), Vector2(6, -3), Vector2(0, 4), Vector2(14, 4)]), INK, width)
-		_stroke(PackedVector2Array([Vector2(11, 9), Vector2(11, -12), Vector2(20, -7), Vector2(11, -4)]), INK, width)
-		draw_set_transform(Vector2.ZERO)
 	var energy_anchor := anchor + Vector2(335, 0)
 	draw_rect(Rect2(energy_anchor, Vector2(140, 15)), EDGE)
 	var energy_color := Color("8ea89b") if energy == 0 else (Color("d2ae65") if energy == 1 else Color("d37d66"))
 	draw_rect(Rect2(energy_anchor, Vector2(140 * float(view.get(&"energy_fill", 1.0)), 15)), energy_color)
-	draw_string(ThemeDB.fallback_font, energy_anchor + Vector2(0, -9), tr(&"HUD_ENERGY_NORMAL" if energy == 0 else (&"HUD_ENERGY_TIRED" if energy == 1 else &"HUD_ENERGY_EXHAUSTED")), HORIZONTAL_ALIGNMENT_LEFT, -1, 18, INK)
+	var label := tr(&"HUD_ENERGY_NORMAL" if energy == 0 else (&"HUD_ENERGY_TIRED" if energy == 1 else &"HUD_ENERGY_EXHAUSTED"))
+	draw_string_outline(ThemeDB.fallback_font, energy_anchor + Vector2(0, -9), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, 4, EDGE)
+	draw_string(ThemeDB.fallback_font, energy_anchor + Vector2(0, -9), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, INK)
 	var trend: int = view.get(&"energy_trend", 0)
 	if trend != 0:
 		var p := energy_anchor + Vector2(155, 7)
@@ -40,7 +35,7 @@ func _draw() -> void:
 	_arc(Vector2(safe.end.x - 65, safe.position.y + 64), float(view.get(&"opacity", 1.0)))
 	var progress: float = view.get(&"progress", -1.0)
 	if progress >= 0:
-		var centre := Vector2(safe.get_center().x, safe.end.y - 27)
+		var centre := Vector2(safe.get_center().x, safe.end.y - 68)
 		draw_arc(centre, 16, -PI / 2, TAU - PI / 2, 40, EDGE, 6, true)
 		draw_arc(centre, 16, -PI / 2, -PI / 2 + TAU * maxf(0.001, progress), 40, INK, 3, true)
 
