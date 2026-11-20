@@ -103,7 +103,7 @@ func _input(event: InputEvent) -> void:
 		if event.is_action_released(action):
 			_blocked.erase(action)
 	var actions: Array[StringName] = ROUTED + UI_ACTIONS
-	if context == Context.UI and (is_paused() or not _ui_sources.has(&"backpack")):
+	if context == Context.UI and (is_paused() or (not _ui_sources.has(&"backpack") and not _ui_sources.has(&"sleep"))):
 		actions = UI_ACTIONS + ROUTED
 	for action: StringName in actions:
 		if event.is_action_released(action):
