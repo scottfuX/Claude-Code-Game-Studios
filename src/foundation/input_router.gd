@@ -80,6 +80,8 @@ func set_context(value: Context) -> void:
 	for action: StringName in ROUTED + MOVEMENT + UI_ACTIONS:
 		if Input.is_action_pressed(action):
 			_blocked[action] = true
+		else:
+			_blocked.erase(action)
 
 ## Returns the only sampled gameplay movement and hurry state.
 func sample_actions() -> Dictionary[StringName, Variant]:
