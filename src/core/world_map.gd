@@ -191,9 +191,14 @@ func _build_large_map() -> void:
 		_box_collision(Vector3(side * extent, 1, 0), Vector3(0.5, 3, width))
 		_box_collision(Vector3(0, 1, side * extent), Vector3(width, 3, 0.5))
 	var lake := layout.tuning.lake_bounds
-	var ice := SceneAssets.material(Color("b5d7df"))
-	ice.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var ice := SceneAssets.material(Color("72a9d8"))
+	ice.roughness = 0.32
+	ice.metallic_specular = 0.75
 	_plane(Vector3(lake.get_center().x, 0.015, lake.get_center().y), lake.size, ice)
+	var shore := ShaderMaterial.new()
+	shore.shader = preload("res://src/presentation/spatial_env_ice_shore.gdshader")
+	shore.set_shader_parameter("lake_size", lake.size)
+	_plane(Vector3(lake.get_center().x, 0.01, lake.get_center().y), lake.size + Vector2(4, 4), shore)
 	if lake_surface != null:
 		_build_thin_ice()
 	for node: Dictionary in layout.nodes:
@@ -249,8 +254,9 @@ func _build_thin_ice() -> void:
 		cells.set_instance_transform(index, Transform3D(Basis.IDENTITY, lake_surface.cell_center(cell) + Vector3.UP * 0.02))
 		index += 1
 	patches.multimesh = cells
-	var ice := SceneAssets.material(Color("9fb9c2"))
-	ice.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var ice := SceneAssets.material(Color("7f9cb1"))
+	ice.roughness = 0.45
+	ice.metallic_specular = 0.6
 	patches.material_override = ice
 	add_child(patches)
 	lake_surface.ice_broken.connect(_show_open_water)
