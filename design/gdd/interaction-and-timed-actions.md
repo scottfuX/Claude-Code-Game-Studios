@@ -64,6 +64,8 @@ Decisions this GDD settles for its neighbours: actions **start on a tap** and ru
    | eat | item (backpack UI) | timed | item `eat_minutes` (5) | none | — | Needs & Weight | no |
    | eat_snow | snow_ground | repeat | 3 per handful | none | — | Needs & Weight | no |
 
+   The [Food chapter proposal](food.md#core-rules) specifies chapter-only set/check/cook rows. Cook targets the Fire interactable through ordinary IA2 and captures its raw input in the existing attempt token; Eat still targets the item.
+
 5. **Starting.** Pressing `interact`/`secondary` (a tap — Input IN2) on an available action starts it if: the tool is in the backpack, Body allows it (`critical_allowed` in Critical), Needs allows it (no heavy actions when Exhausted), and no other action is running. Otherwise the action is refused with a short diegetic reason ("没有斧头", "手抬不起来了", "太累了").
 6. **Running.**
    - `timed`: the action runs for its real duration (IA1) with the animation looping its effort (Character C7). At completion: one tool use → Inventory; outcome roll → Mishaps (if a profile exists); result → resolver.

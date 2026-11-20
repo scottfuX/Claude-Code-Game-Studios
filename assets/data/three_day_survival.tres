@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="SliceTuning" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/slice_tuning.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+start_minute_of_day = 780
+survival_day = 4
+chapter_needs_enabled = true

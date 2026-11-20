@@ -61,3 +61,13 @@ Reviewed-Content-Hash: docs/architecture/architecture.md a4b7d0baf41a20f36068402
 Reviewed-Content-Hash: docs/architecture/adr-0004-authored-map-jolt-terrain-snow-grid-and-persistent-trail-representation.md f9c39a5bd05b614d68a8c59e24ed4865fef5081a
 Reviewed-Content-Hash: docs/architecture/adr-0006-thermal-spatial-queries-and-source-registration.md 72e3d8ceb682ddd6844400d71ab8ee25e4a1a4d6
 Reviewed-Content-Hash: docs/architecture/adr-0011-fire-stage-machine-material-consumption-and-heat-light-publication.md c1b2b421b18fe1299bc89d483f7a4d7c0d0532a8
+
+Cross-reference recheck after integrating `d78bf42`: Food's new item rows and references do not change the Shelter recipe, targeting or protection inputs. Its separate forest-edge site and use of existing Fire/Body/Needs boundaries do not conflict with the reserved plot. The index retains both chapter designs. The approved Shelter text and architecture inputs are unchanged.
+Reviewed-Content-Hash: design/registry/entities.yaml 194ee7c5fb1ce75990c2c3d0f97073d4f715146c
+Reviewed-Content-Hash: design/gdd/interaction-and-timed-actions.md 34e7b7003369e2250a08a904d3b66ae02eee0c46
+Reviewed-Content-Hash: design/gdd/item-database-and-inventory.md fc17bc03438410fc8f801d9b324a90dd946863ed
+Reviewed-Content-Hash: design/gdd/map-and-resource-distribution.md 1468abb1d480ce4855a093bbbd9e181166549e01
+Reviewed-Content-Hash: design/gdd/fire.md 92d6528831a1143a869e3fdf55c8f1a661efdcfc
+Reviewed-Content-Hash: design/gdd/needs-and-weight.md b3fc9ef2a6d3fc2e747f25a89d78797ab66e5be6
+Reviewed-Content-Hash: design/gdd/body-temperature.md 561a533113754334ad3551dedbf98fd5d12260cd
+Reviewed-Content-Hash: design/gdd/systems-index.md 4475337b5e629378f6afbcebd5dd0dd29347271e

@@ -46,7 +46,7 @@ feature → mechanic map every later GDD answers to.
 - **Shelter** — tent or lean-to with at least two build stages; adds insulation to the thermal field.
 - **Water** — melting snow, chopping an ice hole, boiling; dehydration is a fail state.
 - **Wildlife Behavior** — fish, hare and grouse that only wander and flee; presence that eases or deepens loneliness.
-- **Food** — snares, ice fishing and cooking; the chance of nothing is part of the design.
+- **Food** — snares, ice fishing and cooking; the chance of nothing is part of the design. The [three-day chapter proposal](food.md) uses a finite authored hare site and does not require the wider Wildlife system or ice fishing.
 - **Weather & Cold Snaps** — wind, snowfall and cold snaps that raise fuel burn and outdoor danger.
 - **Medical Check-ins** *(show feature)* — periodic weigh-ins and health checks; can force a medical evacuation, which counts as a loss.
 - **Rival Simulation & Ranking** — simulated rivals who tap out over time; "how many are left" makes isolation and the tap-out gamble concrete.
@@ -86,7 +86,7 @@ feature → mechanic map every later GDD answers to.
 | 16 | Shelter | Gameplay | Vertical Slice | Approved | design/gdd/shelter.md | Interaction & Timed Actions, Item Database & Inventory, Gathering, Thermal Environment |
 | 17 | Water | Gameplay | Vertical Slice | Not Started | — | Interaction & Timed Actions, Item Database & Inventory, Fire, Map & Resource Distribution, Needs & Weight |
 | 18 | Wildlife Behavior | Gameplay | Vertical Slice | Not Started | — | Map & Resource Distribution, Terrain & Snow Surface |
-| 19 | Food | Gameplay | Vertical Slice | Not Started | — | Wildlife Behavior, Interaction & Timed Actions, Item Database & Inventory, Fire, Mishaps & Failure, Needs & Weight |
+| 19 | Food | Gameplay | Vertical Slice | In Review | design/gdd/food.md | Map & Resource Distribution, Terrain & Snow Surface (via Map), Time & Day Cycle, Interaction & Timed Actions, Item Database & Inventory, Fire, Needs & Weight, Body Temperature (via Interaction); Wildlife Behavior and Mishaps & Failure (broader slice) |
 | 20 | Weather & Cold Snaps | Gameplay | Vertical Slice | Not Started | — | Time & Day Cycle, Thermal Environment |
 | 21 | Medical Check-ins | Gameplay | Vertical Slice | Not Started | — | Needs & Weight, Body Temperature, Injury & Pain, Time & Day Cycle |
 | 22 | Rival Simulation & Ranking | Gameplay | Vertical Slice | Not Started | — | Time & Day Cycle |
@@ -162,7 +162,7 @@ feature → mechanic map every later GDD answers to.
 7. Shelter — depends on: Interaction & Timed Actions, Item Database & Inventory, Gathering, Thermal Environment
 8. Water — depends on: Interaction & Timed Actions, Item Database & Inventory, Fire, Map & Resource Distribution, Needs & Weight
 9. Wildlife Behavior — depends on: Map & Resource Distribution, Terrain & Snow Surface
-10. Food — depends on: Wildlife Behavior, Interaction & Timed Actions, Item Database & Inventory, Fire, Mishaps & Failure, Needs & Weight
+10. Food — chapter: Map & Resource Distribution, Terrain & Snow Surface (via Map), Time & Day Cycle, Interaction & Timed Actions, Item Database & Inventory, Fire, Needs & Weight, Body Temperature (via Interaction); wider design: Wildlife Behavior and Mishaps & Failure
 11. Weather & Cold Snaps — depends on: Time & Day Cycle, Thermal Environment
 12. Medical Check-ins — depends on: Needs & Weight, Body Temperature, Injury & Pain, Time & Day Cycle
 13. Rival Simulation & Ranking — depends on: Time & Day Cycle
@@ -259,11 +259,11 @@ Order 1 breaks dependency order on purpose: Morale's GDD defines the inputs it n
 | Metric | Count |
 |--------|-------|
 | Total systems identified | 33 |
-| Design docs started | 19 |
+| Design docs started | 20 |
 | Design docs reviewed | 19 |
 | Design docs approved | 19 |
 | MVP systems designed | 18/18 |
-| Vertical Slice systems designed | 1/12 |
+| Vertical Slice systems designed | 2/12 (Food and Shelter chapter slices only; wider design deferred) |
 
 ---
 
