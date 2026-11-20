@@ -160,7 +160,7 @@ func _integrate_minute() -> void:
 	last_felt_temp_c = thermal.effective_temp_c(position)
 	body.step_minute(last_felt_temp_c, activity, work)
 	var resting := false
-	if activity == &"idle" and work == &"idle" and (not tuning.chapter_needs_enabled or clock.rate_mode == &"wait"):
+	if activity == &"idle" and actions.action == &"" and (not tuning.chapter_needs_enabled or clock.rate_mode == &"wait"):
 		for fire: FireController in fires:
 			if fire.stage == &"Burning" and position.distance_to(fire.position) < fire.warm_radius():
 				resting = true

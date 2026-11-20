@@ -42,6 +42,26 @@ func test_cancelled_snow_critical_refusal_and_terminal_never_commit() -> void:
 	assert_float(run.needs.hydration).is_less(50.0)
 
 
+func test_consuming_by_a_fire_does_not_also_recover_energy_from_wait() -> void:
+	var run := _chapter()
+	var fire := run.create_fire(Vector3.ZERO)
+	fire.stage = &"Burning"
+	fire.fuel = 180.0
+	run.needs.energy = 50.0
+	run.needs.stomach_kcal = 200.0
+	run.clock.request_rate_mode(&"wait")
+	_step(run, 1)
+	assert_float(run.needs.energy).is_greater(50.0)
+	var before_meal := run.needs.energy
+	assert_str(run.start_eating(&"pemmican")).is_empty()
+	_step(run, 5)
+	assert_float(run.needs.energy).is_less(before_meal)
+	var before_snow := run.needs.energy
+	assert_bool(run.start_snow_intake(true)).is_true()
+	_step(run, 3)
+	assert_float(run.needs.energy).is_less(before_snow - CHAPTER.snow_energy)
+
+
 func test_meal_capacity_duration_and_exactly_one_commit() -> void:
 	var run := _chapter()
 	assert_int(run.inventory.count(&"pemmican")).is_equal(8)
