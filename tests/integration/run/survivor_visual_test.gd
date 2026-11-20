@@ -22,7 +22,8 @@ func test_visual_contacts_alternate_and_pause_blocks_them() -> void:
 	var shell: Node = auto_free(preload("res://src/run/app_shell.tscn").instantiate())
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
-	var run := shell.get_child(0) as RunCoordinator
+	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
+	var run := shell.get("_run") as RunCoordinator
 	var visual: SurvivorVisual = run.get("_survivor_visual")
 	var contacts: Array[int] = []
 	visual.foot_contact.connect(func(_p: Vector3, foot: int) -> void: contacts.append(foot))
@@ -44,7 +45,8 @@ func test_crouch_respects_imported_skeleton_basis_and_leaves_physics_root_alone(
 	var shell: Node = auto_free(preload("res://src/run/app_shell.tscn").instantiate())
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
-	var run := shell.get_child(0) as RunCoordinator
+	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
+	var run := shell.get("_run") as RunCoordinator
 	var visual: SurvivorVisual = run.get("_survivor_visual")
 	var skeleton: Skeleton3D = visual.get("_skeleton")
 	var pose: SurvivorPose = skeleton.get_child(skeleton.get_child_count() - 1)

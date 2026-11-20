@@ -102,11 +102,12 @@ func test_chapter_switch_pack_and_sleep_bind_through_the_scene() -> void:
 	var shell: Node = auto_free(SHELL.instantiate())
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
-	var run := shell.get_child(0) as RunCoordinator
+	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
+	var run := shell.get("_run") as RunCoordinator
 	assert_int(run.simulation.inventory.count(&"pemmican")).is_zero()
 	run.switch_chapter_requested.emit()
 	await get_tree().process_frame
-	run = shell.get_child(0) as RunCoordinator
+	run = shell.get("_run") as RunCoordinator
 	assert_int(run.simulation.clock.minute_of_day).is_equal(780)
 	assert_int(run.world.interactables.size()).is_equal(17)
 	assert_bool(run.world.is_on_snow(Vector3.ZERO)).is_true()
