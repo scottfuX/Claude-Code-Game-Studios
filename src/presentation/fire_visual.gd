@@ -4,6 +4,8 @@ const CAMPFIRE: PackedScene = preload("res://assets/models/campfire_flat.glb")
 var fire: FireController
 var _model: Node3D
 var _light: OmniLight3D
+var _pulse_s: float = 0.0
+var _glow: MeshInstance3D
 var _flames: CPUParticles3D
 
 func _ready() -> void:
@@ -34,14 +36,31 @@ func _ready() -> void:
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	_flames.material_override = material
 	add_child(_flames)
+	_glow = MeshInstance3D.new()
+	var glow_mesh := SphereMesh.new()
+	glow_mesh.radius = 0.22
+	glow_mesh.height = 0.10
+	_glow.mesh = glow_mesh
+	_glow.position.y = 0.2
+	_glow.material_override = SceneAssets.material(Color("f09840"), true)
+	_glow.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(_glow)
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if fire == null:
 		return
+	_pulse_s += delta
 	var alive := fire.stage in [&"Kindling", &"Burning", &"Embers", &"Smoldering"]
 	_model.visible = fire.stage != &"Site"
 	_light.visible = alive
 	_light.omni_range = fire.light_radius()
 	_light.light_energy = 0.6 if fire.stage == &"Embers" else (2.0 + fire.size_factor() * 3.0)
+	_glow.visible = fire.stage == &"Smoldering"
+	if _glow.visible:
+		var fade := fire.smolder_remaining()
+		var pulse := 0.7 + 0.3 * sin(_pulse_s * TAU * fire.tuning.smolder_pulse_hz)
+		_glow.scale = Vector3.ONE * fade * pulse
+		_light.omni_range = 1.5
+		_light.light_energy = fire.tuning.smolder_glow_energy * fade * pulse
 	_flames.emitting = fire.stage in [&"Kindling", &"Burning"]
 	_flames.scale = Vector3.ONE * (0.6 + 0.4 * fire.size_factor())

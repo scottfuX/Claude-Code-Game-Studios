@@ -19,6 +19,7 @@ var _quit: Button
 var _context: StringName = &"gameplay"
 var _previous_context: StringName = &""
 var _debug_open: bool = false
+var _help_open: bool = false
 var _cue_text: String = ""
 var _cue_remaining: float = 0.0
 var _invalid_reported: bool = false
@@ -81,6 +82,10 @@ func show_cue(message: String) -> void:
 	_cue_text = message
 	_cue_remaining = model.tuning.cue_s
 
+## Reopens controls independently of the first-fire onboarding latch.
+func toggle_help() -> void:
+	_help_open = not _help_open
+
 ## Toggles the isolated developer surface; release builds cannot enable it.
 func toggle_debug() -> void:
 	if OS.is_debug_build():
@@ -102,6 +107,7 @@ func render_snapshot(snapshot: Dictionary) -> void:
 		&"context": context, &"fill": model.fill, &"arrow": model.arrow,
 		&"arc": model.arc, &"moon": model.moon, &"twilight": model.twilight,
 		&"opacity": model.opacity, &"band_alpha": model.band_opacity(context, snapshot.get(&"body_stage", &"") == &"Critical"),
+		&"energy_fill": model.energy_fill, &"energy_trend": model.energy_trend,
 		&"energy_level": model.energy_level, &"elapsed_s": model.elapsed_s,
 		&"progress": snapshot.get(&"progress", 0.0) if snapshot.get(&"action", &"") != &"" else -1.0,
 	}
@@ -111,18 +117,19 @@ func render_snapshot(snapshot: Dictionary) -> void:
 	_cue.text = _cue_text
 	_cue.visible = ordinary and _cue_remaining > 0
 	_hint.text = tr(&"HUD_FIRST_FIRE_HINT") + "\n" + tr(&"HUD_CONTROLS")
-	_hint.visible = ordinary and not model.hint_gone
+	_hint.visible = (ordinary and (not model.hint_gone or _help_open)) or context == &"pause"
 	var menu := context in [&"end", &"pause", &"backpack"]
 	_panel.visible = menu
-	_shade.visible = menu
-	_resume.visible = context != &"end"
+	_shade.visible = menu and context != &"backpack"
+	_resume.visible = context == &"pause"
+	_restart.visible = context != &"backpack"
 	_quit.visible = context == &"pause"
 	if context == &"end":
 		_menu_text.text = tr(&"HUD_DAWN" if terminal == &"dawn_survived" else &"HUD_DEATH")
 	elif context == &"pause":
 		_menu_text.text = tr(&"HUD_PAUSED")
 	elif context == &"backpack":
-		var lines := PackedStringArray([tr(&"HUD_BACKPACK"), ""])
+		var lines := PackedStringArray([tr(&"HUD_BACKPACK"), tr(&"HUD_PACK_LIVE"), ""])
 		for tool: StringName in snapshot.get(&"tools", []):
 			lines.append(tr(StringName("TOOL_" + String(tool).to_upper())))
 		var inventory: Dictionary = snapshot.get(&"inventory", {})
@@ -135,7 +142,7 @@ func render_snapshot(snapshot: Dictionary) -> void:
 		if not any_items:
 			lines.append(tr(&"HUD_PACK_EMPTY"))
 		_menu_text.text = "\n".join(lines)
-	if menu and context != _previous_context:
+	if menu and context != &"backpack" and context != _previous_context:
 		if context == &"end":
 			_restart.grab_focus()
 		else:
@@ -162,7 +169,7 @@ func _layout() -> void:
 	_hint.position = Vector2(centre - hint_width / 2 - 35, safe.position.y + 6)
 	_hint.size = Vector2(hint_width, 100)
 	_panel.size = _panel.get_combined_minimum_size()
-	_panel.position = safe.get_center() - _panel.size / 2
+	_panel.position = Vector2(safe.position.x, safe.position.y + 110) if _context == &"backpack" else safe.get_center() - _panel.size / 2
 	_debug.position = safe.position + Vector2(0, 115)
 	_debug.size = Vector2(minf(700, safe.size.x), 160)
 

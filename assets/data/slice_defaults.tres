@@ -4,3 +4,7 @@
 
 [resource]
 script = ExtResource("1")
+
+day_seconds = 0.47
+night_seconds = 0.47
+smolder_life = 16

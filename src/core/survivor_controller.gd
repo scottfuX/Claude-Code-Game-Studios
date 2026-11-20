@@ -29,6 +29,7 @@ func _ready() -> void:
 	_visual.rotation.y = PI
 	add_child(_visual)
 	SceneAssets.apply_flat(_visual)
+	_hide_shadows(_visual)
 	_animation = _visual.find_child("AnimationPlayer", true, false) as AnimationPlayer
 	if _animation != null:
 		var library := _animation.get_animation_library(&"").duplicate_deep() as AnimationLibrary
@@ -68,3 +69,9 @@ func _physics_process(delta: float) -> void:
 	if _animation != null and desired != _clip and _animation.has_animation(desired):
 		_animation.play(desired, tuning.animation_blend_seconds)
 		_clip = desired
+
+func _hide_shadows(node: Node) -> void:
+	if node is GeometryInstance3D:
+		node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	for child: Node in node.get_children():
+		_hide_shadows(child)

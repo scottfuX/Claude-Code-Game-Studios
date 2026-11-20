@@ -7,6 +7,10 @@ var arc: float = 0.5
 var moon: bool = false
 var twilight: bool = false
 var energy_level: int = 0
+var energy_fill: float = 1.0
+var energy_trend: int = 0
+var _previous_energy: float = NAN
+var _energy_hold: float = 0.0
 var opacity: float = 1.0
 var hint_gone: bool = false
 var elapsed_s: float = 0.0
@@ -76,6 +80,16 @@ func update(snapshot: Dictionary, delta_s: float, paused: bool = false) -> bool:
 	_candidate_s += dt
 	if _candidate_s >= tuning.trend_hold_s:
 		arrow = candidate
+	var sample: float = snapshot.get(&"energy", NAN)
+	if is_finite(sample) and not paused:
+		energy_fill = clampf(sample / 100.0, 0, 1)
+		_energy_hold = maxf(0.0, _energy_hold - dt)
+		if is_finite(_previous_energy) and not is_equal_approx(sample, _previous_energy):
+			energy_trend = 1 if sample > _previous_energy else -1
+			_energy_hold = tuning.energy_trend_hold_s
+		elif _energy_hold <= 0:
+			energy_trend = 0
+		_previous_energy = sample
 	var energy: StringName = snapshot.get(&"energy_stage", &"")
 	energy_level = 2 if energy == &"Exhausted" else (1 if energy == &"Tired" else 0)
 	var stage: StringName = snapshot.get(&"body_stage", &"")
@@ -92,7 +106,7 @@ func update(snapshot: Dictionary, delta_s: float, paused: bool = false) -> bool:
 		fade_dt = 0.0
 	_fade_s += fade_dt
 	opacity = lerpf(_fade_from, target, smoothstep(0.0, 1.0, minf(1.0, _fade_s / _fade_duration)))
-	hint_gone = hint_gone or int(clock.get(&"elapsed_minutes", 0)) >= tuning.hint_minutes
+	hint_gone = hint_gone or (not tuning.hint_until_fire and int(clock.get(&"elapsed_minutes", 0)) >= tuning.hint_minutes)
 	for fire: Dictionary in snapshot.get(&"fires", []):
 		if fire.get(&"stage", &"") in [&"Kindling", &"Burning", &"Embers", &"Out"]:
 			hint_gone = true

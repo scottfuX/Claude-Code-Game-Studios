@@ -69,7 +69,7 @@ func test_qualitative_quantities_never_return_counts() -> void:
 	assert_str(model.quantity_key(100)).is_equal("HUD_QUANTITY_PLENTY")
 
 func test_controls_hint_latches_on_timeout_and_never_returns() -> void:
-	var model := HudModel.new()
+	var model := HudModel.new(HudTuning.new())
 	var state := _snapshot()
 	model.update(state, 0)
 	assert_bool(model.hint_gone).is_false()

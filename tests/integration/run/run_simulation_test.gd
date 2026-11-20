@@ -56,7 +56,7 @@ func test_dawn_and_death_in_owed_minutes_discard_pending_completion() -> void:
 
 
 func test_simulation_same_minute_out_terminal_and_restart() -> void:
-	var s := RunSimulation.new()
+	var s := RunSimulation.new(1, SliceTuning.new())
 	var f := s.create_fire(Vector3.ZERO)
 	f.stage = &"Embers"
 	f.ember_minutes = 89
@@ -70,7 +70,7 @@ func test_simulation_same_minute_out_terminal_and_restart() -> void:
 	s.body.stage = &"Critical"
 	s.step_minute()
 	assert_str(s.terminal).is_equal("hypothermia")
-	var fresh := RunSimulation.new()
+	var fresh := RunSimulation.new(1, SliceTuning.new())
 	assert_float(fresh.body.core_temp_c).is_equal(37.0)
 	assert_int(fresh.fires.size()).is_equal(0)
 	fresh.clock.day = 2
@@ -80,7 +80,7 @@ func test_simulation_same_minute_out_terminal_and_restart() -> void:
 
 
 func test_simulation_actions_keep_work_until_minute_barrier_and_commit_once() -> void:
-	var s := RunSimulation.new()
+	var s := RunSimulation.new(1, SliceTuning.new())
 	var node := GatherNode.new(&"deadfall", 2)
 	assert_bool(s.start_action(&"chop_log", null, node)).is_true()
 	s.update(1.5)
@@ -102,7 +102,7 @@ func test_simulation_actions_keep_work_until_minute_barrier_and_commit_once() ->
 
 
 func test_terminal_discards_action_before_any_completion_draw() -> void:
-	var s := RunSimulation.new()
+	var s := RunSimulation.new(1, SliceTuning.new())
 	var node := GatherNode.new(&"deadfall", 2)
 	s.start_action(&"chop_log", null, node)
 	s.body.core_temp_c = 30.001
@@ -131,7 +131,7 @@ func test_empty_actions_no_profile_and_zero_energy_are_safe() -> void:
 	n.step_minute(&"heavy", true)
 	assert_float(n.energy).is_equal(0.0)
 	assert_str(n.stage).is_equal("Exhausted")
-	var s := RunSimulation.new()
+	var s := RunSimulation.new(1, SliceTuning.new())
 	assert_bool(s.start_action(&"missing")).is_false()
 	assert_object(s.create_fire(Vector3.ZERO)).is_not_null()
 	assert_object(s.create_fire(Vector3.ONE)).is_not_null()

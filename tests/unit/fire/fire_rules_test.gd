@@ -55,7 +55,7 @@ func test_fire_lighting_consumption_and_smolder_timeout() -> void:
 	assert_bool(f.commit_action(&"arrange_tinder", i)).is_true()
 	assert_int(i.count(&"stick")).is_equal(0)
 	assert_bool(f.commit_action(&"strike", i)).is_true()
-	for minute in 3:
+	for minute in f.tuning.smolder_life:
 		f.step_minute()
 	assert_str(f.stage).is_equal("Laid")
 	assert_bool(f.tinder_ready).is_false()
