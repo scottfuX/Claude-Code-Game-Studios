@@ -17,20 +17,24 @@ The three-day chapter adds one simple tarp lean-to. The player brings back wood,
 
 The Chapter 2 player builds one simple, open-front tarp lean-to at a prepared camp spot in the existing snowy playfield. They have to bring wood back and work twice before they get any protection. A chopped log spent on the frame cannot go into the fire that night; choosing when to spend that fuel and daylight is the point of the system.
 
-The finished roof gives a small, local advantage against the wind. It is neither a heat source nor a guarantee of safe sleep. The shelter is optional for victory; the run still ends at the third sunrise or on the existing terminal conditions. This is a design for the chapter profile only, not Sprint 001, the first-night profile, or a project stage change. No cabins, free placement, moving/dismantling, upgrades, decay, wetness protection, new gathering loop, Weather or Save/Load.
+The finished roof gives a small, local advantage against the wind. It is neither a heat source nor a guarantee of safe sleep. The shelter is optional for victory, which occurs at day 4 sunrise after three completed overnights; the existing loss conditions still apply. This is a design for the chapter profile only, not Sprint 001, the first-night profile, or a project stage change. No cabins, free placement, moving/dismantling, upgrades, decay, wetness protection, new gathering loop, Weather or Save/Load.
+
+## Player Fantasy
+
+Make a small refuge with your own hands before dark; the cold outside still matters.
 
 ## Detailed Design
 
 ### Core Rules
 
-1. **One authored site.** WORLD-001 supplies a fixed Chapter 2 marker and orientation on the lee side of a rock on the existing playfield; prefer the nook nearest the drop that meets the following constraints. Use a walkable route within 15 m of the drop on dry, non-ice, non-drift ground, with a footprint slope ≤ 8°, clear footprint and a traversable entrance and exit. There must be valid adjacent outdoor ground for a fire facing the opening and at least one reachable existing deadfall accessible with the starting hatchet. Mark the plot with stakes, not a map marker. No cursor placement, rotation or search for arbitrary buildable ground. Map/Jolt validate terrain and obstructions before enabling the site; Shelter does not infer validity from VFX or triggers. The plot's footprint is reserved for Shelter for the entire chapter (including before the frame); Map excludes fire placement intersecting it, but not the adjacent fire apron. This is a chapter placement constraint, not a new Fire-stage rule.
-2. **Source the materials.** Give the chapter's starting loadout one existing `tarp` with ties bundled into it and the existing hatchet; no separate paracord cost or new catalogue item. Obtain a `log` via the existing deadfall chop and pickup/overflow loop. Use ordinary backpack units (not units on the ground). Existing Inventory masses, stacking and wetness stay unchanged; material wetness does not gate this recipe or affect its thermal result. The chapter loadout adapter must be validated against Inventory before a run starts, not handed out again on retrying construction.
+1. **One authored site.** WORLD-001 supplies a fixed Chapter 2 marker and orientation on the lee side of a rock on the existing playfield. Prefer the nearest valid nook: site centre ≤ 15 m by walkable path from the drop, clear dry non-ice/non-drift ground with footprint slope ≤ 8°, and a traversable entrance and exit. There must be valid adjacent outdoor ground for a fire facing the opening and at least one reachable existing deadfall accessible with the starting hatchet. Mark the plot with stakes, not a map marker. No cursor placement, rotation or search for arbitrary buildable ground. Map/Jolt validate terrain and obstructions before enabling the site; Shelter does not infer validity from VFX or triggers. Reserve the footprint for the whole chapter, even while Empty. When evaluating a new fire site, FireController reads a Map-owned spatial query and refuses an intersecting XZ footprint (including edge contact); the separate apron remains eligible under Fire's existing rules. This is a proposed Chapter 2 eligibility input, not a change to Fire stages or first-night placement. See the architecture gate below.
+2. **Source the materials.** Use the kit's existing `tarp` with ties bundled into it; the kit hatchet is for gathering. Do not consume paracord or add a catalogue item. Obtain a `log` via the existing deadfall chop and pickup/overflow loop. Use ordinary backpack units (not units on the ground). Existing Inventory masses, stacking and wetness stay unchanged; material wetness does not gate this recipe or affect its thermal result.
 3. **Two timed actions.** They use Interaction's existing targeting, work intensity, admission and IA1 duration. Each stage needs its own press of the contextual interact action. No action auto-queues the next stage. Both are cancellable, `progress_kept = false`, `counts_as_idle = false`, `critical_allowed = false`, with no tool use or Mishaps profile. The hatchet is for gathering, not for either construction action.
 
    | Available at | Action id | Base game minutes | Effort | Cost on successful commit | Next stage |
    |---|---|---:|---|---|---|
-   | Empty | `build_shelter_frame` | 6 | Heavy | 1 `log` | Framed |
-   | Framed | `cover_shelter` | 4 | Light | 1 `tarp` | Covered |
+   | Empty | `build_shelter_frame` | 6 | `heavy` | 1 `log` | Framed |
+   | Framed | `cover_shelter` | 4 | `light` | 1 `tarp` | Covered |
 
 4. **Commit or cancel.** At start check the current site, stage, range, backpack cost and Body/Needs permission. At completion revalidate them inside the ordered ActionRunner gate, including run, token and target/owner revisions. Stage progress accrues only in ActionRunner while working. Prepare detached Inventory and Shelter plans; for the cover stage also prepare and validate the Thermal registration through its owner port. After validation all owners apply the one accepted consequence synchronously, without yielding or publishing intermediate state: spend just that stage's units as use (not loss), advance the site revision, register the volume if Covered, then publish the outcome. Invalid preparation or terminal/forced cancellation applies none of those effects; do not roll Mishaps, spend anything or keep fractional work. A successfully committed earlier stage stays paid and standing. Owner revisions and committed tokens rule out duplicate costs or registrations. No staging of materials in a second inventory.
 5. **Insulation starts at Covered.** The Feature owns the pending or committed structure; ThermalField owns the live volume. Publish one versioned record per run/site with authored bounds, the values in Formulas, and stable owner/run/source IDs. Inside means the actual sample point is within the closed authored volume, including its faces. Outside samples receive no Shelter terms; a bare frame has no volume. Publish by the next ordered Thermal sample after commit, never retroactively to a minute already sampled. Remove on provider/site teardown before the next sample; a fresh run starts without a volume. Thermal decides containment from value data, not meshes, camera framing, or Area3D callbacks. If multiple volumes exist in a fixture or later feature, Thermal still applies its minimum exposure / maximum bonus rule, never additive stacking.
@@ -51,19 +55,21 @@ Midnight is not a transition. The run owns all stages; nothing persists across r
 
 | Owner | Contract consumed or supplied by Shelter |
 |---|---|
-| Map / Terrain | Supplies the authored site ID, transform, walkability and clearance via the existing spatial boundary; Map owns the chapter fire-placement exclusion. |
+| Map / Terrain | Supplies the authored site ID, transform, walkability and clearance via the existing spatial boundary. Map owns and publishes the read-only Chapter 2 fire-exclusion query. |
 | Gathering / Inventory | Gathering supplies ordinary deadfall logs through the existing loop. Inventory's read snapshots and prepared consumption plans own both inputs; Shelter cannot decrement stacks. |
 | Interaction / Input | Shelter supplies a staged interactable and injected Feature resolver. ActionRunner owns targeting, progress, revalidation, cancellation and work intensity, using existing bindings. Core imports no concrete Shelter type. |
 | RunCoordinator | Composes this provider only for the chapter, orders commit versus minute/terminal barriers, and disposes of the provider before tearing down its owner services. |
 | ThermalField | Accepts a copied, revision-checked insulation record at cover commit, removes it on teardown, and samples exact geometry through its normal query. It never reads the Shelter node. |
 | Body / Needs / Time | Consume existing work reports, Thermal samples and the sleep request through their current interfaces. No direct writes, new rate mode, or new wake reason. |
-| Fire / Presentation | Fire stays a separate thermal source; visuals and localized contextual prompts read committed stage/action snapshots only. |
+| Fire | FireController owns fire-site validation and consumes the Map exclusion only when evaluating a new Chapter 2 site. Fire stays a separate thermal source. |
+| Morale | No shelter damage, decay or relief event in Chapter 2; no `loss{kind: shelter_damaged}` is emitted. |
+| Presentation | Visuals and localized contextual prompts read committed stage/action snapshots only. |
 
 ## Formulas
 
 ### SH1 — Work and cost
 
-Reuse Interaction IA1: each stage's work duration is its base minutes multiplied by the current IA1 duration multiplier captured on start. Only on commit does the relevant Inventory count decrease by the stated quantity; it never goes below zero because the commit revalidates availability. A full healthy build is **10 game minutes** of work (not counting travel, gathering or time between stages); both stages at IA1's default cap take **20 game minutes**. At the normal daytime rate and healthy multiplier, each stage takes 9 s / 6 s, respectively.
+Reuse Interaction IA1: each stage's work duration is its base minutes multiplied by the current IA1 duration multiplier captured on start. Only on commit does the relevant Inventory count decrease by the stated quantity; it never goes below zero because the commit revalidates availability. A full healthy build is **10 game minutes** of work (not counting travel, gathering or time between stages); both stages at IA1's default cap take **20 game minutes**. At the healthy multiplier, frame/cover take 9 s / 6 s starting by day or 6 s / 4 s starting at night.
 
 | Input | Chapter value / range | Owner / reason |
 |---|---|---|
@@ -82,6 +88,14 @@ In site-local metres with +Z facing out of the opening and Y up from the finishe
 | `heat_reflect_mult` | 1.0 | 1.0–1.5 per TH4; neutral for this chapter. |
 
 No new temperature formula: Thermal uses TH3–TH5. Example with no fire, the same lee-zone baseline exposure of 0.30, wind 3 m/s and default TH3 coefficient 1.2: outside chill is 1.08 °C; inside it is 0.36 °C. The net increase at otherwise equal air/zone conditions is 0.72 + 2.00 = **2.72 °C**. At zero wind the increase is only the 2.00 °C bonus. With a fire nearby, the ordinary distance-based heat term is separate and reflection stays neutral. These are felt-temperature differences, not core-temperature gains or changes to sleep thresholds.
+
+## Tuning Knobs
+
+| Knob | Chapter baseline | Guardrail |
+|---|---|---|
+| Stage durations and quantities | 6 / 4 game min; 1 log / 1 tarp | IA1 accepts 0.25–30 min per stage; keep one whole unit per stage with the current kit. |
+| Wind override, bonus and reflection | 0.10, +2 °C, 1.0 | Override 0–1 and no higher than the lowest ambient exposure in the volume; TH5 bonus 0–10 °C; TH4 reflection 1.0–1.5 (neutral for this milestone). |
+| Path, slope and volume | ≤ 15 m, ≤ 8°, 2.40 × 1.50 m footprint, 1.80 m high | Positive dimensions, clear bedroll and walking clearance; keep a separate Fire-legal apron. Changing these bounds requires validating WORLD-001 again. |
 
 ## Edge Cases
 
@@ -125,20 +139,23 @@ Use the existing [localized HUD prompt pattern](../ux/hud.md) and contextual wor
 | Insulation separated from heat and cold wake | [Thermal Rule 7](thermal-environment.md#core-rules) / [TH3–TH5](thermal-environment.md#formulas), [Fire](fire.md), [Body](body-temperature.md), [Needs](needs-and-weight.md), [ADR-0006](../../docs/architecture/adr-0006-thermal-spatial-queries-and-source-registration.md), [ADR-0008](../../docs/architecture/adr-0008-body-needs-minute-integration-sleep-and-terminal-candidate-ports.md), [ADR-0011](../../docs/architecture/adr-0011-fire-stage-machine-material-consumption-and-heat-light-publication.md) | Separate terms and owners; the GDD does not supersede any equation, terminal precedence or wake threshold. |
 | Read-only presentation | [HUD](hud.md), [Foley](ambient-and-foley-audio.md), [Control Manifest](../../docs/architecture/control-manifest.md#presentation-layer-rules) | Reuse existing action, camera, visual and audio adapters; no special locomotion, morale, camera or post-processing state. |
 
-Relevant existing requirements are cited by the linked stories (including Thermal TRs 007, 009, 010 and 022). The chapter design adds no Accepted ADR or canonical TR entry; [Control Manifest](../../docs/architecture/control-manifest.md) remains the implementation boundary.
+Relevant existing requirements are cited by the linked stories (including Thermal TRs 007, 009, 010 and 022).
+
+**Architecture gate before implementation.** Shelter is still deferred in the [architecture](../../docs/architecture/architecture.md). Before implementing the provider or wiring ACT-003 / RUN-002, accept a Shelter ADR (or amend ADR-0006) covering the run-owned Feature stage state, injected resolver and Thermal volume lifecycle. Run `/propagate-design-change` for the Chapter 2 fire exclusion against ADR-0004 and ADR-0011: record the Map-owned spatial input and FireController's validation of it. Then update the architecture and regenerate the [Control Manifest](../../docs/architecture/control-manifest.md). The current Accepted ADRs are not changed by this GDD; THERM-002 may still implement the generic registry with fixtures.
 
 ## Acceptance Criteria
 
 **Automated targets (future implementation evidence, not tests claimed by this GDD):**
 
-1. **Given** a fresh Chapter 2 run, **when** the map loads, **then** a player can walk from drop to the single authored site and an existing deadfall, the footprint is non-ice/non-drift and ≤ 8°, the adjoining fire apron is legal, and placing a fire across the plot boundary is refused. A bad site fixture fails validation before play. (WORLD-001)
+1. **Given** a fresh Chapter 2 run, **when** the map loads, **then** the path from drop to site centre is ≤ 15 m and an existing deadfall is reachable, the footprint is dry/non-ice/non-drift and ≤ 8°, and ambient zone exposure across the interior is ≥ 0.10 (lee 0.30 expected). A bad site fixture fails validation before play. **Given** Empty, Framed or Covered, **then** FireController refuses a new fire whose footprint touches or overlaps the reservation and accepts a valid site on the separate apron. (WORLD-001)
 2. **Given** the starting tarp and hatchet and no log in the backpack, **when** the survivor attempts to frame, **then** it is refused; **when** they gather and carry a log and finish the frame, **then** exactly one log is gone, the frame is visible and the tarp and Thermal records are unchanged. Cover needs a separate press; on successful cover exactly one tarp is gone, the sleep target is available and exactly one insulation record exists. Neither action uses a tool or draws randomness. (ACT-003)
 3. **Given** each stage in progress, **when** the player cancels or is forced out, a material/target revision invalidates the commit, or terminal wins on the completion boundary, **then** partial work is not kept and no stage cost or registration occurs; earlier committed work remains. A duplicated or stale accepted completion has no further effects. If thermal preparation rejects the cover volume, the tarp remains in Inventory and the state is Framed. (ACT-003)
 4. **Given** identical lee-zone inputs with no fire and 3 m/s wind, **when** Thermal samples just inside, on the boundary and just outside the finished volume, **then** inside and boundary get the override and +2 °C bonus; the outside uses zone exposure and no bonus. The inside/outside felt difference is 2.72 °C at the example inputs. Under matching fire contributions the heat term is unchanged by shelter reflection. Adding an overlapping fixture does not sum its bonus; removal restores baseline by the next sample. (THERM-002)
 5. **Given** a Covered plot, **when** an eligible survivor starts existing `sleep` from inside, **then** Needs owns the sleep transition; the same shelter request outside or while ineligible changes neither position nor sleep. **When** fire goes Out with no valid wake trigger, sleep continues; qualifying Body cold wake still interrupts before the next skipped minute. (ACT-001, BODY-001, RUN-002)
 6. **Given** a Framed or Covered site at midnight, **when** the day changes, **then** the state and any registered volume persist. **When** the run exits and a new run starts, **then** there is no old volume or stage; the first-night profile still has no chapter site or Shelter-specific grants. (RUN-002)
+7. **Given** an Exhausted survivor with no other admission blocker, **then** a frame attempt is refused for heavy effort; at a Framed site a cover attempt is admitted as light effort. **When** cover commits after an ordered minute's Thermal sample, **then** that minute keeps its original result and the next sample includes the volume. (ACT-003, THERM-002)
 
-**Chapter playtest:** Build at the marked site without instructions or new controls; distinguish stakes, frame and roof at normal zoom; sleep under cover with a tended fire, and show a separate Body cold wake. Record placement, use and the third-sunrise run under the [milestone exit checks](../../production/milestones/three-day-survival.md#success-criteria). If the initial tuning makes shelter a replacement for fire or barely perceptible, bring the paired inside/outside samples back to the owner before changing the approved values.
+**Chapter playtest:** Build at the marked site without instructions or new controls; distinguish stakes, frame and roof at normal zoom; sleep under cover with a tended fire, and show a separate Body cold wake. Record placement, use and the day 4 sunrise run under the [milestone exit checks](../../production/milestones/three-day-survival.md#success-criteria). If the initial tuning makes shelter a replacement for fire or barely perceptible, bring the paired inside/outside samples back to the owner before changing the approved values.
 
 ## Open Questions
 

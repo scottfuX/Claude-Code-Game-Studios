@@ -85,7 +85,7 @@ For the player it is the first goal ("天黑前要有火"), the evening ritual (
 | Time & Day Cycle (approved) | in | `minute_tick` | Time |
 | Morale & Mental State | out | `fire_burning`, `warm_radius`, `loss{fire_died_unattended}` | Fire |
 | Gathering | — | supplies fuel and tinder via Inventory | — |
-| Terrain / Map (approved) | in | site validity (slope, type), good lee sites | Terrain / Map |
+| Terrain / Map (approved) | in | site validity (slope, type), good lee sites; proposed Chapter 2 reservation input below | Terrain / Map |
 | Body Temperature (approved) | — | warmed through Thermal only | — |
 | Emotional Feedback / rendering | out | stage, light radius, smoke (burning wetness), smother and ember-death events | Fire |
 | Camera (approved) | — | ritual framing is requested by Emotional Feedback | — |
@@ -189,6 +189,8 @@ Solved, the fuel falls as `F(t) = (F0 + b0·b_div) · e^(−t·w/b_div) − b0·
 **Upstream — hard:** Interaction & Timed Actions, Item Database & Inventory, Thermal Environment, Mishaps & Failure, Time & Day Cycle (all approved).
 
 **Upstream — soft:** Gathering (fuel and tinder), Terrain / Map (sites), Weather (VS).
+
+**Chapter 2 forward link:** [Map](map-and-resource-distribution.md#interactions-with-other-systems) owns the proposed query for the authored [Shelter](shelter.md#cross-references) reservation. After the Shelter architecture gate, FireController adds the query to Rule 1's new-site validation for this chapter only: refuse a fire footprint that touches or overlaps the reservation, even before framing. The apron still uses ordinary site checks. No first-night or Fire stage, heat or sleep rule changes.
 
 **Downstream:** Thermal (heat source), Body Temperature (via Thermal), Morale (`fire_burning`, `warm_radius`, unattended loss), Inventory (camp piles), Needs & Weight (`resting_at_fire` via Interaction), Emotional Feedback / rendering (light, smoke), Ambient & Foley Audio (crackle), Food / Water / Shelter (VS), Save/Load.
 
