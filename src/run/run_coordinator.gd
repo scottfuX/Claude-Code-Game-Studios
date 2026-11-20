@@ -23,6 +23,8 @@ var _demo: bool = false
 var _demo_end: bool = false
 var _demo_gather: bool = false
 var _smolder_stage: Dictionary[StringName, StringName] = {}
+var _survivor_visual: SurvivorVisual
+var _footprints: FootprintPool
 var _demo_driver: FirstNightDemo
 
 @onready var input_router: InputRouter = $InputRouter
@@ -52,6 +54,12 @@ func _ready() -> void:
 	camera.target = survivor
 	camera.position = survivor.position + Vector3.UP * camera.tuning.camera_target_height
 	survivor.configure(simulation, input_router, camera)
+	_footprints = FootprintPool.new()
+	add_child(_footprints)
+	_survivor_visual = SurvivorVisual.new()
+	_survivor_visual.controller = survivor
+	_survivor_visual.footprints = _footprints
+	survivor.add_child(_survivor_visual)
 	input_router.action_pressed.connect(_on_action)
 	simulation.action_resolved.connect(_on_action_resolved)
 	hud.restart_requested.connect(func() -> void: restart_requested.emit())
