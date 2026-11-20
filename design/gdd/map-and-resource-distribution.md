@@ -73,6 +73,7 @@ The MVP map is deliberately small — 240 × 240 m playable — because walking 
 9. **Good camp sites.** Fire can be built on any flat (≤ 8°), non-ice, non-drift spot (Fire GDD), but Map marks 3 authored "good" sites in lee zones (exposure ≤ 0.3) within 60 m of the drop — the outcrop's lee is one. They are not labelled; they read as sheltered nooks (rocks, low trees) — the first lesson of 越活越懂.
 10. **Bounds and spawn safety.** Map publishes the playable polygon (Camera clamps; Character cannot leave). No node or good site is placed on ice, in drifts deeper than 0.6 m, or on slopes > 20°.
 11. **Reserved VS content** (positions authored now, systems later): hare and grouse ranges (forest edges, birch stand), fish spots and ice-hole sites (lake centre, ice ≥ 20 cm), a water hole site at the inlet (open water in thaw, VS), shelter-friendly sites (lee, near poles of young trees).
+    The [Food chapter proposal](food.md#core-rules) uses one of these forest-edge hare ranges; Map validates the approach and stance but does not produce the catch.
 
 ### States and Transitions
 

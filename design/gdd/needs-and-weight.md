@@ -197,6 +197,8 @@ One step per tick in each machine; each change emits `needs_stage_changed(need, 
 
 **Upstream — soft:** Character Controller (movement activity), Interaction (work activity and eat/drink/sleep actions), Food and Water (VS, through Item DB).
 
+The [Food chapter proposal](food.md#formulas) uses the existing pre-drop meal, burn and weight formulas. Hare calories enter only through the normal timed Eat transaction.
+
 **Downstream:** Morale & Mental State (hard: `fullness`, `weight_kg`, `start_weight_kg`, `is_asleep`), Body Temperature (`is_asleep`), Time (mode requests), Mishaps (`fatigue_penalty`), Interaction (`needs_action_mult`, refusals), Character Controller (`needs_move_speed_mult`), Emotional Feedback, HUD, Medical Check-ins (VS), Tap-out & Run Results (VS), Save/Load (Alpha).
 
 **Bidirectional check:** the systems index lists Needs → Time, Body Temperature, Item DB (matches). Morale lists Needs for `fullness`, `weight_kg`, `start_weight_kg`, `is_asleep` (all provided). Body lists Needs for `is_asleep` and as consumer of `is_shivering`, `stage`, `wake_request` (matches). Time lists Needs as the `sleep`/`normal` requester and states that `is_asleep` is Needs' contract (matches — Rule 9 also handles Time `normal` interrupts). Gaps for later GDDs: Mishaps, Interaction and Character Controller must list Needs as an input (index rows do not yet).

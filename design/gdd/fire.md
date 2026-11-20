@@ -56,6 +56,7 @@ For the player it is the first goal ("天黑前要有火"), the evening ritual (
 10. **No wake-up from Fire.** Fire does not wake the sleeping survivor; the body does (Body Temperature wakes them when Cold). The dying fire and the cold that follows are the night's story.
 11. **Fire tending in Critical.** `add_fuel` and `blow_embers` are `critical_allowed` (Interaction): a crawling survivor can still save the fire.
 12. **Rest and ritual.** `sit_warm` and `rest` target a Burning fire (Interaction); Morale's fire ritual uses `fire_burning` (stage Kindling flame or Burning) and `warm_radius`.
+    The [Food chapter proposal](food.md#core-rules) uses a Burning campfire's existing context verbs and read-only interaction state. Fire burns normally and does not own the cooking transaction.
 
 ### States and Transitions
 

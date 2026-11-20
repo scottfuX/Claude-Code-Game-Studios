@@ -86,7 +86,7 @@ feature → mechanic map every later GDD answers to.
 | 16 | Shelter | Gameplay | Vertical Slice | Not Started | — | Interaction & Timed Actions, Item Database & Inventory, Gathering, Thermal Environment |
 | 17 | Water | Gameplay | Vertical Slice | Not Started | — | Interaction & Timed Actions, Item Database & Inventory, Fire, Map & Resource Distribution, Needs & Weight |
 | 18 | Wildlife Behavior | Gameplay | Vertical Slice | Not Started | — | Map & Resource Distribution, Terrain & Snow Surface |
-| 19 | Food | Gameplay | Vertical Slice | Designed | design/gdd/food.md | Map & Resource Distribution, Time & Day Cycle, Interaction & Timed Actions, Item Database & Inventory, Fire, Needs & Weight, Body Temperature (via Interaction); Wildlife Behavior and Mishaps & Failure (broader slice) |
+| 19 | Food | Gameplay | Vertical Slice | In Review | design/gdd/food.md | Map & Resource Distribution, Terrain & Snow Surface (via Map), Time & Day Cycle, Interaction & Timed Actions, Item Database & Inventory, Fire, Needs & Weight, Body Temperature (via Interaction); Wildlife Behavior and Mishaps & Failure (broader slice) |
 | 20 | Weather & Cold Snaps | Gameplay | Vertical Slice | Not Started | — | Time & Day Cycle, Thermal Environment |
 | 21 | Medical Check-ins | Gameplay | Vertical Slice | Not Started | — | Needs & Weight, Body Temperature, Injury & Pain, Time & Day Cycle |
 | 22 | Rival Simulation & Ranking | Gameplay | Vertical Slice | Not Started | — | Time & Day Cycle |
@@ -162,7 +162,7 @@ feature → mechanic map every later GDD answers to.
 7. Shelter — depends on: Interaction & Timed Actions, Item Database & Inventory, Gathering, Thermal Environment
 8. Water — depends on: Interaction & Timed Actions, Item Database & Inventory, Fire, Map & Resource Distribution, Needs & Weight
 9. Wildlife Behavior — depends on: Map & Resource Distribution, Terrain & Snow Surface
-10. Food — chapter: Map & Resource Distribution, Time & Day Cycle, Interaction & Timed Actions, Item Database & Inventory, Fire, Needs & Weight, Body Temperature (via Interaction); wider design: Wildlife Behavior and Mishaps & Failure
+10. Food — chapter: Map & Resource Distribution, Terrain & Snow Surface (via Map), Time & Day Cycle, Interaction & Timed Actions, Item Database & Inventory, Fire, Needs & Weight, Body Temperature (via Interaction); wider design: Wildlife Behavior and Mishaps & Failure
 11. Weather & Cold Snaps — depends on: Time & Day Cycle, Thermal Environment
 12. Medical Check-ins — depends on: Needs & Weight, Body Temperature, Injury & Pain, Time & Day Cycle
 13. Rival Simulation & Ranking — depends on: Time & Day Cycle
