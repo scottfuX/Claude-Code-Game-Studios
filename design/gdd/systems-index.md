@@ -83,7 +83,7 @@ feature → mechanic map every later GDD answers to.
 | 13 | Needs & Weight | Gameplay | MVP | Approved | design/gdd/needs-and-weight.md | Time & Day Cycle, Body Temperature, Item Database & Inventory |
 | 14 | Injury & Pain (inferred) | Gameplay | Vertical Slice | Not Started | — | Mishaps & Failure, Body Temperature |
 | 15 | Morale & Mental State | Gameplay | MVP | Approved | design/gdd/morale-and-mental-state.md | Time & Day Cycle, Body Temperature, Needs & Weight, Mishaps & Failure |
-| 16 | Shelter | Gameplay | Vertical Slice | In Review | design/gdd/shelter.md | Interaction & Timed Actions, Item Database & Inventory, Gathering, Thermal Environment |
+| 16 | Shelter | Gameplay | Vertical Slice | Approved | design/gdd/shelter.md | Interaction & Timed Actions, Item Database & Inventory, Gathering, Thermal Environment |
 | 17 | Water | Gameplay | Vertical Slice | Not Started | — | Interaction & Timed Actions, Item Database & Inventory, Fire, Map & Resource Distribution, Needs & Weight |
 | 18 | Wildlife Behavior | Gameplay | Vertical Slice | Not Started | — | Map & Resource Distribution, Terrain & Snow Surface |
 | 19 | Food | Gameplay | Vertical Slice | Not Started | — | Wildlife Behavior, Interaction & Timed Actions, Item Database & Inventory, Fire, Mishaps & Failure, Needs & Weight |
@@ -261,7 +261,7 @@ Order 1 breaks dependency order on purpose: Morale's GDD defines the inputs it n
 | Total systems identified | 33 |
 | Design docs started | 19 |
 | Design docs reviewed | 19 |
-| Design docs approved | 18 |
+| Design docs approved | 19 |
 | MVP systems designed | 18/18 |
 | Vertical Slice systems designed | 1/12 |
 
