@@ -79,7 +79,6 @@ func _ready() -> void:
 	sun.shadow_opacity = _atmosphere.tuning.sun_shadow_opacity
 	_atmosphere.simulation = simulation
 	_atmosphere.survivor = survivor
-	_atmosphere.sunlight = sun
 	_atmosphere.environment = _environment
 	add_child(_atmosphere)
 	_survivor_visual.foot_contact.connect(_atmosphere.footstep)
@@ -290,13 +289,16 @@ func _update_lighting() -> void:
 	elif hour > sunset:
 		daylight = 1.0 - clampf((hour - sunset) / simulation.tuning.twilight, 0, 1)
 	var sun_progress := clampf((hour - dawn) / (sunset - dawn), 0, 1)
-	sun.rotation = Vector3(-deg_to_rad(6 + 16 * sin(PI * sun_progress)), -0.6 + sun_progress * 1.2, 0)
-	sun.light_color = Color(1.0, 0.39, 0.13).lerp(Color(1.0, 0.885, 0.63), daylight)
-	sun.light_energy = 0.85 * daylight
+	var sun_rotation := Vector3(-deg_to_rad(6 + 16 * sin(PI * sun_progress)), -0.6 + sun_progress * 1.2, 0)
+	sun.rotation = Vector3(-deg_to_rad(42), -deg_to_rad(65), 0).lerp(sun_rotation, daylight)
+	var sun_color := Color(1.0, 0.39, 0.13).lerp(Color(1.0, 0.885, 0.63), daylight)
+	sun.light_color = Color("9fbfe9").lerp(sun_color, daylight)
+	sun.light_energy = lerpf(_atmosphere.tuning.moon_energy, 0.85, daylight)
+	sun.shadow_opacity = _atmosphere.tuning.sun_shadow_opacity * daylight
+	sun.shadow_enabled = true
 	var night := Color(0.07, 0.13, 0.27)
 	_environment.ambient_light_color = night.lerp(Color(0.799, 0.828, 0.835), daylight)
 	_environment.ambient_light_energy = lerpf(0.65, 0.6, daylight)
 	_environment.background_color = Color(0.02, 0.04, 0.10).lerp(Color(0.6939, 0.7835, 0.8963), daylight)
-	_environment.fog_light_color = _environment.background_color
 	_environment.fog_light_energy = lerpf(0.45, 1.0, daylight)
 	_atmosphere.set_daylight(daylight)
