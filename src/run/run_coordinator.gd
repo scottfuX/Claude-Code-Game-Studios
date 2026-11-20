@@ -93,6 +93,8 @@ func _ready() -> void:
 		if not initialization_ok:
 			return
 	var chapter := simulation.tuning.chapter_needs_enabled
+	for locale: String in ["en", "zh"]:
+		TranslationServer.add_translation(load("res://assets/localization/mishaps.%s.translation" % locale))
 	if chapter:
 		for locale: String in ["en", "zh"]:
 			TranslationServer.add_translation(load("res://assets/localization/ice.%s.translation" % locale))
@@ -787,7 +789,10 @@ func _on_action_resolved(action: StringName, success: bool, cause: StringName) -
 		for fire: FireController in simulation.fires:
 			_smolder_stage[fire.id] = fire.stage
 	var verb := tr(VERB_NAMES.get(action, "VERB_WORKING"))
-	_refuse(tr(&"HUD_DONE") % verb if success else tr(&"HUD_FAILED") % [verb, tr(StringName("CAUSE_" + String(cause).to_upper()))])
+	if not success and cause in [&"damp", &"wind", &"tinder", &"cold_hands", &"fatigue", &"fumble"]:
+		_refuse(tr(StringName("MISHAP_" + String(cause).to_upper())))
+	else:
+		_refuse(tr(&"HUD_DONE") % verb if success else tr(&"HUD_FAILED") % [verb, tr(StringName("CAUSE_" + String(cause).to_upper()))])
 
 func _refuse(message: String) -> void:
 	hud.show_cue(message)

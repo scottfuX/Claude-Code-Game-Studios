@@ -20,10 +20,14 @@ var tinder_ready: bool = false
 var _tinder_fuel: float = 0.0
 var _tinder_wetness: float = 0.0
 var _kindling_wetness: float = 0.0
+var _tinder_quality: float = 1.0
 var _thermal: ThermalField
 
 func material_wetness(action: StringName) -> float:
 	return _tinder_wetness if action == &"strike" else (_kindling_wetness if stage == &"Smoldering" else burning_wetness)
+
+func material_quality(action: StringName) -> float:
+	return _tinder_quality if action == &"strike" else 1.0
 
 func _init(source_id: StringName, site_position: Vector3, thermal: ThermalField, data: SliceTuning = null) -> void:
 	id = source_id
@@ -71,6 +75,7 @@ func commit_action(action: StringName, inventory: InventoryModel, success: bool 
 			var tinder: StringName = &"bark" if inventory.count(&"bark") >= tuning.tinder_bark else &"grass"
 			var amount := tuning.tinder_bark if tinder == &"bark" else tuning.tinder_grass
 			_tinder_wetness = inventory.wetness(tinder)
+			_tinder_quality = inventory.tinder_quality(tinder)
 			inventory.consume(tinder, amount)
 			_tinder_fuel = amount * tuning.fuel_values[tinder]
 			tinder_ready = true

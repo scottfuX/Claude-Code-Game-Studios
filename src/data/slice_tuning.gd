@@ -110,7 +110,7 @@ class_name SliceTuning extends Resource
 @export var ember_life: int = 90
 @export var unattended_distance: float = 15.0
 @export var fuel_values: Dictionary[StringName, float] = {&"stick": 6.0, &"log": 60.0, &"bark": 1.0, &"grass": 0.5}
-@export var base_fail: Dictionary[StringName, float] = {&"strike": 0.35, &"blow_embers": 0.25, &"chop_log": 0.1, &"strip_bark": 0.1, &"gather_sticks": 0.05, &"gather_grass": 0.05}
+@export var base_fail: Dictionary[StringName, float] = {&"strike": 0.35, &"blow_embers": 0.25, &"chop_log": 0.1, &"strip_bark": 0.1, &"gather_sticks": 0.05}
 @export var wind_fail: Dictionary[StringName, float] = {&"strike": 0.04, &"blow_embers": 0.05}
 @export var fail_cap: float = 0.9
 @export var cause_min: float = 0.05

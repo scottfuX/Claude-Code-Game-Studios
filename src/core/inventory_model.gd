@@ -12,6 +12,10 @@ var _chapter_data: ChapterContentTuning
 var _wet_counts: Dictionary[StringName, int] = {}
 var _immersions: Dictionary[int, bool] = {}
 const SOAKABLE: Array[StringName] = [&"stick", &"log", &"bark", &"grass"]
+const TINDER_QUALITY: Dictionary[StringName, float] = {&"bark": 0.9, &"grass": 0.7, &"stick": 0.3}
+
+func tinder_quality(item: StringName) -> float:
+	return TINDER_QUALITY.get(item, 0.0)
 
 func _init(chapter_data: ChapterContentTuning = null) -> void:
 	_chapter_data = chapter_data if chapter_data != null else preload("res://assets/data/chapter_content_defaults.tres")

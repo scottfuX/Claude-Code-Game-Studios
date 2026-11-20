@@ -441,7 +441,9 @@ func _commit_completion(action: StringName) -> void:
 		cancel_action()
 		return
 	var wetness := _fire_target.material_wetness(action) if _fire_target != null else 0.0
-	var result := mishaps.resolve(action, thermal.wind_eff(position), body.cold_hands_penalty(), needs.fatigue_penalty(), rng, wetness)
+	var quality := _fire_target.material_quality(action) if _fire_target != null else 1.0
+	var attempt_position := _fire_target.position if _fire_target != null else position
+	var result := mishaps.resolve(action, thermal.wind_eff(attempt_position), body.cold_hands_penalty(), needs.fatigue_penalty(), rng, wetness, quality)
 	if _fire_target != null:
 		_fire_target.commit_action(action, inventory, result[&"success"])
 	else:
