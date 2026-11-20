@@ -36,6 +36,7 @@ Scope signal: M
 Specialists: none (lean)
 Blocking items: 0 | Recommended: 0
 Summary: Independent re-review of `66d9dda` confirmed both blockers and all six recommendations were resolved. Approval covers the GDD only; Scott's chapter content decisions and the ADR/Control Manifest gate still apply.
+The index stamp includes the approval row and total recorded after re-review; its design and dependency entries are unchanged.
 Prior verdict resolved: Yes
 Findings:
 - [NICE-TO-HAVE] Fire Core Rules: fold the Chapter 2 exclusion into Rule 1 when the ADR lands.
@@ -53,7 +54,7 @@ Reviewed-Content-Hash: design/gdd/needs-and-weight.md 4a9e8ff5c3c3de01f13add708e
 Reviewed-Content-Hash: design/gdd/body-temperature.md 89da076cbc1c871c153a61856005427947aac01d
 Reviewed-Content-Hash: design/gdd/morale-and-mental-state.md 839af1e8afb3c784803cd146bf7890721208a27a
 Reviewed-Content-Hash: design/gdd/game-concept.md 947bfd5a053eed5c276acf53373853ad5dc5c3ee
-Reviewed-Content-Hash: design/gdd/systems-index.md ae41483893329c1e8f8fcbf8848da7a529c2277e
+Reviewed-Content-Hash: design/gdd/systems-index.md ccd595758800b9cc91240bcf3715814401180cd9
 Reviewed-Content-Hash: production/milestones/three-day-survival.md 6f215bd3cd2338f60ca9e5c416fe825e8798d41d
 Reviewed-Content-Hash: docs/architecture/control-manifest.md feb172a4ab81091fb234ef951ef778eedec1d1f9
 Reviewed-Content-Hash: docs/architecture/architecture.md a4b7d0baf41a20f360684028d339711a40d51b6f
