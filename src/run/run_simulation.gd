@@ -99,6 +99,7 @@ func start_action(action: StringName, fire: FireController = null, node: GatherN
 	_gather_target = node
 	return true
 
+## Returns the current fire or gathering target, or null when idle.
 func active_action_target() -> RefCounted:
 	if actions.action == &"":
 		return null

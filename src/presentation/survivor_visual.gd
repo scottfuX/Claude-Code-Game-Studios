@@ -130,6 +130,7 @@ func _process(delta: float) -> void:
 	var desired_yaw := atan2(direction.x, direction.z)
 	rotation.y = lerp_angle(rotation.y, desired_yaw, 1.0 - exp(-tuning.blend_response * delta))
 
+## Finds the nearest burning fire within hand-warming range.
 func warming_fire() -> FireController:
 	var nearest: FireController
 	var distance := tuning.warming_distance
@@ -140,6 +141,7 @@ func warming_fire() -> FireController:
 			distance = reach
 	return nearest
 
+## Resolves work or warming targets, falling back to movement-facing.
 func action_facing(warm_fire: FireController = null) -> Vector3:
 	var target: RefCounted = controller.simulation.active_action_target()
 	if warm_fire != null:

@@ -1,3 +1,4 @@
+## Renders deep snow and feeds world contacts into its compaction map.
 class_name SnowSurface extends MeshInstance3D
 
 @export var tuning: PlayfieldTuning = preload("res://assets/data/playfield_defaults.tres")

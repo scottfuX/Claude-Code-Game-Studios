@@ -11,6 +11,9 @@ func test_speed_samples_fresh_ground_beyond_current_body_press() -> void:
 	assert_float(survivor.snow_speed_factor(Vector3.FORWARD)).is_equal(survivor.tuning.fresh_snow_speed_factor)
 	surface.deformation.clear(Vector3.FORWARD * survivor.tuning.snow_speed_probe_distance, 0.3)
 	assert_float(survivor.snow_speed_factor(Vector3.FORWARD)).is_equal(1.0)
+	assert_float(survivor.snow_speed_factor(Vector3.RIGHT)).is_equal(survivor.tuning.fresh_snow_speed_factor)
+	survivor.snow = null
+	assert_float(survivor.snow_speed_factor(Vector3.FORWARD)).is_equal(1.0)
 
 func test_body_and_work_pressure_use_external_tuning() -> void:
 	var surface: SnowSurface = auto_free(SnowSurface.new())
@@ -29,9 +32,6 @@ func test_body_and_work_pressure_use_external_tuning() -> void:
 	survivor.simulation.actions.start(&"gather_sticks", 1.0, 1.0)
 	surface._physics_process(0.0)
 	assert_float(surface.deformation.compaction_at(Vector3(0.8, 0, 0))).is_equal_approx(0.8, 0.001)
-	assert_float(survivor.snow_speed_factor(Vector3.RIGHT)).is_equal(survivor.tuning.fresh_snow_speed_factor)
-	survivor.snow = null
-	assert_float(survivor.snow_speed_factor(Vector3.FORWARD)).is_equal(1.0)
 
 func test_fresh_press_clear_and_persistence() -> void:
 	var snow := SnowDeformation.new(128, 16)

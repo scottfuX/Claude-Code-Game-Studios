@@ -1,3 +1,4 @@
+## Persistent world-space snow compaction with throttled texture uploads.
 class_name SnowDeformation extends RefCounted
 
 var size: int
@@ -14,15 +15,18 @@ func _init(resolution: int = 512, world_size: float = 64.0) -> void:
 	image.fill(Color(0, 0, 0, 1))
 	texture = ImageTexture.create_from_image(image)
 
+## Returns compaction from zero to one, or zero outside the playfield.
 func compaction_at(world_pos: Vector3) -> float:
 	if not _inside(world_pos):
 		return 0.0
 	var uv := (Vector2(world_pos.x, world_pos.z) / extent + Vector2.ONE * 0.5) * (size - 1)
 	return image.get_pixel(roundi(uv.x), roundi(uv.y)).r
 
+## Blends fresh-snow movement resistance toward packed-ground speed.
 func speed_factor(world_pos: Vector3, fresh_factor: float) -> float:
 	return lerpf(clampf(fresh_factor, 0.1, 1.0), 1.0, compaction_at(world_pos))
 
+## Compacts an oval without erasing existing pressure; invalid inputs are ignored.
 func press(world_pos: Vector3, radius: float, strength: float, aspect: float = 1.0, yaw: float = 0.0) -> void:
 	if not _inside(world_pos) or not is_finite(radius) or radius <= 0 or not is_finite(strength) or strength <= 0 or not is_finite(aspect) or aspect <= 0 or not is_finite(yaw):
 		return
@@ -43,9 +47,11 @@ func press(world_pos: Vector3, radius: float, strength: float, aspect: float = 1
 				image.set_pixel(x, y, Color(value, 0, 0, 1))
 				dirty = true
 
+## Fully compacts a disc with a feathered edge.
 func clear(world_pos: Vector3, radius: float) -> void:
 	press(world_pos, radius, 1.0)
 
+## Uploads dirty pixels at most once per tenth of a second.
 func upload(delta: float) -> void:
 	_upload_elapsed += maxf(0.0, delta)
 	if dirty and _upload_elapsed >= 0.1:

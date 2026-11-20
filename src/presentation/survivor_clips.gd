@@ -1,3 +1,4 @@
+## Deterministic context clips authored for the survivor skeleton.
 class_name SurvivorClips extends RefCounted
 
 const ACTIONS: Dictionary[StringName, StringName] = {
@@ -10,6 +11,7 @@ const ACTIONS: Dictionary[StringName, StringName] = {
 const STATES: Array[StringName] = [&"idle", &"cold_idle", &"warm_hands", &"walk", &"sleep"]
 const KNEEL: float = 0.34
 
+## Selects a context, returning an empty name for unmapped work.
 static func select(action: StringName, speed: float, core_c: float, near_fire: bool, asleep: bool = false) -> StringName:
 	if asleep:
 		return &"sleep"
@@ -21,11 +23,13 @@ static func select(action: StringName, speed: float, core_c: float, near_fire: b
 		return &"warm_hands"
 	return &"cold_idle" if core_c < 36.5 else &"idle"
 
+## Returns horizontal target-facing, retaining fallback for coincident targets.
 static func facing(origin: Vector3, target: Vector3, fallback: Vector3) -> Vector3:
 	var offset := target - origin
 	offset.y = 0
 	return offset.normalized() if offset.is_finite() and offset.length_squared() > 0.0001 else fallback
 
+## Installs context clips and matching tired variants in the player's library.
 static func build(skeleton: Skeleton3D, visual: Node3D, player: AnimationPlayer) -> void:
 	var library := player.get_animation_library(&"")
 	var clips := _sequences()
