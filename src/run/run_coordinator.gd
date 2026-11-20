@@ -467,6 +467,7 @@ func advance_loading(delta: float) -> void:
 		input_router.release_pause(_loading_token)
 		_loading_token = 0
 		_end_grade.color = Color(0.94, 0.96, 0.98, 0.0)
+		input_router.set_context(InputRouter.Context.GAMEPLAY)
 		_sync_context()
 		input_router.set_process_input(true)
 		survivor.frozen = input_router.is_paused() or simulation.needs.is_asleep
