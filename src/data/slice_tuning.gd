@@ -2,6 +2,8 @@ class_name SliceTuning extends Resource
 
 @export_range(1, 60) var start_day: int = 1
 @export_range(0, 1439) var start_minute_of_day: int = 990
+@export_range(2, 60) var survival_day: int = 2
+@export var chapter_needs_enabled: bool = false
 
 @export var daylight_start: float = 8.0
 @export var daylight_min: float = 5.0
@@ -11,6 +13,7 @@ class_name SliceTuning extends Resource
 @export var day_seconds: float = 1.5
 @export var night_seconds: float = 1.0
 @export var wait_seconds: float = 0.25
+@export var sleep_seconds: float = 0.05
 @export var max_ticks: int = 120
 @export var air_start: float = -5.0
 @export var air_floor: float = -25.0
@@ -48,6 +51,37 @@ class_name SliceTuning extends Resource
 @export var needs_move: Array[float] = [1.0, 0.95, 0.85]
 @export var needs_action: Array[float] = [1.0, 1.1, 1.25]
 @export var fatigue: Array[float] = [0.0, 0.04, 0.1]
+@export var hydration_start: float = 100.0
+@export var hydration_awake: float = 1.4
+@export var hydration_asleep: float = 0.7
+@export var hydration_work_mult: float = 1.5
+@export var dehydration_grace_minutes: int = 360
+@export var thirsty_threshold: float = 30.0
+@export var parched_threshold: float = 10.0
+@export var parched_action_mult: float = 1.1
+@export var parched_fatigue: float = 0.05
+@export var thirst_energy_mult: float = 1.2
+@export var stomach_start_kcal: float = 1200.0
+@export_range(1.0, 3000.0) var stomach_capacity_kcal: float = 1500.0
+@export var calories_awake: float = 110.0
+@export var calories_asleep: float = 65.0
+@export var calories_shiver: float = 80.0
+@export var calorie_activity: Dictionary[StringName, float] = {&"walk": 60.0, &"wade": 120.0, &"light": 80.0, &"heavy": 200.0}
+@export var calories_per_kg: float = 7700.0
+@export_range(50.0, 120.0) var start_weight_kg: float = 72.0
+@export var weight_floor_kg: float = 40.0
+@export var hungry_threshold: float = 30.0
+@export var starving_minutes: int = 1440
+@export var starving_energy_mult: float = 1.2
+@export var energy_cap_loss_mult: float = 2.0
+@export var energy_cap_floor: float = 60.0
+@export var sleep_energy: float = 8.0
+@export var sleep_day_threshold: float = 50.0
+@export var sleep_night_threshold: float = 90.0
+@export var sleep_warmth: Dictionary[StringName, float] = {&"Warm": 1.0, &"Chilled": 0.7, &"Cold": 0.4, &"Hypothermic": 0.2, &"Critical": 0.0}
+@export var sleep_food_min: float = 0.5
+@export var sleep_food_full: float = 50.0
+@export var forced_wake_energy: float = 5.0
 @export var fire_scale: float = 60.0
 @export var fire_heat: float = 28.0
 @export var damp_heat: float = 0.4

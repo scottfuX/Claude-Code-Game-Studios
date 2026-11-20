@@ -14,7 +14,13 @@ var day: int = 1
 var minute_of_day: int = 0
 var rate_mode: StringName = &"normal"
 var debt: float = 0.0
+var sunrise_this_minute: bool = false
 var _capped: bool = false
+var _dispatching: bool = false
+var _requested_mode: StringName = &""
+
+const MODE_PRIORITY := {&"": 0, &"wait": 1, &"sleep": 2, &"normal": 3}
+const DEBT_EPSILON: float = 0.000000001
 
 func _init(data: SliceTuning = null) -> void:
 	tuning = data if data != null else preload("res://assets/data/slice_defaults.tres")
@@ -42,39 +48,60 @@ func phase() -> StringName:
 
 ## Returns the current real seconds per game minute.
 func seconds_per_minute() -> float:
+	if rate_mode == &"sleep":
+		return tuning.sleep_seconds
 	if rate_mode == &"wait":
 		return tuning.wait_seconds
 	return tuning.night_seconds if phase() == &"Night" else tuning.day_seconds
 
-## Applies a supported rate mode; sleep is outside this slice.
+## Queues requests during the minute barrier; idle clock requests apply immediately.
 func request_rate_mode(mode: StringName, _reason: StringName = &"") -> void:
-	if mode not in [&"normal", &"wait"] or mode == rate_mode:
+	if mode == &"" or not MODE_PRIORITY.has(mode) or (mode == &"wait" and rate_mode == &"sleep"):
+		return
+	if _dispatching:
+		if MODE_PRIORITY[mode] > MODE_PRIORITY[_requested_mode]:
+			_requested_mode = mode
+	else:
+		_apply_mode(mode)
+
+func _apply_mode(mode: StringName) -> void:
+	if mode == &"" or mode == rate_mode:
 		return
 	rate_mode = mode
 	rate_mode_changed.emit(mode)
+
+func normal_requested() -> bool:
+	return _requested_mode == &"normal"
 
 ## Accumulates only finite unpaused real delta.
 func accumulate(delta_s: float, paused: bool = false) -> void:
 	if not paused and is_finite(delta_s) and delta_s > 0 and not _capped:
 		debt += delta_s
 
+## Reports whether another minute is owed at the current rate.
+func minute_owed() -> bool:
+	return not _capped and debt + DEBT_EPSILON >= seconds_per_minute()
+
 ## Consumes one owed minute, leaving catch-up policy to the coordinator.
-func consume_minute() -> bool:
+func consume_minute(integrate: Callable = Callable()) -> bool:
 	var cost := seconds_per_minute()
-	if _capped or debt < cost:
+	if not minute_owed() or _dispatching:
 		return false
-	debt -= cost
-	advance_minute()
-	return true
+	if day == 60 and minute_of_day == 1439:
+		return advance_minute()
+	debt = maxf(0.0, debt - cost)
+	return advance_minute(integrate)
 
 ## Advances exactly one minute and publishes boundary notifications.
-func advance_minute() -> void:
-	if _capped:
-		return
+func advance_minute(integrate: Callable = Callable()) -> bool:
+	if _capped or _dispatching:
+		return false
 	if day == 60 and minute_of_day == 1439:
 		_capped = true
 		run_day_cap_reached.emit()
-		return
+		return false
+	_dispatching = true
+	sunrise_this_minute = false
 	var old_phase := phase()
 	var old_hour := minute_of_day / 60
 	minute_of_day += 1
@@ -89,8 +116,16 @@ func advance_minute() -> void:
 		if phase() == &"Night":
 			nightfall.emit()
 		if old_phase == &"Dawn" and phase() == &"Day":
+			sunrise_this_minute = true
 			sunrise.emit()
 	minute_tick.emit()
+	if integrate.is_valid():
+		integrate.call()
+	var next_mode := _requested_mode
+	_requested_mode = &""
+	_dispatching = false
+	_apply_mode(next_mode)
+	return true
 
 ## Returns detached clock values for presentation.
 func snapshot() -> Dictionary[StringName, Variant]:

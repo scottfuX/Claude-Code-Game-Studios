@@ -1,6 +1,7 @@
 class_name BodyThermoregulation extends RefCounted
 
 signal stage_changed(stage: StringName)
+signal wake_request(cause: StringName)
 
 const STAGES: Array[StringName] = [&"Warm", &"Chilled", &"Cold", &"Hypothermic", &"Critical"]
 var tuning: SliceTuning
@@ -48,6 +49,15 @@ func is_dead() -> bool:
 ## Reports post-step shivering for Needs.
 func is_shivering() -> bool:
 	return stage in [&"Chilled", &"Cold"]
+
+func cold_or_worse() -> bool:
+	return STAGES.find(stage) >= STAGES.find(&"Cold")
+
+func cold_wake_due(previous_stage: StringName, skipping: bool) -> bool:
+	return skipping and STAGES.find(stage) > STAGES.find(previous_stage)
+
+func publish_cold_wake() -> void:
+	wake_request.emit(&"cold")
 
 ## Returns the movement multiplier, including Critical's separate crawl contract.
 func move_speed_mult() -> float:

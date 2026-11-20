@@ -35,6 +35,15 @@ func _init(seed_value: int = 1, data: SliceTuning = null) -> void:
 	mishaps = MishapResolver.new(tuning)
 	gathering = GatheringResolver.new(tuning)
 	actions = ActionRunner.new()
+	clock.rate_mode_changed.connect(_on_rate_mode_changed)
+
+## Admits already-selected sleep; control and action bindings are separate.
+func request_sleep() -> bool:
+	if terminal != &"" or not needs.request_sleep(clock.phase() == &"Night"):
+		return false
+	cancel_action()
+	clock.request_rate_mode(&"sleep", &"chosen")
+	return true
 
 ## Creates at most two run-owned fire sites; geometry validation belongs to WorldMap.
 func create_fire(site_position: Vector3) -> FireController:
@@ -46,7 +55,7 @@ func create_fire(site_position: Vector3) -> FireController:
 
 ## Starts an eligible transaction with target and duration fixed at admission.
 func start_action(action: StringName, fire: FireController = null, node: GatherNode = null) -> bool:
-	if terminal != &"" or not tuning.action_minutes.has(action) or not _allowed(action):
+	if terminal != &"" or needs.is_asleep or not tuning.action_minutes.has(action) or not _allowed(action):
 		return false
 	if fire != null:
 		if not fires.has(fire) or not fire.can_act(action, inventory):
@@ -79,10 +88,9 @@ func update(delta_s: float, paused: bool = false) -> void:
 		_action_delta_s += delta_s
 	clock.accumulate(delta_s)
 	var ticks := 0
-	while ticks < tuning.max_ticks and terminal == &"" and clock.consume_minute():
-		_integrate_minute()
+	while ticks < tuning.max_ticks and terminal == &"" and clock.consume_minute(_integrate_minute):
 		ticks += 1
-	if terminal == &"" and clock.debt < clock.seconds_per_minute():
+	if terminal == &"" and not clock.minute_owed():
 		var completed := actions.advance(_action_delta_s)
 		_action_delta_s = 0.0
 		if completed != &"":
@@ -93,8 +101,7 @@ func update(delta_s: float, paused: bool = false) -> void:
 func step_minute() -> void:
 	if terminal != &"":
 		return
-	clock.advance_minute()
-	_integrate_minute()
+	clock.advance_minute(_integrate_minute)
 	snapshot_published.emit(snapshot())
 
 ## Returns detached values for presentation; contains no live owner objects.
@@ -102,29 +109,71 @@ func snapshot() -> Dictionary[StringName, Variant]:
 	var fire_values: Array[Dictionary] = []
 	for fire: FireController in fires:
 		fire_values.append(fire.snapshot())
-	return {&"clock": clock.snapshot(), &"core_temp_c": body.core_temp_c, &"body_stage": body.stage, &"rate_c_per_hour": body.rate_c_per_hour, &"energy": needs.energy, &"energy_stage": needs.stage, &"inventory": inventory.snapshot(), &"fires": fire_values, &"terminal": terminal, &"action": actions.action, &"progress": actions.progress()}
+	var values: Dictionary[StringName, Variant] = {&"clock": clock.snapshot(), &"core_temp_c": body.core_temp_c, &"body_stage": body.stage, &"rate_c_per_hour": body.rate_c_per_hour, &"energy": needs.energy, &"energy_stage": needs.stage, &"inventory": inventory.snapshot(), &"fires": fire_values, &"terminal": terminal, &"action": actions.action, &"progress": actions.progress()}
+	if tuning.chapter_needs_enabled:
+		values[&"needs"] = needs.snapshot()
+	return values
 
 func _integrate_minute() -> void:
 	minute_sequence += 1
-	var work := _work_activity(actions.action)
+	var was_asleep := needs.is_asleep
+	var old_stage := body.stage
+	var was_skipping := was_asleep or clock.rate_mode == &"wait"
+	var activity := &"idle" if was_asleep else movement
+	var work := &"idle" if was_asleep else _work_activity(actions.action)
 	thermal.begin_minute(clock.day, clock.minute_of_day / 60.0)
 	for fire: FireController in fires:
 		fire.step_minute(position)
 	thermal.seal_sources(minute_sequence)
 	last_felt_temp_c = thermal.effective_temp_c(position)
-	body.step_minute(last_felt_temp_c, movement, work)
+	body.step_minute(last_felt_temp_c, activity, work)
 	var resting := false
-	if movement == &"idle" and work == &"idle":
+	if activity == &"idle" and work == &"idle" and (not tuning.chapter_needs_enabled or clock.rate_mode == &"wait"):
 		for fire: FireController in fires:
 			if fire.stage == &"Burning" and position.distance_to(fire.position) < fire.warm_radius():
 				resting = true
-	needs.step_minute(movement, body.is_shivering(), resting, work)
+	needs.step_minute(activity, body.is_shivering(), resting, work, body.stage)
 	if body.is_dead():
 		_end(&"hypothermia")
-	elif clock.day >= 2 and clock.minute_of_day / 60.0 >= clock.sunrise_hour():
+	elif needs.dehydration_due:
+		_end(&"dehydration")
+	elif _survived():
 		_end(&"dawn_survived")
-	elif actions.action != &"" and not _allowed(actions.action):
+	else:
+		if tuning.chapter_needs_enabled:
+			_reconcile_sleep(body.cold_wake_due(old_stage, was_skipping))
+		if actions.action != &"" and not _allowed(actions.action):
+			cancel_action()
+
+func _survived() -> bool:
+	if tuning.chapter_needs_enabled:
+		return clock.day >= tuning.survival_day and clock.sunrise_this_minute
+	return clock.day >= tuning.survival_day and clock.minute_of_day / 60.0 >= clock.sunrise_hour()
+
+func _reconcile_sleep(cold: bool) -> void:
+	cold = cold or (needs.collapse_due and body.cold_or_worse())
+	var wake_cause := &""
+	if cold:
+		wake_cause = &"cold"
+	elif needs.natural_wake_due:
+		wake_cause = &"rested"
+	elif clock.normal_requested():
+		wake_cause = &"interrupted"
+	if needs.collapse_due:
 		cancel_action()
+		needs.apply_collapse(wake_cause)
+		if needs.is_asleep:
+			clock.request_rate_mode(&"sleep", &"exhaustion")
+	elif wake_cause != &"":
+		needs.wake(wake_cause)
+	if cold:
+		body.publish_cold_wake()
+	if wake_cause != &"":
+		clock.request_rate_mode(&"normal", wake_cause)
+
+func _on_rate_mode_changed(mode: StringName) -> void:
+	if mode == &"normal" and terminal == &"":
+		needs.wake(&"interrupted")
 
 func _end(cause: StringName) -> void:
 	terminal = cause
