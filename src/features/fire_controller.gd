@@ -104,11 +104,15 @@ func commit_action(action: StringName, inventory: InventoryModel, success: bool 
 				_expire_smolder()
 		&"add_fuel":
 			var item := _preferred_fuel(inventory)
+			var smother := stage == &"Kindling" and item == &"log" and inventory.wetness(item) > tuning.wet_log_smother_threshold
 			var added := _effective_fuel(item, inventory)
 			burning_wetness = (burning_wetness * fuel + inventory.wetness(item) * added) / (fuel + added)
 			inventory.consume(item, 1)
 			fuel += added
-			if stage != &"Embers":
+			if smother:
+				stage = &"Embers"
+				ember_minutes = 0
+			elif stage != &"Embers":
 				_derive_flame()
 	publish_heat()
 	return true

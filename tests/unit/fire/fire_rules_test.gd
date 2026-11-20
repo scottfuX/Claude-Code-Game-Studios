@@ -1,5 +1,27 @@
 extends GdUnitTestSuite
 
+func test_wet_log_smothering_uses_pre_feed_stage_and_preserves_fi5_fuel() -> void:
+	for stage: StringName in [&"Kindling", &"Burning", &"Embers"]:
+		var inventory := InventoryModel.new()
+		inventory.add(&"log", 1)
+		inventory.soak_carried(1)
+		var thermal := ThermalField.new()
+		var fire := FireController.new(&"fire", Vector3.ZERO, thermal)
+		fire.stage = stage
+		fire.fuel = 26 if stage == &"Kindling" else 60
+		var before := fire.fuel
+		assert_bool(fire.commit_action(&"add_fuel", inventory)).is_true()
+		assert_float(fire.fuel).is_equal(before + 42.0)
+		assert_str(fire.stage).is_equal("Burning" if stage == &"Burning" else "Embers")
+		assert_float(thermal.heat_at(Vector3.ZERO)).is_equal(fire.heat_c())
+	var dry_inventory := InventoryModel.new()
+	dry_inventory.add(&"log", 1)
+	var dry := FireController.new(&"dry", Vector3.ZERO, ThermalField.new())
+	dry.stage = &"Kindling"
+	dry.fuel = 26
+	dry.commit_action(&"add_fuel", dry_inventory)
+	assert_str(dry.stage).is_equal("Burning")
+
 func test_fi5_damp_fuel_amount_mixing_and_capacity_use_same_effective_units() -> void:
 	var inventory := InventoryModel.new()
 	inventory.add(&"log", 1)

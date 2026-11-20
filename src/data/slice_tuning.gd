@@ -96,6 +96,7 @@ class_name SliceTuning extends Resource
 @export var damp_heat: float = 0.4
 @export var fire_drying_per_minute: float = 0.05
 @export var fuel_damp: float = 0.3
+@export var wet_log_smother_threshold: float = 0.6
 @export var radius_min: float = 0.8
 @export var radius_span: float = 2.6
 @export var ember_heat: float = 4.0
