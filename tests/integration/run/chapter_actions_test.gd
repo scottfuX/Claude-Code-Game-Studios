@@ -131,6 +131,26 @@ func test_chapter_hud_consumes_stage_warnings_and_hides_raw_physiology() -> void
 	assert_str(hud.tr(&"ITEM_PEMMICAN")).is_equal("pemmican rations")
 
 
+func test_ration_button_stays_visible_between_backpack_draws() -> void:
+	var hud: SurvivalHud = auto_free(SurvivalHud.new())
+	add_child(hud)
+	var snapshot := _chapter().snapshot()
+	hud.set_visibility_context(&"backpack")
+	hud.render_snapshot(snapshot)
+	var ration_button: Button
+	for child: Node in hud.find_children("*", "Button", true, false):
+		var button := child as Button
+		if button.text == hud.tr(&"VERB_EAT_RATION"):
+			ration_button = button
+			break
+	assert_object(ration_button).is_not_null()
+	assert_bool(ration_button.is_visible_in_tree()).is_true()
+	var changes: Array[bool] = []
+	ration_button.visibility_changed.connect(func() -> void: changes.append(ration_button.visible))
+	hud.render_snapshot(snapshot)
+	assert_int(changes.size()).is_zero()
+
+
 func _chapter() -> RunSimulation:
 	return RunSimulation.new(20261119, CHAPTER)
 

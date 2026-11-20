@@ -151,7 +151,9 @@ func render_snapshot(snapshot: Dictionary) -> void:
 	_quit.visible = context == &"pause"
 	_switch_run.visible = context in [&"end", &"pause"]
 	_switch_run.text = tr(&"HUD_START_FIRST_NIGHT" if chapter else &"HUD_START_CHAPTER")
-	_eat_ration.visible = false
+	var inventory: Dictionary = snapshot.get(&"inventory", {})
+	var rations: int = inventory.get(&"pemmican", 0)
+	_eat_ration.visible = context == &"backpack" and chapter and rations > 0
 	if context == &"end":
 		match terminal:
 			&"dawn_survived":
@@ -166,7 +168,6 @@ func render_snapshot(snapshot: Dictionary) -> void:
 		var lines := PackedStringArray([tr(&"HUD_BACKPACK"), tr(&"HUD_PACK_LIVE"), ""])
 		for tool: StringName in snapshot.get(&"tools", []):
 			lines.append(tr(StringName("TOOL_" + String(tool).to_upper())))
-		var inventory: Dictionary = snapshot.get(&"inventory", {})
 		var any_items := false
 		for item: StringName in [&"stick", &"log", &"grass", &"bark"]:
 			var count: int = inventory.get(item, 0)
@@ -176,9 +177,7 @@ func render_snapshot(snapshot: Dictionary) -> void:
 		if not any_items:
 			lines.append(tr(&"HUD_PACK_EMPTY"))
 		if chapter:
-			var rations: int = inventory.get(&"pemmican", 0)
 			lines.append(tr(model.quantity_key(rations)) % tr(&"ITEM_PEMMICAN") if rations > 0 else tr(&"HUD_PACK_NO_RATIONS"))
-			_eat_ration.visible = rations > 0
 		_menu_text.text = "\n".join(lines)
 	if menu and context != &"backpack" and context != _previous_context:
 		if context == &"end":
