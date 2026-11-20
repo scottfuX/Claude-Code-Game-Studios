@@ -9,11 +9,7 @@ var extra_deadfalls: Array[Vector3] = []
 var _obstacles: Array[Vector3] = []
 
 func _ready() -> void:
-	var ground := MeshInstance3D.new()
-	var plane := PlaneMesh.new()
-	plane.size = Vector2(64, 64)
-	ground.mesh = plane
-	ground.material_override = SceneAssets.SNOW
+	var ground := SnowSurface.new()
 	add_child(ground)
 	_box_collision(Vector3(0, -0.15, 0), Vector3(TUNING.half_extent * 2, 0.3, TUNING.half_extent * 2))
 	for side in [-1.0, 1.0]:
