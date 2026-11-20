@@ -4,6 +4,7 @@ const SHELL: PackedScene = preload("res://src/run/app_shell.tscn")
 
 func _shell() -> Node:
 	var shell: Node = auto_free(SHELL.instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/navigation_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
 	return shell

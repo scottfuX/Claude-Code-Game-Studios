@@ -32,6 +32,7 @@ func test_survivor_capsule_and_camera_read_custom_playfield_tuning() -> void:
 
 func test_shell_restart_replaces_all_mutable_run_state() -> void:
 	var shell: Node = auto_free(SHELL.instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/scene_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
 	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
@@ -54,6 +55,7 @@ func test_shell_restart_replaces_all_mutable_run_state() -> void:
 
 func test_scene_routes_gathering_and_backpack_keeps_work_and_time_running() -> void:
 	var shell: Node = auto_free(SHELL.instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/scene_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
 	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
@@ -117,6 +119,7 @@ func test_gather_verb_cache_reuses_storage_and_invalidates_on_reserves_and_tools
 
 func test_open_ground_creates_only_two_sites_and_rejects_busy_or_critical_work() -> void:
 	var shell: Node = auto_free(SHELL.instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/scene_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
 	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
@@ -142,6 +145,7 @@ func test_open_ground_creates_only_two_sites_and_rejects_busy_or_critical_work()
 
 func test_critical_survivor_cannot_spend_a_site_on_impossible_snow_clear() -> void:
 	var shell: Node = auto_free(SHELL.instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/scene_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
 	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
@@ -163,6 +167,7 @@ func test_camera_projects_diagonal_input_to_unit_ground_vector() -> void:
 
 func test_fire_adapter_tracks_stage_and_exact_fi6_light_radius() -> void:
 	var shell: Node = auto_free(SHELL.instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/scene_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
 	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
@@ -248,6 +253,7 @@ func test_survival_hud_clears_prompts_and_replaces_cues_without_model_access() -
 
 func test_f3_toggles_numeric_debug_surface_only_in_debug_builds() -> void:
 	var shell: Node = auto_free(SHELL.instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/scene_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
 	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
@@ -274,6 +280,7 @@ func test_f3_toggles_numeric_debug_surface_only_in_debug_builds() -> void:
 
 func test_demo_arrival_latches_while_turning_without_teleporting_or_seeding() -> void:
 	var shell: Node = auto_free(SHELL.instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/scene_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
 	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
@@ -293,6 +300,7 @@ func test_demo_arrival_latches_while_turning_without_teleporting_or_seeding() ->
 
 func test_lit_fire_without_an_available_verb_never_requests_tinder() -> void:
 	var shell: Node = auto_free(SHELL.instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/scene_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
 	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
@@ -314,6 +322,7 @@ func test_lit_fire_without_an_available_verb_never_requests_tinder() -> void:
 
 func test_missing_material_prompt_and_help_reopen() -> void:
 	var shell: Node = auto_free(SHELL.instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/scene_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
 	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})

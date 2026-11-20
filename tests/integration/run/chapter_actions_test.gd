@@ -100,6 +100,7 @@ func test_interrupted_stale_and_no_longer_eligible_meals_preserve_the_ration() -
 
 func test_chapter_switch_pack_and_sleep_bind_through_the_scene() -> void:
 	var shell: Node = auto_free(SHELL.instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/chapter_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
 	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})

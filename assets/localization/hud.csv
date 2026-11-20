@@ -1,4 +1,11 @@
 keys,en
+MENU_SAVE_RETURN_TITLE,"Save & Return to Title"
+MENU_DISCARD_CONFIRM,"Discard your checkpoint and start a new run?"
+MENU_SAVE_FAILED,"Checkpoint could not be saved. Retry your choice, or Resume to stay."
+MENU_AUTOSAVE_FAILED,"Checkpoint could not be saved. Your run is still active."
+MENU_CHECKPOINT_UNAVAILABLE,"Checkpoint unavailable"
+MENU_DELETE_FAILED,"Checkpoint could not be removed. Please retry."
+MENU_RETRY,"Retry"
 MENU_TITLE,"LONEFIRE"
 MENU_CONTINUE,"Continue"
 MENU_NEW_RUN,"New Run"

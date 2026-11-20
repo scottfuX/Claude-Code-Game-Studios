@@ -12,6 +12,16 @@ var end_shot_elapsed: float = 0.0
 var end_phase: StringName = &""
 var navigation: NavigationScreen
 var _end_grade: ColorRect
+var restore_checkpoint: Dictionary = {}
+var initialization_ok: bool = true
+var checkpoint_writer: Callable
+var checkpoint_deleter: Callable
+var checkpoint_available: Callable
+var _sunrise_pending: bool = false
+var _terminal_deleted: bool = false
+var _cleanup_blocked: bool = false
+var _loading_token: int = 0
+var _loading_elapsed: float = 0.0
 
 const PLAYFIELD: PlayfieldTuning = preload("res://assets/data/playfield_defaults.tres")
 const VERB_NAMES: Dictionary[StringName, String] = {
@@ -50,12 +60,20 @@ var _demo_driver: FirstNightDemo
 @onready var environment_node: WorldEnvironment = $WorldEnvironment
 
 func _enter_tree() -> void:
+	var router := get_node("InputRouter") as InputRouter
+	router.set_context(InputRouter.Context.LOCKED)
+	router.set_process_input(false)
+	(get_node("Survivor") as SurvivorController).set_physics_process(false)
 	if tuning != null:
 		var run_world := get_node("WorldMap") as WorldMap
 		run_world.extra_deadfalls.assign(tuning.extra_deadfalls)
 
 func _ready() -> void:
 	simulation = RunSimulation.new(seed_value, tuning)
+	if not restore_checkpoint.is_empty():
+		initialization_ok = _restore_owners(restore_checkpoint)
+		if not initialization_ok:
+			return
 	var chapter := simulation.tuning.chapter_needs_enabled
 	input_router.chapter_actions_enabled = chapter
 	_gather_query = simulation.gathering.can_gather
@@ -82,6 +100,7 @@ func _ready() -> void:
 	_survivor_visual.footprints = _footprints
 	survivor.add_child(_survivor_visual)
 	input_router.action_pressed.connect(_on_action)
+	simulation.clock.sunrise.connect(func() -> void: _sunrise_pending = true)
 	simulation.action_resolved.connect(_on_action_resolved)
 	simulation.needs.sleep_changed.connect(_on_sleep_changed)
 	hud.restart_requested.connect(func() -> void: restart_requested.emit())
@@ -127,17 +146,33 @@ func _ready() -> void:
 	if _demo_gather:
 		simulation.start_action(&"gather_sticks", null, world.interactables[0].gather_node)
 	_update_lighting()
+	if not restore_checkpoint.is_empty():
+		_loading_token = input_router.request_pause(&"loading")
+		input_router.set_context(InputRouter.Context.LOCKED)
+		input_router.set_process_input(false)
+		_end_grade.color = Color(0.015, 0.025, 0.05, 1.0)
+		hud.hide()
+	else:
+		input_router.set_context(InputRouter.Context.GAMEPLAY)
+		input_router.set_process_input(true)
+	survivor.set_physics_process(true)
+	survivor.frozen = _loading_token != 0 or simulation.needs.is_asleep
 
 func _process(delta: float) -> void:
 	if simulation == null:
+		return
+	if _loading_token != 0:
+		advance_loading(delta)
 		return
 	paused = input_router.is_paused()
 	survivor.frozen = paused or simulation.needs.is_asleep or simulation.terminal != &""
 	var speed := _demo_driver.advance(delta) if _demo_driver != null and not paused else _time_scale
 	simulation.update(delta * speed, paused)
 	if simulation.terminal != &"":
+		_sunrise_pending = false
 		advance_end_shot(delta)
 		return
+	flush_autosave()
 	_update_pause_menu()
 	_check_smolder()
 	_update_target()
@@ -163,6 +198,8 @@ func _process(delta: float) -> void:
 	hud.render_snapshot(snapshot)
 
 func _on_action(action: StringName) -> void:
+	if _loading_token != 0 or not initialization_ok:
+		return
 	if simulation.terminal != &"":
 		if end_phase == &"":
 			advance_end_shot(0.0)
@@ -301,7 +338,7 @@ func _open_pause() -> void:
 	var terminal := simulation.terminal != &""
 	var entries: Array = [[&"resume", &"MENU_RESUME_SHOT" if terminal else &"HUD_RESUME"]]
 	if not terminal:
-		entries.append([&"title", &"MENU_RETURN_TITLE"])
+		entries.append([&"title", &"MENU_SAVE_RETURN_TITLE"])
 		entries.append([&"switch", &"HUD_START_FIRST_NIGHT" if simulation.tuning.chapter_needs_enabled else &"HUD_START_CHAPTER"])
 	entries.append([&"quit", &"HUD_QUIT"])
 	navigation.show_menu(tr(&"HUD_PAUSED"), "", entries)
@@ -312,12 +349,22 @@ func _update_pause_menu() -> void:
 		_open_pause()
 
 func _on_navigation(action: StringName) -> void:
+	if _cleanup_blocked:
+		if action == &"cleanup_retry" and ensure_checkpoint_deleted():
+			navigation.hide()
+			input_router.set_context(InputRouter.Context.LOCKED)
+		return
 	match action:
 		&"resume":
 			_resume()
 		&"title":
 			title_requested.emit()
 		&"switch":
+			if checkpoint_available.is_valid() and checkpoint_available.call():
+				navigation.ask_confirmation(&"switch_confirmed", &"MENU_DISCARD_CONFIRM")
+			else:
+				switch_chapter_requested.emit()
+		&"switch_confirmed":
 			switch_chapter_requested.emit()
 		&"retry":
 			restart_requested.emit()
@@ -329,14 +376,18 @@ func _on_navigation(action: StringName) -> void:
 func advance_end_shot(delta: float) -> void:
 	if simulation.terminal == &"":
 		return
+	if _cleanup_blocked:
+		return
+	hud.hide()
+	camera.set_process(false)
+	survivor.frozen = true
+	if not ensure_checkpoint_deleted():
+		return
 	if end_phase == &"":
 		end_phase = &"end_shot"
 		backpack_open = false
 		input_router.terminal_input = true
 		input_router.set_context(InputRouter.Context.LOCKED)
-		hud.hide()
-		camera.set_process(false)
-		survivor.frozen = true
 		phase_changed.emit(&"end_shot")
 	if end_phase != &"end_shot":
 		return
@@ -382,8 +433,68 @@ func shutdown() -> void:
 	if _pause_token != 0:
 		input_router.release_pause(_pause_token)
 		_pause_token = 0
-	navigation.hide()
+	if _loading_token != 0:
+		input_router.release_pause(_loading_token)
+		_loading_token = 0
+	if is_instance_valid(navigation):
+		navigation.hide()
 	survivor.frozen = true
+
+func _restore_owners(dto: Dictionary) -> bool:
+	if not RunCheckpoint.validate(dto):
+		return false
+	var owners: Dictionary = dto.owners.duplicate(true)
+	var gathering: Dictionary = owners.gathering
+	var survivor_state: Dictionary = owners.survivor
+	owners.erase("gathering")
+	owners.erase("survivor")
+	if not simulation.restore_state(owners) or not survivor.restore_state(survivor_state):
+		return false
+	for entry: WorldInteractable in world.interactables:
+		if entry.gather_node != null and not entry.gather_node.restore_state(gathering[String(entry.site_id)]):
+			return false
+	simulation.position = survivor.position
+	for fire: FireController in simulation.fires:
+		add_fire_site(fire)
+	return true
+
+func advance_loading(delta: float) -> void:
+	if _loading_token == 0 or not is_finite(delta):
+		return
+	_loading_elapsed += maxf(0.0, delta)
+	_end_grade.color.a = clampf(1.0 - _loading_elapsed, 0.0, 1.0)
+	if _loading_elapsed >= 1.0:
+		input_router.release_pause(_loading_token)
+		_loading_token = 0
+		_end_grade.color = Color(0.94, 0.96, 0.98, 0.0)
+		_sync_context()
+		input_router.set_process_input(true)
+		survivor.frozen = input_router.is_paused() or simulation.needs.is_asleep
+
+func flush_autosave() -> void:
+	if not _sunrise_pending or simulation.actions.action != &"" or simulation.clock._dispatching:
+		return
+	_sunrise_pending = false
+	if simulation.terminal == &"" and checkpoint_writer.is_valid() and not checkpoint_writer.call(self):
+		_refuse(tr(&"MENU_AUTOSAVE_FAILED"))
+
+func ensure_checkpoint_deleted() -> bool:
+	if _terminal_deleted:
+		return true
+	_sunrise_pending = false
+	if checkpoint_deleter.is_valid() and not checkpoint_deleter.call():
+		_cleanup_blocked = true
+		input_router.set_context(InputRouter.Context.UI)
+		hud.hide()
+		navigation.show_menu(tr(&"MENU_CHECKPOINT_UNAVAILABLE"), tr(&"MENU_DELETE_FAILED"), [[&"cleanup_retry", &"MENU_RETRY"]])
+		return false
+	_terminal_deleted = true
+	_cleanup_blocked = false
+	return true
+
+func show_save_error() -> void:
+	_open_pause()
+	navigation.show_error(&"MENU_SAVE_FAILED")
 
 ## Wires a run-owned fire to a model-free site; e.g. add_fire_site(simulation.create_fire(p)).
 func add_fire_site(fire: FireController) -> WorldInteractable:

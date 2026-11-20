@@ -14,6 +14,7 @@ func test_synthesis_is_seeded_bounded_and_rejects_unknown_sounds() -> void:
 
 func test_atmosphere_maps_daylight_and_pauses_without_rule_mutations() -> void:
 	var shell: Node = auto_free(preload("res://src/run/app_shell.tscn").instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/atmosphere_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
 	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
@@ -32,6 +33,7 @@ func test_atmosphere_maps_daylight_and_pauses_without_rule_mutations() -> void:
 
 func test_fog_palette_persists_between_clock_ticks() -> void:
 	var shell: Node = auto_free(preload("res://src/run/app_shell.tscn").instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/atmosphere_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
 	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
@@ -49,6 +51,7 @@ func test_fog_palette_persists_between_clock_ticks() -> void:
 
 func test_sun_moon_handoff_is_continuous_at_both_twilight_boundaries() -> void:
 	var shell: Node = auto_free(preload("res://src/run/app_shell.tscn").instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/atmosphere_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
 	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})

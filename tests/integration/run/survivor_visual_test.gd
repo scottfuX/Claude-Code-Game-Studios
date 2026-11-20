@@ -20,6 +20,7 @@ func test_footprints_are_bounded_fade_and_ignore_invalid_contacts() -> void:
 
 func test_visual_contacts_alternate_and_pause_blocks_them() -> void:
 	var shell: Node = auto_free(preload("res://src/run/app_shell.tscn").instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/visual_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
 	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
@@ -43,6 +44,7 @@ func test_visual_contacts_alternate_and_pause_blocks_them() -> void:
 
 func test_crouch_respects_imported_skeleton_basis_and_leaves_physics_root_alone() -> void:
 	var shell: Node = auto_free(preload("res://src/run/app_shell.tscn").instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/visual_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
 	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})

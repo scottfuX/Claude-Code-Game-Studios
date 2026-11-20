@@ -230,3 +230,58 @@ func _remaining(balance: float) -> float:
 
 func _stage_index() -> int:
 	return 2 if stage == &"Exhausted" else (1 if stage == &"Tired" else 0)
+
+func export_state() -> Dictionary:
+	return {"energy": energy, "stage": String(stage), "hydration": hydration, "hydration_stage": String(hydration_stage),
+		"stomach_kcal": stomach_kcal, "weight_kg": weight_kg, "fullness_stage": String(fullness_stage), "is_asleep": is_asleep,
+		"zero_hydration_minutes": zero_hydration_minutes, "empty_minutes": empty_minutes, "dehydration_due": dehydration_due,
+		"collapse_due": collapse_due, "natural_wake_due": natural_wake_due, "collapsed": _collapsed,
+		"start_weight_kg": _start_weight_kg, "stomach_capacity_kcal": _stomach_capacity_kcal}
+
+func restore_state(dto: Dictionary) -> bool:
+	if not CheckpointValues.keys(dto, export_state().keys()):
+		return false
+	for key: String in ["is_asleep", "dehydration_due", "collapse_due", "natural_wake_due", "collapsed"]:
+		if not dto[key] is bool:
+			return false
+	if not CheckpointValues.number(dto.energy, 0, 100) or not CheckpointValues.number(dto.hydration, 0, 100) or not CheckpointValues.number(dto.stomach_kcal, 0, _stomach_capacity_kcal) or not CheckpointValues.number(dto.weight_kg, tuning.weight_floor_kg, _start_weight_kg):
+		return false
+	if not CheckpointValues.number(dto.start_weight_kg, _start_weight_kg, _start_weight_kg) or not CheckpointValues.number(dto.stomach_capacity_kcal, _stomach_capacity_kcal, _stomach_capacity_kcal):
+		return false
+	if not CheckpointValues.integer(dto.zero_hydration_minutes, 0, tuning.dehydration_grace_minutes - 1) or not CheckpointValues.integer(dto.empty_minutes, 0, 86400):
+		return false
+	for key: String in ["stage", "hydration_stage", "fullness_stage"]:
+		if not CheckpointValues.text(dto[key]):
+			return false
+	if dto.stage not in ["Rested", "Tired", "Exhausted"] or dto.hydration_stage not in ["OK", "Thirsty", "Parched", "Dehydrated"] or dto.fullness_stage not in ["Fed", "Hungry", "Empty", "Starving"]:
+		return false
+	if dto.dehydration_due or (dto.hydration > 0 and dto.zero_hydration_minutes != 0) or (dto.stomach_kcal > 0 and dto.empty_minutes != 0) or (dto.collapsed and not dto.is_asleep):
+		return false
+	var staged := NeedsModel.new(tuning)
+	staged._apply_state(dto)
+	staged.refresh_stage()
+	if tuning.chapter_needs_enabled:
+		staged._refresh_hydration()
+		staged._refresh_fullness()
+	if staged.stage != StringName(dto.stage) or staged.hydration_stage != StringName(dto.hydration_stage) or staged.fullness_stage != StringName(dto.fullness_stage) or staged.energy > staged.energy_cap():
+		return false
+	if not tuning.chapter_needs_enabled and (dto.is_asleep or dto.collapsed or dto.collapse_due or dto.natural_wake_due):
+		return false
+	_apply_state(dto)
+	return true
+
+func _apply_state(dto: Dictionary) -> void:
+	energy = float(dto.energy)
+	stage = StringName(dto.stage)
+	hydration = float(dto.hydration)
+	hydration_stage = StringName(dto.hydration_stage)
+	stomach_kcal = float(dto.stomach_kcal)
+	weight_kg = float(dto.weight_kg)
+	fullness_stage = StringName(dto.fullness_stage)
+	is_asleep = dto.is_asleep
+	zero_hydration_minutes = int(dto.zero_hydration_minutes)
+	empty_minutes = int(dto.empty_minutes)
+	dehydration_due = dto.dehydration_due
+	collapse_due = dto.collapse_due
+	natural_wake_due = dto.natural_wake_due
+	_collapsed = dto.collapsed

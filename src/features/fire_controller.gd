@@ -164,3 +164,49 @@ func _derive_flame() -> void:
 	else:
 		stage = &"Embers"
 		ember_minutes = 0
+
+func export_state() -> Dictionary:
+	return {"id": String(id), "position": CheckpointValues.encode_vector(position), "stage": String(stage), "fuel": fuel,
+		"burning_wetness": burning_wetness, "smolder_minutes": smolder_minutes, "ember_minutes": ember_minutes,
+		"kindling_count": kindling_count, "tinder_ready": tinder_ready, "tinder_fuel": _tinder_fuel}
+
+func restore_state(dto: Dictionary) -> bool:
+	if not CheckpointValues.keys(dto, export_state().keys()) or not CheckpointValues.text(dto.id) or dto.id != String(id) or not CheckpointValues.vector(dto.position):
+		return false
+	var p := CheckpointValues.decode_vector(dto.position)
+	var field: PlayfieldTuning = preload("res://assets/data/playfield_defaults.tres")
+	if absf(p.x) >= field.half_extent or absf(p.z) >= field.half_extent or absf(p.y) > 0.01:
+		return false
+	if not CheckpointValues.text(dto.stage) or dto.stage not in ["Site", "Cleared", "Laid", "Smoldering", "Kindling", "Burning", "Embers", "Out"] or not dto.tinder_ready is bool:
+		return false
+	if not CheckpointValues.number(dto.fuel, 0, tuning.fuel_cap) or not CheckpointValues.number(dto.burning_wetness, 0, 1) or not CheckpointValues.number(dto.tinder_fuel, 0, tuning.fuel_cap):
+		return false
+	if not CheckpointValues.integer(dto.smolder_minutes, 0, tuning.smolder_life) or not CheckpointValues.integer(dto.ember_minutes, 0, tuning.ember_life) or not CheckpointValues.integer(dto.kindling_count, 0, tuning.kindling_sticks):
+		return false
+	if (dto.kindling_count != 0 and dto.kindling_count != tuning.kindling_sticks) or (dto.tinder_ready and dto.kindling_count != tuning.kindling_sticks) or (not dto.tinder_ready and dto.tinder_fuel != 0):
+		return false
+	if dto.tinder_ready and dto.tinder_fuel not in [tuning.tinder_bark * tuning.fuel_values[&"bark"], tuning.tinder_grass * tuning.fuel_values[&"grass"]]:
+		return false
+	if dto.stage in ["Site", "Cleared", "Laid", "Smoldering", "Out"] and dto.fuel != 0:
+		return false
+	if (dto.stage == "Burning" and dto.fuel < tuning.burning_threshold) or (dto.stage == "Kindling" and (dto.fuel < tuning.kindling_threshold or dto.fuel >= tuning.burning_threshold)):
+		return false
+	if dto.stage == "Smoldering" and (not dto.tinder_ready or dto.smolder_minutes >= tuning.smolder_life):
+		return false
+	if dto.stage == "Embers" and dto.ember_minutes >= tuning.ember_life:
+		return false
+	if dto.stage in ["Site", "Cleared", "Kindling", "Burning", "Embers", "Out"] and (dto.kindling_count != 0 or dto.tinder_ready):
+		return false
+	if dto.stage == "Laid" and dto.kindling_count != tuning.kindling_sticks:
+		return false
+	position = p
+	stage = StringName(dto.stage)
+	fuel = float(dto.fuel)
+	burning_wetness = float(dto.burning_wetness)
+	smolder_minutes = int(dto.smolder_minutes)
+	ember_minutes = int(dto.ember_minutes)
+	kindling_count = int(dto.kindling_count)
+	tinder_ready = dto.tinder_ready
+	_tinder_fuel = float(dto.tinder_fuel)
+	publish_heat()
+	return true
