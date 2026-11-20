@@ -7,6 +7,7 @@ var bark_remaining: int
 var _limits: Array[int] = []
 var sticks_remaining: int = 0
 var node_id: StringName = &""
+var action_progress: Dictionary[StringName, float] = {}
 
 func _init(node_kind: StringName = &"bush", reserve: int = 0, grass_reserve: int = 0, bark_reserve: int = 0) -> void:
 	kind = node_kind

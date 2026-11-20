@@ -81,6 +81,7 @@ func _enter_tree() -> void:
 	simulation = RunSimulation.new(seed_value, tuning)
 	var run_world := get_node("WorldMap") as WorldMap
 	run_world.layout = simulation.map_layout
+	run_world.lake_surface = simulation.lake
 	if tuning != null:
 		run_world.extra_deadfalls.assign(tuning.extra_deadfalls)
 		run_world.chapter_sites = tuning.chapter_needs_enabled
@@ -92,6 +93,10 @@ func _ready() -> void:
 		if not initialization_ok:
 			return
 	var chapter := simulation.tuning.chapter_needs_enabled
+	if chapter:
+		for locale: String in ["en", "zh"]:
+			TranslationServer.add_translation(load("res://assets/localization/ice.%s.translation" % locale))
+	simulation.fell_in_water.connect(_on_fell_in_water)
 	input_router.chapter_actions_enabled = chapter
 	_gather_query = simulation.gathering.can_gather
 	for argument: String in OS.get_cmdline_user_args():
@@ -107,6 +112,9 @@ func _ready() -> void:
 			_demo_end = true
 		if not chapter and argument == "--demo-gather":
 			_demo_gather = true
+		if chapter and argument == "--debug-thin-ice-at-spawn":
+			survivor.position = simulation.debug_thin_ice_spawn()
+			simulation.position = survivor.position
 	camera.target = survivor
 	camera.position = survivor.position + Vector3.UP * camera.tuning.camera_target_height
 	survivor.configure(simulation, input_router, camera)
@@ -228,6 +236,9 @@ func _exit_tree() -> void:
 	if _food != null:
 		_food.dispose()
 
+func _on_fell_in_water(_event: ImmersionEvent) -> void:
+	hud.show_cue(tr(&"HUD_ICE_BROKE"))
+
 func _process(delta: float) -> void:
 	if simulation == null or not initialization_ok:
 		return
@@ -292,6 +303,8 @@ func _on_action(action: StringName) -> void:
 		else:
 			hud.handle_ui_action(action)
 		return
+	if simulation.in_water and action != &"pause_menu" and not String(action).begins_with("camera_"):
+		return
 	if simulation.needs.is_asleep and action not in [&"pause_menu", &"cancel_action", &"debug_overlay"]:
 		return
 	match action:
@@ -316,7 +329,7 @@ func _on_action(action: StringName) -> void:
 				if not paused:
 					simulation.clock.request_rate_mode(&"normal", &"interrupted")
 			else:
-				simulation.cancel_action()
+				simulation.cancel_action(false)
 		&"sleep":
 			_try_sleep()
 		&"drink_snow":
@@ -672,6 +685,8 @@ func _survivor_position() -> Vector3:
 	return survivor.global_position
 
 func _make_fire() -> void:
+	if simulation.in_water:
+		return
 	if simulation.body.stage == &"Critical" or simulation.needs.stage == &"Exhausted":
 		_refuse(tr(&"HUD_CLEAR_REFUSED"))
 		return
@@ -696,6 +711,8 @@ func _make_fire() -> void:
 		_refuse(tr(&"HUD_CLEAR_REFUSED"))
 
 func _prompt() -> String:
+	if simulation.in_water:
+		return ""
 	if simulation.terminal != &"" or paused or backpack_open:
 		return ""
 	if simulation.actions.action != &"":

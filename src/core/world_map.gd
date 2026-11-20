@@ -16,6 +16,13 @@ var chapter_sites: bool = false
 var _shelter_reserved: bool = false
 var _obstacles: Array[Vector3] = []
 var layout: LargeMapLayout
+var lake_surface: LakeSurface
+
+func surface_at(p: Vector3) -> Dictionary[StringName, Variant]:
+	return lake_surface.surface_at(p) if lake_surface != null else {&"kind": &"snow", &"ice_thickness_cm": 0.0}
+
+func break_ice(cell: Vector2i) -> bool:
+	return lake_surface != null and lake_surface.break_ice(cell)
 
 func half_extent() -> float:
 	return LargeMapLayout.HALF_EXTENT if layout != null else TUNING.half_extent
@@ -185,6 +192,8 @@ func _build_large_map() -> void:
 	var ice := SceneAssets.material(Color("b5d7df"))
 	ice.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_plane(Vector3(lake.get_center().x, 0.015, lake.get_center().y), lake.size, ice)
+	if lake_surface != null:
+		_build_thin_ice()
 	for node: Dictionary in layout.nodes:
 		var kind: StringName = node[&"kind"]
 		var label: String = {&"bush": "TARGET_DRY_BUSH", &"deadfall": "TARGET_DEADFALL", &"birch": "TARGET_BIRCH", &"grass": "TARGET_DRY_GRASS", &"stone": "TARGET_STONE_PILE"}[kind]
@@ -224,6 +233,30 @@ func _clear_of_nodes(p: Vector3, clearance: float) -> bool:
 		if camp.distance_to(p) < 5:
 			return false
 	return true
+
+func _build_thin_ice() -> void:
+	var patches := MultiMeshInstance3D.new()
+	var cells := MultiMesh.new()
+	cells.transform_format = MultiMesh.TRANSFORM_3D
+	var plane := PlaneMesh.new()
+	plane.size = Vector2.ONE * LakeSurface.CELL_SIZE
+	cells.mesh = plane
+	cells.instance_count = lake_surface.thin_cells.size()
+	var index := 0
+	for cell: Vector2i in lake_surface.thin_cells:
+		cells.set_instance_transform(index, Transform3D(Basis.IDENTITY, lake_surface.cell_center(cell) + Vector3.UP * 0.02))
+		index += 1
+	patches.multimesh = cells
+	var ice := SceneAssets.material(Color("9fb9c2"))
+	ice.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	patches.material_override = ice
+	add_child(patches)
+	lake_surface.ice_broken.connect(_show_open_water)
+
+func _show_open_water(cell: Vector2i) -> void:
+	var water := SceneAssets.material(Color("243d4f"))
+	water.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_plane(lake_surface.cell_center(cell) + Vector3.UP * 0.025, Vector2.ONE * LakeSurface.CELL_SIZE, water)
 
 func _plane(p: Vector3, size: Vector2, material: Material) -> void:
 	var mesh := MeshInstance3D.new()

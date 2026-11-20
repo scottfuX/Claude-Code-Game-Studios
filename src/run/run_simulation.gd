@@ -3,6 +3,7 @@ class_name RunSimulation extends RefCounted
 signal snapshot_published(snapshot: Dictionary[StringName, Variant])
 signal run_ended(cause: StringName)
 signal action_resolved(action: StringName, success: bool, cause: StringName)
+signal fell_in_water(event: ImmersionEvent)
 
 var tuning: SliceTuning
 var clock: Clock
@@ -10,6 +11,12 @@ var rng: RunRng
 var thermal: ThermalField
 var weather: WeatherController
 var map_layout: LargeMapLayout
+var lake: LakeSurface
+var in_water: bool = false
+var _contacts: Array[Dictionary] = []
+var _travel_remainder: float = 0.0
+var _immersion_sequence: int = 0
+var _debug_break_next: bool = false
 var body: BodyThermoregulation
 var needs: NeedsModel
 var inventory: InventoryModel
@@ -90,6 +97,7 @@ func _init(seed_value: int = 1, data: SliceTuning = null) -> void:
 	rng = RunRng.new(seed_value)
 	if tuning.large_map_enabled:
 		map_layout = LargeMapLayout.new(rng)
+		lake = LakeSurface.new(rng)
 	thermal = ThermalField.new(tuning)
 	if map_layout != null:
 		map_layout.publish_zones(thermal)
@@ -110,7 +118,7 @@ func _init(seed_value: int = 1, data: SliceTuning = null) -> void:
 
 ## Admits already-selected sleep; control and action bindings are separate.
 func request_sleep() -> bool:
-	if terminal != &"" or not needs.request_sleep(clock.phase() == &"Night"):
+	if in_water or terminal != &"" or not needs.request_sleep(clock.phase() == &"Night"):
 		return false
 	cancel_action()
 	clock.request_rate_mode(&"sleep", &"chosen")
@@ -167,7 +175,7 @@ func start_feature_action(action: StringName, minutes: float, still_eligible: Ca
 
 ## Starts an eligible transaction with target and duration fixed at admission.
 func start_action(action: StringName, fire: FireController = null, node: GatherNode = null) -> bool:
-	if terminal != &"" or needs.is_asleep or not tuning.action_minutes.has(action) or not _allowed(action):
+	if in_water or terminal != &"" or needs.is_asleep or not tuning.action_minutes.has(action) or not _allowed(action):
 		return false
 	if fire != null:
 		if not fires.has(fire) or not fire.can_act(action, inventory):
@@ -183,6 +191,10 @@ func start_action(action: StringName, fire: FireController = null, node: GatherN
 		return false
 	_fire_target = fire
 	_gather_target = node
+	actions.cancellable = true
+	actions.progress_kept = lake != null and action == &"chop_log"
+	if node != null and actions.progress_kept:
+		actions.elapsed_s = node.action_progress.get(action, 0.0) * actions.duration_s
 	return true
 
 ## Returns the current fire or gathering target, or null when idle.
@@ -192,8 +204,12 @@ func active_action_target() -> RefCounted:
 	return _fire_target if _fire_target != null else _gather_target
 
 ## Cancels active work and clears the stored target without a result or draw.
-func cancel_action() -> void:
-	actions.cancel()
+func cancel_action(forced: bool = true) -> void:
+	if not forced and not actions.cancellable:
+		return
+	if _gather_target != null and actions.progress_kept and actions.action != &"":
+		_gather_target.action_progress[actions.action] = clampf((actions.elapsed_s + _action_delta_s) / actions.duration_s, 0, 1)
+	actions.cancel(forced)
 	_fire_target = null
 	_gather_target = null
 	_action_delta_s = 0.0
@@ -206,19 +222,23 @@ func cancel_action() -> void:
 func update(delta_s: float, paused: bool = false) -> void:
 	if terminal != &"" or paused or not is_finite(delta_s) or delta_s <= 0:
 		return
-	if movement != &"idle" or (_feature_valid.is_valid() and not _feature_valid.call()):
+	if _feature_valid.is_valid() and not _feature_valid.call():
 		cancel_action()
+	if movement != &"idle":
+		cancel_action(false)
 	if actions.action != &"" and actions.action != &"eat_snow":
 		_action_delta_s += delta_s
 	clock.accumulate(delta_s)
 	var ticks := 0
 	while ticks < tuning.max_ticks and terminal == &"" and clock.consume_minute(_integrate_minute):
 		ticks += 1
-	if terminal == &"" and not clock.minute_owed() and actions.action != &"eat_snow":
-		var completed := actions.advance(_action_delta_s)
-		_action_delta_s = 0.0
-		if completed != &"":
-			_commit_completion(completed)
+	if terminal == &"" and not clock.minute_owed():
+		_resolve_contacts()
+		if actions.action != &"eat_snow":
+			var completed := actions.advance(_action_delta_s)
+			_action_delta_s = 0.0
+			if completed != &"":
+				_commit_completion(completed)
 	snapshot_published.emit(snapshot())
 
 ## Advances a single deterministic minute for tests and explicit simulation drivers.
@@ -226,7 +246,65 @@ func step_minute() -> void:
 	if terminal != &"":
 		return
 	clock.advance_minute(_integrate_minute)
+	_resolve_contacts()
 	snapshot_published.emit(snapshot())
+
+func record_travel(from: Vector3, to: Vector3, hurrying: bool) -> void:
+	if lake == null or in_water or terminal != &"" or not from.is_finite() or not to.is_finite():
+		return
+	var distance := Vector2(to.x - from.x, to.z - from.z).length()
+	if distance <= 0.0:
+		return
+	var next := 0.7 - _travel_remainder
+	while next <= distance:
+		_contacts.append({&"position": from.lerp(to, next / distance), &"hurrying": hurrying})
+		next += 0.7
+	_travel_remainder = fposmod(_travel_remainder + distance, 0.7)
+
+func debug_thin_ice_spawn() -> Vector3:
+	if not OS.is_debug_build() or lake == null:
+		return Vector3.ZERO
+	_debug_break_next = true
+	return lake.cell_center(Vector2i(2, 45))
+
+func leave_water() -> void:
+	in_water = false
+	movement = &"idle"
+	_travel_remainder = 0.0
+
+func _resolve_contacts() -> void:
+	if terminal != &"" or lake == null:
+		_contacts.clear()
+		return
+	if body.is_dead():
+		_end(&"hypothermia")
+		_contacts.clear()
+		return
+	for contact: Dictionary in _contacts:
+		if in_water:
+			break
+		var p: Vector3 = contact[&"position"]
+		var surface := lake.surface_at(p)
+		var debug_break: bool = OS.is_debug_build() and _debug_break_next and surface[&"kind"] == &"ice" and surface[&"ice_thickness_cm"] < 15.0
+		if not debug_break and not mishaps.check_ice(surface, 0.0, contact[&"hurrying"], rng):
+			continue
+		_debug_break_next = false
+		if not lake.break_ice(surface[&"cell"]):
+			continue
+		_immersion_sequence += 1
+		var event := ImmersionEvent.new(_immersion_sequence, surface[&"cell"], p)
+		cancel_action(true)
+		body.apply_immersion(event.sequence)
+		inventory.soak_carried(event.sequence)
+		var tool := mishaps.lost_tool(inventory.tools, rng)
+		if tool != &"":
+			inventory.lose_tool(tool)
+		in_water = true
+		needs.wake(&"fell_in_water")
+		clock.request_rate_mode(&"normal", &"fell_in_water")
+		movement = &"wade"
+		fell_in_water.emit(event)
+	_contacts.clear()
 
 ## Returns detached values for presentation; contains no live owner objects.
 func snapshot() -> Dictionary[StringName, Variant]:
@@ -278,7 +356,7 @@ func _integrate_minute() -> void:
 	else:
 		if actions.action != &"" and (needs.collapse_due or not _allowed(actions.action) or (_feature_valid.is_valid() and not _feature_valid.call())):
 			cancel_action()
-		if actions.action == &"eat_snow" and actions.advance(1.0) == &"eat_snow":
+		if _contacts.is_empty() and actions.action == &"eat_snow" and actions.advance(1.0) == &"eat_snow":
 			var accepted := needs.accept_snow()
 			action_resolved.emit(&"eat_snow", accepted, &"" if accepted else &"unavailable")
 		if tuning.chapter_needs_enabled:
@@ -362,14 +440,16 @@ func _commit_completion(action: StringName) -> void:
 	if not eligible:
 		cancel_action()
 		return
-	var result := mishaps.resolve(action, thermal.wind_eff(position), body.cold_hands_penalty(), needs.fatigue_penalty(), rng)
+	var wetness := _fire_target.material_wetness(action) if _fire_target != null else 0.0
+	var result := mishaps.resolve(action, thermal.wind_eff(position), body.cold_hands_penalty(), needs.fatigue_penalty(), rng, wetness)
 	if _fire_target != null:
 		_fire_target.commit_action(action, inventory, result[&"success"])
 	else:
 		gathering.resolve(_gather_target, action, result[&"success"], inventory)
+		_gather_target.action_progress.erase(action)
 	action_resolved.emit(action, result[&"success"], result[&"cause"])
 	_fire_target = null
 	_gather_target = null
 
 func _can_use_consumables() -> bool:
-	return tuning.chapter_needs_enabled and terminal == &"" and not needs.is_asleep and body.stage != &"Critical" and movement == &"idle"
+	return not in_water and tuning.chapter_needs_enabled and terminal == &"" and not needs.is_asleep and body.stage != &"Critical" and movement == &"idle"

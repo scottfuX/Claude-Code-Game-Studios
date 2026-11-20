@@ -37,6 +37,7 @@ func test_map_rng_finishes_before_weather_initialization() -> void:
 	var run := RunSimulation.new(20261119, preload("res://assets/data/three_day_survival.tres"))
 	var expected_rng := RunRng.new(20261119)
 	var layout := LargeMapLayout.new(expected_rng)
+	LakeSurface.new(expected_rng)
 	assert_array(run.map_layout.nodes).is_equal(layout.nodes)
 	assert_dict(run.rng.snapshot()).is_equal(expected_rng.snapshot())
 	assert_float(run.thermal.components(Vector3(60, 0, 0))[&"zone"]).is_equal(-3.0)

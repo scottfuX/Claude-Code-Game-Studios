@@ -18,7 +18,12 @@ var ember_minutes: int = 0
 var kindling_count: int = 0
 var tinder_ready: bool = false
 var _tinder_fuel: float = 0.0
+var _tinder_wetness: float = 0.0
+var _kindling_wetness: float = 0.0
 var _thermal: ThermalField
+
+func material_wetness(action: StringName) -> float:
+	return _tinder_wetness if action == &"strike" else (_kindling_wetness if stage == &"Smoldering" else burning_wetness)
 
 func _init(source_id: StringName, site_position: Vector3, thermal: ThermalField, data: SliceTuning = null) -> void:
 	id = source_id
@@ -65,10 +70,12 @@ func commit_action(action: StringName, inventory: InventoryModel, success: bool 
 		&"arrange_tinder":
 			var tinder: StringName = &"bark" if inventory.count(&"bark") >= tuning.tinder_bark else &"grass"
 			var amount := tuning.tinder_bark if tinder == &"bark" else tuning.tinder_grass
+			_tinder_wetness = inventory.wetness(tinder)
 			inventory.consume(tinder, amount)
 			_tinder_fuel = amount * tuning.fuel_values[tinder]
 			tinder_ready = true
 			if kindling_count == 0:
+				_kindling_wetness = inventory.wetness(&"stick")
 				inventory.consume(&"stick", tuning.kindling_sticks)
 				kindling_count = tuning.kindling_sticks
 			stage = &"Laid"
@@ -80,6 +87,7 @@ func commit_action(action: StringName, inventory: InventoryModel, success: bool 
 		&"blow_embers":
 			if success:
 				if stage == &"Smoldering":
+					burning_wetness = (_kindling_wetness * kindling_count * tuning.fuel_values[&"stick"] + _tinder_wetness * _tinder_fuel) / maxf(0.001, kindling_count * tuning.fuel_values[&"stick"] + _tinder_fuel)
 					fuel = kindling_count * tuning.fuel_values[&"stick"] + _tinder_fuel
 					kindling_count = 0
 					tinder_ready = false
@@ -90,6 +98,7 @@ func commit_action(action: StringName, inventory: InventoryModel, success: bool 
 				_expire_smolder()
 		&"add_fuel":
 			var item := _preferred_fuel(inventory)
+			burning_wetness = (burning_wetness * fuel + inventory.wetness(item) * tuning.fuel_values[item]) / (fuel + tuning.fuel_values[item])
 			inventory.consume(item, 1)
 			fuel += tuning.fuel_values[item]
 			if stage != &"Embers":

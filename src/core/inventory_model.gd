@@ -1,5 +1,7 @@
 class_name InventoryModel extends RefCounted
 
+signal item_lost(tool: StringName)
+
 var tools: Array[StringName] = [&"hatchet", &"knife", &"ferro_rod"]
 var _counts: Dictionary[StringName, int] = {}
 var _revisions: Dictionary[StringName, int] = {}
@@ -7,8 +9,29 @@ var _wire_uses: int = 0
 var _wire_revision: int = 0
 var _chapter_data: ChapterContentTuning
 
+var _wet_counts: Dictionary[StringName, int] = {}
+var _immersions: Dictionary[int, bool] = {}
+const SOAKABLE: Array[StringName] = [&"stick", &"log", &"bark", &"grass"]
+
 func _init(chapter_data: ChapterContentTuning = null) -> void:
 	_chapter_data = chapter_data if chapter_data != null else preload("res://assets/data/chapter_content_defaults.tres")
+
+func soak_carried(event_id: int) -> void:
+	if event_id < 0 or _immersions.has(event_id):
+		return
+	_immersions[event_id] = true
+	for item: StringName in SOAKABLE:
+		_wet_counts[item] = count(item)
+
+func wetness(item: StringName) -> float:
+	return float(_wet_counts.get(item, 0)) / count(item) if count(item) > 0 else 0.0
+
+func lose_tool(tool: StringName) -> bool:
+	if not tools.has(tool):
+		return false
+	tools.erase(tool)
+	item_lost.emit(tool)
+	return true
 
 ## Returns the owned count, zero for an absent item.
 func count(item: StringName) -> int:
@@ -29,6 +52,7 @@ func consume(item: StringName, amount: int) -> bool:
 		return false
 	if amount > 0:
 		_counts[item] = count(item) - amount
+		_wet_counts[item] = maxi(0, _wet_counts.get(item, 0) - amount)
 		_revisions[item] = _revisions.get(item, 0) + 1
 	return true
 
