@@ -4,6 +4,7 @@ signal restart_requested
 signal switch_chapter_requested
 
 const PLAYFIELD: PlayfieldTuning = preload("res://assets/data/playfield_defaults.tres")
+const CHAPTER_CONTENT: ChapterContentTuning = preload("res://assets/data/chapter_content_defaults.tres")
 const VERB_NAMES: Dictionary[StringName, String] = {
 	&"gather_sticks": "VERB_GATHER_STICKS", &"chop_log": "VERB_CHOP_LOG", &"strip_bark": "VERB_STRIP_BARK",
 	&"gather_grass": "VERB_GATHER_GRASS", &"clear_snow": "VERB_CLEAR_SNOW", &"arrange_tinder": "VERB_ARRANGE_TINDER",
@@ -123,17 +124,17 @@ func _ready() -> void:
 	_update_lighting()
 
 func _setup_chapter_sites() -> void:
-	var plot := world.shelter_plot(survivor.global_position, FireController.PLACEMENT_RADIUS)
+	var plot := world.shelter_plot(survivor.global_position)
 	var route := world.hare_approach(survivor.global_position)
 	var cooked_minutes: float = simulation.tuning.eat_minutes.get(HareFoodFeature.COOKED, 0.0)
 	var cooked_kcal: float = simulation.tuning.food_kcal.get(HareFoodFeature.COOKED, 0.0)
-	if plot.is_empty() or route.is_empty() or not (cooked_minutes >= 0.25 and cooked_minutes <= 30.0 and cooked_kcal >= 250.0 and cooked_kcal <= 450.0):
+	if plot.is_empty() or route.is_empty() or not CHAPTER_CONTENT.is_valid() or not (cooked_minutes >= 0.25 and cooked_minutes <= 30.0 and cooked_kcal >= 250.0 and cooked_kcal <= 450.0):
 		push_error("Chapter 2: invalid shelter plot, hare route, or cooked hare data")
 		_setup_failed = true
 		return
 	simulation.inventory.add(&"tarp", 1)
-	simulation.fire_site_eligible = world.can_place_fire.bind(FireController.PLACEMENT_RADIUS)
-	_shelter = ShelterFeature.new(plot, simulation.inventory, simulation.thermal)
+	simulation.fire_site_eligible = world.can_place_fire
+	_shelter = ShelterFeature.new(plot, simulation.inventory, simulation.thermal, CHAPTER_CONTENT)
 	var site: Transform3D = plot[&"site"]
 	_shelter_target = world.add_site(ShelterFeature.ID, site.origin, "TARGET_SHELTER")
 	_shelter_target.chapter_target = true
@@ -141,7 +142,7 @@ func _setup_chapter_sites() -> void:
 	_shelter_visual.transform = site
 	world.add_child(_shelter_visual)
 	simulation.inventory.equip_snare_wire()
-	_food = HareFoodFeature.new(simulation.inventory, simulation.clock, world.can_place_bundle)
+	_food = HareFoodFeature.new(simulation.inventory, simulation.clock, world.can_place_bundle, CHAPTER_CONTENT)
 	_trail_target = world.add_site(HareFoodFeature.TRAIL, route[-1], "TARGET_HARE_TRAIL")
 	_trail_target.chapter_target = true
 	_trail_visual = HareTrailVisual.new()
@@ -413,7 +414,7 @@ func _make_fire() -> void:
 	if absf(p.x) > world.half_extent() - PLAYFIELD.edge_inset or absf(p.z) > world.half_extent() - PLAYFIELD.edge_inset:
 		_refuse(tr(&"HUD_INSIDE_CLEARING"))
 		return
-	if not world.can_place_fire(p, FireController.PLACEMENT_RADIUS):
+	if not world.can_place_fire(p):
 		_refuse(tr(&"HUD_OPEN_GROUND"))
 		return
 	for existing: FireController in simulation.fires:

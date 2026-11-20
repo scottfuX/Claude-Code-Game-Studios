@@ -5,12 +5,10 @@ var _counts: Dictionary[StringName, int] = {}
 var _revisions: Dictionary[StringName, int] = {}
 var _wire_uses: int = 0
 var _wire_revision: int = 0
-const CARRY_CAPACITY_KG := 25.0
-const CHAPTER_MASS_KG: Dictionary[StringName, float] = {
-	&"hatchet": 1.0, &"knife": 0.2, &"ferro_rod": 0.1, &"snare_wire": 0.2,
-	&"tarp": 1.2, &"pemmican": 0.1, &"stick": 0.2, &"log": 2.5, &"grass": 0.02, &"bark": 0.05,
-	&"hare_raw": 0.4, &"hare_cooked": 0.15,
-}
+var _chapter_data: ChapterContentTuning
+
+func _init(chapter_data: ChapterContentTuning = null) -> void:
+	_chapter_data = chapter_data if chapter_data != null else preload("res://assets/data/chapter_content_defaults.tres")
 
 ## Returns the owned count, zero for an absent item.
 func count(item: StringName) -> int:
@@ -43,7 +41,9 @@ func consume_prepared(item: StringName, revision: int) -> bool:
 	return revision >= 0 and revision == stack_revision(item) and consume(item, 1)
 
 ## Equips the chapter's existing wire with authored durability.
-func equip_snare_wire(uses: int = 50) -> void:
+func equip_snare_wire(uses: int = -1) -> void:
+	if uses == -1:
+		uses = _chapter_data.wire_durability
 	if uses <= 0 or has_tool(&"snare_wire"):
 		return
 	tools.append(&"snare_wire")
@@ -66,16 +66,20 @@ func spend_wire(revision: int) -> bool:
 
 ## Calculates what fits after one optional input spend; caller validates overflow before applying.
 func prepare_exchange(input: StringName, revision: int, output: StringName, units: int) -> Dictionary:
-	if (input != &"" and (revision < 0 or revision != stack_revision(input) or not CHAPTER_MASS_KG.has(input))) or not CHAPTER_MASS_KG.has(output) or units <= 0:
+	var mass := _chapter_data.item_mass_kg
+	if (input != &"" and (revision < 0 or revision != stack_revision(input) or not mass.has(input))) or not mass.has(output) or units <= 0:
+		return {}
+	var output_mass: float = mass[output]
+	if not is_finite(output_mass) or output_mass <= 0.0:
 		return {}
 	var carried := 0.0
 	for tool: StringName in tools:
-		carried += CHAPTER_MASS_KG.get(tool, 0.0)
+		carried += mass.get(tool, 0.0)
 	for item: StringName in _counts:
-		carried += count(item) * float(CHAPTER_MASS_KG.get(item, 0.0))
+		carried += count(item) * float(mass.get(item, 0.0))
 	if input != &"":
-		carried -= CHAPTER_MASS_KG[input]
-	var fits := clampi(floori((CARRY_CAPACITY_KG - carried + 0.00001) / CHAPTER_MASS_KG[output]), 0, units)
+		carried -= mass[input]
+	var fits := clampi(floori((_chapter_data.carry_capacity_kg - carried + 0.00001) / output_mass), 0, units)
 	return {&"input": input, &"output": output, &"fits": fits, &"overflow": units - fits}
 
 ## Applies an exchange immediately after preparation, with no callbacks between effects.

@@ -90,13 +90,13 @@ func can_place_bundle(point: Vector3) -> bool:
 	return true
 
 ## Returns the authored plot only after geometry, approach and outdoor apron checks.
-func shelter_plot(drop: Vector3, fire_radius: float) -> Dictionary:
+func shelter_plot(drop: Vector3) -> Dictionary:
 	var site := SHELTER_TRANSFORM.origin
 	var center := SHELTER_TRANSFORM * SHELTER_BOUNDS.get_center()
 	center.y = 0
 	if not _shelter_reserved or not ThermalField.valid_site_geometry(SHELTER_TRANSFORM, SHELTER_BOUNDS) or drop.distance_to(site) + site.distance_to(center) > 15.0:
 		return {}
-	if not clear_approach(PackedVector3Array([drop, site, center])) or not can_place_fire(SHELTER_APRON, fire_radius):
+	if not clear_approach(PackedVector3Array([drop, site, center])) or not can_place_fire(SHELTER_APRON):
 		return {}
 	for obstacle: Vector3 in _obstacles:
 		if disc_intersects_plot(obstacle, TUNING.obstacle_radius, SHELTER_TRANSFORM, SHELTER_BOUNDS):
@@ -153,7 +153,8 @@ func add_site(site_id: StringName, position: Vector3, label: String) -> WorldInt
 	return entry
 
 ## Rejects occupied ground while leaving authoritative site limits to the simulation.
-func can_place_fire(position: Vector3, footprint: float = FireController.PLACEMENT_RADIUS) -> bool:
+func can_place_fire(position: Vector3) -> bool:
+	var footprint := TUNING.fire_placement_radius
 	if _shelter_reserved and disc_intersects_plot(position, footprint, SHELTER_TRANSFORM, SHELTER_BOUNDS):
 		return false
 	if chapter_sites and (not is_on_snow(position) or position.distance_to(HARE_TRAIL) <= footprint + TUNING.resource_clearance):

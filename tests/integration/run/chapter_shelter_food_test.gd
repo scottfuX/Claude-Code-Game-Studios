@@ -1,6 +1,7 @@
 extends GdUnitTestSuite
 
 const CHAPTER: SliceTuning = preload("res://assets/data/three_day_survival.tres")
+const CONTENT: ChapterContentTuning = preload("res://assets/data/chapter_content_defaults.tres")
 const SCENE: PackedScene = preload("res://src/run/run.tscn")
 const YES := true
 
@@ -92,7 +93,7 @@ func test_authored_chapter_sites_reserve_empty_plot_and_leave_outdoor_fire() -> 
 	scene.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(scene)
 	var world := scene.world
-	assert_bool(world.shelter_plot(Vector3.ZERO, FireController.PLACEMENT_RADIUS).is_empty()).is_false()
+	assert_bool(world.shelter_plot(Vector3.ZERO).is_empty()).is_false()
 	assert_int(world.hare_approach(Vector3.ZERO).size()).is_equal(4)
 	assert_bool(world.hare_approach(Vector3(0, 5, 0)).is_empty()).is_true()
 	assert_bool(world.can_place_fire(WorldMap.SHELTER_APRON)).is_true()
@@ -236,6 +237,20 @@ func test_cooking_fits_after_raw_removal_and_terminal_beats_catch() -> void:
 	assert_str(run.terminal).is_equal("hypothermia")
 	assert_int(food.state).is_equal(HareFoodFeature.Trap.ARMED)
 	assert_int(run.inventory.count(HareFoodFeature.RAW)).is_zero()
+
+
+func test_chapter_resources_supply_work_durations_and_reject_invalid_values() -> void:
+	var data: ChapterContentTuning = CONTENT.duplicate()
+	assert_bool(data.is_valid()).is_true()
+	data.frame_minutes = 2.0
+	var run := _run()
+	var shelter := ShelterFeature.new({&"site": Transform3D.IDENTITY, &"bounds": WorldMap.SHELTER_BOUNDS}, run.inventory, run.thermal, data)
+	run.inventory.add(&"log", 1)
+	assert_bool(shelter.start(run, ShelterFeature.FRAME, _focused)).is_true()
+	_advance(run, 2)
+	assert_int(shelter.stage).is_equal(1)
+	data.cook_minutes = NAN
+	assert_bool(data.is_valid()).is_false()
 
 
 func _run() -> RunSimulation:

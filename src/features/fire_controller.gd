@@ -1,7 +1,5 @@
 class_name FireController extends RefCounted
 
-const PLACEMENT_RADIUS: float = 1.0
-
 signal loss(kind: StringName)
 
 var tuning: SliceTuning

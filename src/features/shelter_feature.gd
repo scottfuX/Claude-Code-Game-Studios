@@ -9,12 +9,14 @@ var _bounds: AABB
 var _inventory: InventoryModel
 var _thermal: ThermalField
 var _live := true
+var _tuning: ChapterContentTuning
 
-func _init(plot: Dictionary, inventory: InventoryModel, thermal: ThermalField) -> void:
+func _init(plot: Dictionary, inventory: InventoryModel, thermal: ThermalField, tuning: ChapterContentTuning = null) -> void:
 	_site = plot[&"site"]
 	_bounds = plot[&"bounds"]
 	_inventory = inventory
 	_thermal = thermal
+	_tuning = tuning if tuning != null else preload("res://assets/data/chapter_content_defaults.tres")
 
 ## Returns the current build verb only when the required material is carried.
 func offered_action() -> StringName:
@@ -35,7 +37,7 @@ func start(run: RunSimulation, action: StringName, focused: Callable) -> bool:
 	var expected_stage := stage
 	var valid := func() -> bool:
 		return _live and stage == expected_stage and _inventory.stack_revision(item) == revision and focused.is_valid() and focused.call()
-	return run.start_feature_action(action, 6.0 if action == FRAME else 4.0, valid, _commit.bind(expected_stage, item, revision))
+	return run.start_feature_action(action, _tuning.frame_minutes if action == FRAME else _tuning.cover_minutes, valid, _commit.bind(expected_stage, item, revision))
 
 ## Checks both the bedroll and the real Body sample; never moves the survivor.
 func can_sleep(position: Vector3) -> bool:
@@ -52,7 +54,7 @@ func _commit(expected_stage: int, item: StringName, revision: int) -> StringName
 		return &"unavailable"
 	var plan: Dictionary = {}
 	if expected_stage == 1:
-		plan = _thermal.prepare_insulation(ID, 2, _site, _bounds, 0.1, 2.0)
+		plan = _thermal.prepare_insulation(ID, 2, _site, _bounds, _tuning.shelter_exposure, _tuning.shelter_bonus_c)
 		if plan.is_empty():
 			return &"unavailable"
 	if not _inventory.consume_prepared(item, revision):

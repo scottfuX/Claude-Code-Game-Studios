@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="ChapterContentTuning" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/chapter_content_tuning.gd" id="1_tuning"]
+
+[resource]
+script = ExtResource("1_tuning")
+frame_minutes = 6.0
+cover_minutes = 4.0
+shelter_exposure = 0.1
+shelter_bonus_c = 2.0
+wire_durability = 50
+set_minutes = 3.0
+check_minutes = 2.0
+cook_minutes = 10.0
+pickup_minutes = 1.0
+crossing_start_minute = 1200
+crossing_length_minutes = 120
+carry_capacity_kg = 25.0
+item_mass_kg = Dictionary[StringName, float]({
+&"bark": 0.05,
+&"ferro_rod": 0.1,
+&"grass": 0.02,
+&"hare_cooked": 0.15,
+&"hare_raw": 0.4,
+&"hatchet": 1.0,
+&"knife": 0.2,
+&"log": 2.5,
+&"pemmican": 0.1,
+&"snare_wire": 0.2,
+&"stick": 0.2,
+&"tarp": 1.2
+})
