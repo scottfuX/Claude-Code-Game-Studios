@@ -9,3 +9,9 @@ HUD slice Resource keeps onboarding until first flame, with H-reopenable help an
 Atmosphere quality is selected once per run from assets/data/atmosphere_defaults.tres. Auto keeps full ambient wind/fire loops on GPUs and selects Low for llvmpipe, softpipe, lavapipe, SwiftShader and software adapter names. Low disables those two loops but retains footstep/action sounds and all visual effects; High and Low can be forced in the Resource, and both loop defaults are editable. This is an explicit software-renderer audio-quality exception, not missing audio content.
 
 A single-pass, staged night/fire ablation at 1152×648 OpenGL3 (30 warm-up frames, 180 measured frames per variant) found audio-off fastest: median 10.61 FPS versus 8.98 all-on. Other removals were sometimes slower, so this noisy software-renderer result is a quality-selection input, not a confirmed bottleneck or a prediction of GPU performance.
+
+## Deferred feel issues
+
+[Scott's replay of main fce1b66](../production/qa/playtests/playtest-2026-11-20-scott-replay.md) records flat snow contact and contextually strange animations as polish backlog for the next feel/art-animation pass. Ground remains flat with visual footprint marks; broad reused clips and procedural layers need later contextual art/animation work. Neither is changed in code here.
+
+The screen flicker was classified S2/P1 and fixed rather than deferred: fog colour now has one owner; sun/moon energy, colour and direction blend through twilight, with shadow opacity fading instead of switching the shadow path off at night. Keeping that path enabled removes the separately observed OpenGL3 boundary pop, but its night-time rendering cost was not benchmarked. Before/after GUI evidence and regression details are in the replay report. Scott's GPU recheck remains pending; slice timing and gameplay rules are unchanged.

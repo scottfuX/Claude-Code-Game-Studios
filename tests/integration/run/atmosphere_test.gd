@@ -29,6 +29,57 @@ func test_atmosphere_maps_daylight_and_pauses_without_rule_mutations() -> void:
 	assert_int(run.simulation.clock.minute_of_day).is_equal(990)
 	assert_int(run.simulation.rng.draw_count).is_zero()
 
+func test_fog_palette_persists_between_clock_ticks() -> void:
+	var shell: Node = auto_free(preload("res://src/run/app_shell.tscn").instantiate())
+	shell.process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(shell)
+	var run := shell.get_child(0) as RunCoordinator
+	var environment := run.environment_node.environment
+	for minute: int in [990, 1031, 1034, 1035, 1036, 0, 465, 466, 510]:
+		run.simulation.clock.minute_of_day = minute
+		run.call("_update_lighting")
+		var fog := environment.fog_light_color
+		var density := environment.fog_density
+		for frame in 3:
+			run.call("_update_lighting")
+			assert_bool(environment.fog_light_color.is_equal_approx(fog)).is_true()
+			assert_float(environment.fog_density).is_equal(density)
+
+func test_sun_moon_handoff_is_continuous_at_both_twilight_boundaries() -> void:
+	var shell: Node = auto_free(preload("res://src/run/app_shell.tscn").instantiate())
+	shell.process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(shell)
+	var run := shell.get_child(0) as RunCoordinator
+	for boundary: int in [465, 1035]:
+		run.simulation.clock.minute_of_day = boundary - 3
+		run.call("_update_lighting")
+		var energy := run.sun.light_energy
+		var color := run.sun.light_color
+		var rotation := run.sun.rotation
+		var opacity := run.sun.shadow_opacity
+		for minute in range(boundary - 2, boundary + 4):
+			run.simulation.clock.minute_of_day = minute
+			run.call("_update_lighting")
+			assert_float(absf(run.sun.light_energy - energy)).is_less(0.02)
+			assert_float(absf(run.sun.light_color.r - color.r)).is_less(0.04)
+			assert_float(absf(run.sun.light_color.g - color.g)).is_less(0.04)
+			assert_float(absf(run.sun.light_color.b - color.b)).is_less(0.04)
+			assert_float(run.sun.rotation.distance_to(rotation)).is_less(0.05)
+			assert_float(absf(run.sun.shadow_opacity - opacity)).is_less(0.02)
+			assert_bool(run.sun.shadow_enabled).is_true()
+			energy = run.sun.light_energy
+			color = run.sun.light_color
+			rotation = run.sun.rotation
+			opacity = run.sun.shadow_opacity
+	run.simulation.clock.minute_of_day = 0
+	run.call("_update_lighting")
+	var atmosphere: WinterAtmosphere = run.get("_atmosphere")
+	assert_float(run.sun.light_energy).is_equal_approx(atmosphere.tuning.moon_energy, 0.0001)
+	assert_float(run.sun.shadow_opacity).is_zero()
+	run.simulation.clock.minute_of_day = 720
+	run.call("_update_lighting")
+	assert_float(run.sun.light_energy).is_equal_approx(0.85, 0.0001)
+
 func test_software_quality_detection_and_explicit_overrides() -> void:
 	var data := AtmosphereTuning.new()
 	for adapter: String in ["llvmpipe (LLVM 15.0.7, 256 bits)", "SOFTPIPE", "SwiftShader", "Software Rasterizer", "lavapipe", "Microsoft Basic Render Driver"]:

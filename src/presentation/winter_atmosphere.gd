@@ -4,7 +4,6 @@ const AUDIBLE_FIRE: Array[StringName] = [&"Kindling", &"Burning", &"Embers"]
 const CHOP: Array[StringName] = [&"chop_log", &"strip_bark"]
 var simulation: RunSimulation
 var survivor: SurvivorController
-var sunlight: DirectionalLight3D
 var environment: Environment
 var tuning: AtmosphereTuning = preload("res://assets/data/atmosphere_defaults.tres")
 var low_quality: bool = false
@@ -49,11 +48,6 @@ func _ready() -> void:
 ## Updates the shared sky palette; e.g. set_daylight(daylight_fraction).
 func set_daylight(daylight: float) -> void:
 	var light := clampf(daylight, 0, 1)
-	sunlight.shadow_enabled = light > 0.001
-	if light <= 0.001:
-		sunlight.rotation_degrees = Vector3(-42, -65, 0)
-		sunlight.light_color = Color("9fbfe9")
-		sunlight.light_energy = tuning.moon_energy
 	if is_equal_approx(light, _last_daylight):
 		return
 	_last_daylight = light
