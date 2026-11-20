@@ -9,6 +9,7 @@ var clock: Clock
 var rng: RunRng
 var thermal: ThermalField
 var weather: WeatherController
+var map_layout: LargeMapLayout
 var body: BodyThermoregulation
 var needs: NeedsModel
 var inventory: InventoryModel
@@ -87,7 +88,11 @@ func _init(seed_value: int = 1, data: SliceTuning = null) -> void:
 	tuning = data if data != null else preload("res://assets/data/slice_defaults.tres")
 	clock = Clock.new(tuning)
 	rng = RunRng.new(seed_value)
+	if tuning.large_map_enabled:
+		map_layout = LargeMapLayout.new(rng)
 	thermal = ThermalField.new(tuning)
+	if map_layout != null:
+		map_layout.publish_zones(thermal)
 	if tuning.weather_enabled:
 		weather = WeatherController.new()
 		thermal.register_wind_source(&"weather", 3.0)
@@ -322,7 +327,7 @@ func _allowed(action: StringName) -> bool:
 func _work_activity(action: StringName) -> StringName:
 	if action in [&"", &"eat", &"eat_snow"]:
 		return &"idle"
-	return &"heavy" if action in [&"clear_snow", &"chop_log", &"build_shelter_frame"] else &"light"
+	return &"heavy" if action in [&"clear_snow", &"chop_log", &"gather_stones", &"build_shelter_frame"] else &"light"
 
 func _commit_completion(action: StringName) -> void:
 	if not _allowed(action):

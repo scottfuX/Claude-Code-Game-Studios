@@ -1,0 +1,45 @@
+extends GdUnitTestSuite
+
+func test_birch_stones_and_deadfall_reserves() -> void:
+	var resolver := GatheringResolver.new()
+	var inventory := InventoryModel.new()
+	var birch := GatherNode.new(&"birch", 0, 0, 4)
+	assert_bool(resolver.resolve(birch, &"strip_bark", true, inventory)).is_true()
+	assert_int(inventory.count(&"bark")).is_equal(2)
+	assert_int(birch.bark_remaining).is_equal(2)
+	assert_bool(resolver.resolve(birch, &"chop_log", true, inventory)).is_false()
+	var stone := GatherNode.new(&"stone", 2)
+	assert_bool(resolver.resolve(stone, &"gather_stones", true, inventory)).is_true()
+	assert_int(inventory.count(&"stone")).is_equal(1)
+	assert_int(stone.remaining).is_equal(1)
+	var deadfall := GatherNode.new(&"deadfall", 4)
+	deadfall.sticks_remaining = 3
+	inventory.tools.clear()
+	assert_bool(resolver.resolve(deadfall, &"gather_sticks", true, inventory)).is_true()
+	assert_int(inventory.count(&"stick")).is_equal(2)
+	assert_int(deadfall.sticks_remaining).is_equal(1)
+	assert_int(deadfall.remaining).is_equal(4)
+	assert_bool(resolver.can_gather(deadfall, &"chop_log", inventory)).is_false()
+
+func test_empty_missing_tools_and_failed_gathers_preserve_reserves() -> void:
+	var resolver := GatheringResolver.new()
+	var inventory := InventoryModel.new()
+	var birch := GatherNode.new(&"birch", 0, 0, 4)
+	resolver.resolve(birch, &"strip_bark", false, inventory)
+	assert_int(birch.bark_remaining).is_equal(4)
+	assert_int(inventory.count(&"bark")).is_equal(1)
+	inventory.tools.clear()
+	assert_bool(resolver.can_gather(birch, &"strip_bark", inventory)).is_false()
+	assert_bool(resolver.resolve(GatherNode.new(&"stone"), &"gather_stones", true, inventory)).is_false()
+	assert_bool(resolver.resolve(null, &"gather_stones", true, inventory)).is_false()
+	assert_bool(resolver.resolve(GatherNode.new(&"unknown", 2), &"gather_stones", true, inventory)).is_false()
+
+func test_stone_completion_has_no_mishap_roll_and_empties_once() -> void:
+	var run := RunSimulation.new()
+	var node := GatherNode.new(&"stone", 1)
+	assert_bool(run.start_action(&"gather_stones", null, node)).is_true()
+	run.update(run.clock.seconds_per_minute())
+	assert_int(run.inventory.count(&"stone")).is_equal(1)
+	assert_int(run.rng.draw_count).is_equal(0)
+	assert_bool(node.is_depleted()).is_true()
+	assert_bool(run.start_action(&"gather_stones", null, node)).is_false()

@@ -229,6 +229,8 @@ place each node at a random point (seeded) inside the ring ∩ allowed zones, re
 
 ## Open Questions
 
+**Phase B own call (owner-approved reversible default):** only the three-night profile uses the 240 × 240 m map and seeded rings. Collision remains flat at y=0; the hill, heightfield and slope costs are deferred to the ADR-0004 terrain/Jolt spike. The central clearing is ~40 m across (rather than the original west-centre drop); zones are authored rectangles, with flat frozen lake visuals. The first-night map/demo retains its original layout. Lake break-through and thin-ice cells follow in Phase C; drifts/ridge are thermal zone data, not changes to snow rendering or animation. Far-ring placement is clipped to the square playfield. Counts can fall short only after the GDD's logged 30-retry limit.
+
 | Question | Owner | Resolve by | How |
 |---|---|---|---|
 | Is 240 × 240 m right? 100 m costs ~1.2 game hours; the far ring is a half-day expedition. | owner + level-designer | MVP playtest | resize rings (data) before resizing the map |

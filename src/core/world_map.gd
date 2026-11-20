@@ -15,8 +15,18 @@ var extra_deadfalls: Array[Vector3] = []
 var chapter_sites: bool = false
 var _shelter_reserved: bool = false
 var _obstacles: Array[Vector3] = []
+var layout: LargeMapLayout
+
+func half_extent() -> float:
+	return LargeMapLayout.HALF_EXTENT if layout != null else TUNING.half_extent
+
+func zone_at(p: Vector3) -> StringName:
+	return layout.zone_at(p) if layout != null else &"open"
 
 func _ready() -> void:
+	if layout != null:
+		_build_large_map()
+		return
 	var extent := half_extent()
 	var ground := SnowSurface.new(extent * 2.0 + 4.0)
 	add_child(ground)
@@ -110,7 +120,7 @@ static func disc_intersects_plot(point: Vector3, radius: float, transform_value:
 ## Checks the snow plane at the player's feet, e.g. [code]world.is_on_snow(survivor.global_position)[/code].
 func is_on_snow(feet: Vector3) -> bool:
 	var p := to_local(feet)
-	return p.is_finite() and absf(p.x) < half_extent() and absf(p.z) < half_extent() and absf(p.y) < TUNING.capsule_radius
+	return p.is_finite() and absf(p.x) < half_extent() and absf(p.z) < half_extent() and absf(p.y) < TUNING.capsule_radius and zone_at(p) != &"lake"
 
 ## Selects the nearest live interactable within reach and in the facing hemisphere.
 func nearest(position: Vector3, facing: Vector3) -> WorldInteractable:
@@ -155,6 +165,8 @@ func can_place_fire(position: Vector3) -> bool:
 		return false
 	if chapter_sites and (not is_on_snow(position) or position.distance_to(HARE_TRAIL) <= footprint + TUNING.resource_clearance):
 		return false
+	if layout != null and (not layout.contains(position) or zone_at(position) in [&"lake", &"drift"]):
+		return false
 	for obstacle: Vector3 in _obstacles:
 		if Vector2(position.x - obstacle.x, position.z - obstacle.z).length() < TUNING.fire_clearance:
 			return false
@@ -162,6 +174,63 @@ func can_place_fire(position: Vector3) -> bool:
 		if entry.gather_node != null and Vector2(position.x - entry.position.x, position.z - entry.position.z).length() < TUNING.resource_clearance:
 			return false
 	return true
+
+func _build_large_map() -> void:
+	_plane(Vector3.ZERO, Vector2(240, 240), SceneAssets.SNOW)
+	_box_collision(Vector3(0, -0.15, 0), Vector3(240, 0.3, 240))
+	for side in [-1.0, 1.0]:
+		_box_collision(Vector3(side * 120, 1, 0), Vector3(0.5, 3, 240))
+		_box_collision(Vector3(0, 1, side * 120), Vector3(240, 3, 0.5))
+	var lake := LargeMapLayout.LAKE
+	_plane(Vector3(lake.get_center().x, 0.015, lake.get_center().y), lake.size, SceneAssets.material(Color("b5d7df")))
+	for node: Dictionary in layout.nodes:
+		var kind: StringName = node[&"kind"]
+		var label: String = {&"bush": "TARGET_DRY_BUSH", &"deadfall": "TARGET_DEADFALL", &"birch": "TARGET_BIRCH", &"grass": "TARGET_DRY_GRASS", &"stone": "TARGET_STONE_PILE"}[kind]
+		var entry := _gather(kind, label, node[&"position"], node[&"remaining"], node[&"bonus_grass"], node[&"bark_remaining"])
+		entry.gather_node.node_id = node[&"id"]
+		entry.gather_node.sticks_remaining = node[&"sticks_remaining"]
+		match kind:
+			&"deadfall":
+				_stick(entry, Vector3(0, 0.22, 0), Vector3(0, 0.5, PI / 2), 2.4, 0.22)
+			&"birch":
+				_stick(entry, Vector3(0, 2.2, 0), Vector3(0.03, 0, 0.04), 4.4, 0.17, Color("ddd9ce"))
+				for stripe in 5:
+					_stick(entry, Vector3(0, 0.7 + stripe * 0.7, 0), Vector3.ZERO, 0.07, 0.175, Color("555b60"))
+				_stick(entry, Vector3(0.5, 3.4, 0), Vector3(0, 0, -0.7), 1.8, 0.065, Color("ddd9ce"))
+			&"stone":
+				var rock := ROCK.instantiate() as Node3D
+				rock.scale = Vector3.ONE * 0.55
+				entry.add_child(rock)
+				SceneAssets.apply_flat(rock)
+			_:
+				for branch in (5 if kind == &"bush" else 7):
+					var angle := branch * TAU / 5.0
+					_stick(entry, Vector3(sin(angle) * 0.2, 0.3, cos(angle) * 0.2), Vector3(0.2, angle, 0.3), 0.85 if kind == &"bush" else 0.4, 0.035 if kind == &"bush" else 0.015)
+	for x in range(-110, 116, 9):
+		for z in range(-105, 116, 11):
+			var p := Vector3(x + sin(z * 2.0) * 2, 0, z + cos(x) * 2)
+			if zone_at(p) == &"forest" and _clear_of_nodes(p, 3.0):
+				_place(PINE if (x + z) % 3 != 0 else BARE, p, x + z, 1.1 + absf(sin(x * z)) * 0.6)
+	for camp: Vector3 in LargeMapLayout.CAMPS:
+		_place(ROCK, camp + Vector3(-3, 0, -3), 0, 1.5)
+
+func _clear_of_nodes(p: Vector3, clearance: float) -> bool:
+	for entry: WorldInteractable in interactables:
+		if entry.position.distance_to(p) < clearance:
+			return false
+	for camp: Vector3 in LargeMapLayout.CAMPS:
+		if camp.distance_to(p) < 5:
+			return false
+	return true
+
+func _plane(p: Vector3, size: Vector2, material: Material) -> void:
+	var mesh := MeshInstance3D.new()
+	var plane := PlaneMesh.new()
+	plane.size = size
+	mesh.mesh = plane
+	mesh.material_override = material
+	mesh.position = p
+	add_child(mesh)
 
 func _gather(kind: StringName, label: String, p: Vector3, reserve: int, bonus: int = 0, bark: int = 0) -> WorldInteractable:
 	var entry := WorldInteractable.new()

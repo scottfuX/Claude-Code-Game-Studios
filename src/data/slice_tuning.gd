@@ -5,6 +5,7 @@ class_name SliceTuning extends Resource
 @export_range(2, 60) var survival_day: int = 2
 @export var chapter_needs_enabled: bool = false
 @export var weather_enabled: bool = false
+@export var large_map_enabled: bool = false
 @export var extra_deadfalls: Array[Vector3] = []
 @export var starting_rations: Dictionary[StringName, int] = {}
 @export var food_kcal: Dictionary[StringName, float] = {}
@@ -114,8 +115,8 @@ class_name SliceTuning extends Resource
 @export var fail_cap: float = 0.9
 @export var cause_min: float = 0.05
 @export var wind_fail_start: float = 2.0
-@export var action_minutes: Dictionary[StringName, float] = {&"gather_sticks": 3.0, &"chop_log": 4.0, &"strip_bark": 4.0, &"gather_grass": 2.0, &"clear_snow": 5.0, &"arrange_tinder": 2.0, &"strike": 0.5, &"blow_embers": 1.0, &"add_fuel": 0.5}
-@export var gather_take: Dictionary[StringName, int] = {&"gather_sticks": 3, &"chop_log": 1, &"strip_bark": 2, &"gather_grass": 2}
+@export var action_minutes: Dictionary[StringName, float] = {&"gather_sticks": 3.0, &"chop_log": 4.0, &"strip_bark": 4.0, &"gather_grass": 2.0, &"gather_stones": 1.0, &"clear_snow": 5.0, &"arrange_tinder": 2.0, &"strike": 0.5, &"blow_embers": 1.0, &"add_fuel": 0.5}
+@export var gather_take: Dictionary[StringName, int] = {&"gather_sticks": 3, &"chop_log": 1, &"strip_bark": 2, &"gather_grass": 2, &"gather_stones": 1}
 @export var tinder_bark: int = 2
 @export var tinder_grass: int = 3
 @export var kindling_sticks: int = 4

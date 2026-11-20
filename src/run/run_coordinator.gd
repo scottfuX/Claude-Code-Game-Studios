@@ -28,6 +28,7 @@ const CHAPTER_CONTENT: ChapterContentTuning = preload("res://assets/data/chapter
 const VERB_NAMES: Dictionary[StringName, String] = {
 	&"gather_sticks": "VERB_GATHER_STICKS", &"chop_log": "VERB_CHOP_LOG", &"strip_bark": "VERB_STRIP_BARK",
 	&"gather_grass": "VERB_GATHER_GRASS", &"clear_snow": "VERB_CLEAR_SNOW", &"arrange_tinder": "VERB_ARRANGE_TINDER",
+	&"gather_stones": "VERB_GATHER_STONES",
 	&"strike": "VERB_STRIKE", &"blow_embers": "VERB_BLOW_EMBERS", &"add_fuel": "VERB_ADD_FUEL",
 	&"eat_snow": "VERB_DRINK_SNOW", &"eat": "VERB_EAT_RATION",
 	&"eat_hare": "VERB_EAT_HARE",
@@ -77,13 +78,14 @@ func _enter_tree() -> void:
 	router.set_context(InputRouter.Context.LOCKED)
 	router.set_process_input(false)
 	(get_node("Survivor") as SurvivorController).set_physics_process(false)
+	simulation = RunSimulation.new(seed_value, tuning)
+	var run_world := get_node("WorldMap") as WorldMap
+	run_world.layout = simulation.map_layout
 	if tuning != null:
-		var run_world := get_node("WorldMap") as WorldMap
 		run_world.extra_deadfalls.assign(tuning.extra_deadfalls)
 		run_world.chapter_sites = tuning.chapter_needs_enabled
 
 func _ready() -> void:
-	simulation = RunSimulation.new(seed_value, tuning)
 	var drop := survivor.global_position
 	if not restore_checkpoint.is_empty():
 		initialization_ok = _restore_owners(restore_checkpoint)

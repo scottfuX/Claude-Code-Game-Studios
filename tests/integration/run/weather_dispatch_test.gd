@@ -11,10 +11,12 @@ func test_first_night_has_no_weather_or_weather_draws() -> void:
 func test_three_night_profile_enables_weather_and_pause_freezes_it() -> void:
 	var run := RunSimulation.new(23, preload("res://assets/data/three_day_survival.tres"))
 	assert_object(run.weather).is_not_null()
+	var map_draws := run.rng.draw_count
+	assert_int(map_draws).is_greater(0)
 	run.update(100.0, true)
-	assert_int(run.rng.draw_count).is_equal(0)
+	assert_int(run.rng.draw_count).is_equal(map_draws)
 	run.step_minute()
-	assert_int(run.rng.draw_count).is_equal(1)
+	assert_int(run.rng.draw_count).is_equal(map_draws + 1)
 	assert_bool(run.snapshot().has(&"weather")).is_true()
 
 func test_weather_publishes_before_fire_and_body_in_same_minute() -> void:

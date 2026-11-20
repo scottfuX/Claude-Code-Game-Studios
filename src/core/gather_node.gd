@@ -5,6 +5,8 @@ var remaining: int
 var bonus_grass: int
 var bark_remaining: int
 var _limits: Array[int] = []
+var sticks_remaining: int = 0
+var node_id: StringName = &""
 
 func _init(node_kind: StringName = &"bush", reserve: int = 0, grass_reserve: int = 0, bark_reserve: int = 0) -> void:
 	kind = node_kind
@@ -29,4 +31,4 @@ func restore_state(dto: Dictionary) -> bool:
 
 ## Returns whether the finite primary reserve has been exhausted.
 func is_depleted() -> bool:
-	return remaining == 0 and bark_remaining == 0
+	return remaining == 0 and bark_remaining == 0 and sticks_remaining == 0

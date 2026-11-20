@@ -25,6 +25,7 @@ func test_terminal_precedence_suppresses_wake_collapse_and_uncommitted_action() 
 	for cause in [&"hypothermia", &"dehydration", &"dawn_survived"]:
 		var tuning := CHAPTER.duplicate() as SliceTuning
 		tuning.weather_enabled = false
+		tuning.large_map_enabled = false
 		tuning.rate_min = -0.6
 		tuning.rate_max = -0.6
 		var sim := RunSimulation.new(4, tuning)
@@ -72,6 +73,7 @@ func test_default_starts_at_dusk_and_keeps_its_first_sunrise_outcome() -> void:
 func _replay(delta: float) -> Array:
 	var tuning := CHAPTER.duplicate() as SliceTuning
 	tuning.weather_enabled = false
+	tuning.large_map_enabled = false
 	tuning.cooling = 0.0
 	var sim := RunSimulation.new(4, tuning)
 	var trace: Array[StringName] = []
