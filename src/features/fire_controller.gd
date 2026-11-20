@@ -49,7 +49,7 @@ func can_act(action: StringName, inventory: InventoryModel) -> bool:
 			return stage == &"Smoldering" or (stage == &"Embers" and fuel >= tuning.kindling_threshold)
 		&"add_fuel":
 			var item := _preferred_fuel(inventory)
-			return stage in [&"Kindling", &"Burning", &"Embers"] and item != &"" and fuel + tuning.fuel_values[item] <= tuning.fuel_cap
+			return stage in [&"Kindling", &"Burning", &"Embers"] and item != &"" and fuel + _effective_fuel(item, inventory) <= tuning.fuel_cap
 	return false
 
 ## Returns the remaining kindling count without exposing fuel units.
@@ -77,7 +77,7 @@ func commit_action(action: StringName, inventory: InventoryModel, success: bool 
 			_tinder_wetness = inventory.wetness(tinder)
 			_tinder_quality = inventory.tinder_quality(tinder)
 			inventory.consume(tinder, amount)
-			_tinder_fuel = amount * tuning.fuel_values[tinder]
+			_tinder_fuel = amount * tuning.fuel_values[tinder] * (1.0 - tuning.fuel_damp * _tinder_wetness)
 			tinder_ready = true
 			if kindling_count == 0:
 				_kindling_wetness = inventory.wetness(&"stick")
@@ -92,8 +92,9 @@ func commit_action(action: StringName, inventory: InventoryModel, success: bool 
 		&"blow_embers":
 			if success:
 				if stage == &"Smoldering":
-					burning_wetness = (_kindling_wetness * kindling_count * tuning.fuel_values[&"stick"] + _tinder_wetness * _tinder_fuel) / maxf(0.001, kindling_count * tuning.fuel_values[&"stick"] + _tinder_fuel)
-					fuel = kindling_count * tuning.fuel_values[&"stick"] + _tinder_fuel
+					var kindling_fuel := kindling_count * tuning.fuel_values[&"stick"] * (1.0 - tuning.fuel_damp * _kindling_wetness)
+					fuel = kindling_fuel + _tinder_fuel
+					burning_wetness = (_kindling_wetness * kindling_fuel + _tinder_wetness * _tinder_fuel) / maxf(0.001, fuel)
 					kindling_count = 0
 					tinder_ready = false
 					_tinder_fuel = 0.0
@@ -103,9 +104,10 @@ func commit_action(action: StringName, inventory: InventoryModel, success: bool 
 				_expire_smolder()
 		&"add_fuel":
 			var item := _preferred_fuel(inventory)
-			burning_wetness = (burning_wetness * fuel + inventory.wetness(item) * tuning.fuel_values[item]) / (fuel + tuning.fuel_values[item])
+			var added := _effective_fuel(item, inventory)
+			burning_wetness = (burning_wetness * fuel + inventory.wetness(item) * added) / (fuel + added)
 			inventory.consume(item, 1)
-			fuel += tuning.fuel_values[item]
+			fuel += added
 			if stage != &"Embers":
 				_derive_flame()
 	publish_heat()
@@ -164,11 +166,14 @@ func _preferred_fuel(inventory: InventoryModel) -> StringName:
 	var preferred: StringName = &""
 	var largest := 0.0
 	for item: StringName in [&"log", &"stick"]:
-		var value: float = tuning.fuel_values[item]
+		var value := _effective_fuel(item, inventory)
 		if inventory.count(item) > 0 and value > largest and fuel + value <= tuning.fuel_cap:
 			preferred = item
 			largest = value
 	return preferred
+
+func _effective_fuel(item: StringName, inventory: InventoryModel) -> float:
+	return tuning.fuel_values[item] * (1.0 - tuning.fuel_damp * inventory.wetness(item))
 
 func _expire_smolder() -> void:
 	tinder_ready = false

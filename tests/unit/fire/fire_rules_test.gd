@@ -1,5 +1,22 @@
 extends GdUnitTestSuite
 
+func test_fi5_damp_fuel_amount_mixing_and_capacity_use_same_effective_units() -> void:
+	var inventory := InventoryModel.new()
+	inventory.add(&"log", 1)
+	inventory.soak_carried(1)
+	inventory.add(&"log", 1)
+	var fire := FireController.new(&"fire", Vector3.ZERO, ThermalField.new())
+	fire.stage = &"Burning"
+	fire.fuel = 240
+	assert_bool(fire.commit_action(&"add_fuel", inventory)).is_true()
+	assert_float(fire.fuel).is_equal(291.0)
+	assert_float(fire.burning_wetness).is_equal_approx(0.5 * 51.0 / 291.0, 0.000001)
+	fire.fuel = 249
+	assert_bool(fire.can_act(&"add_fuel", inventory)).is_true()
+	fire.fuel = 250
+	assert_bool(fire.can_act(&"add_fuel", inventory)).is_false()
+	assert_int(inventory.count(&"log")).is_equal(1)
+
 func test_mixed_stack_consumption_preserves_sampled_moisture() -> void:
 	var inventory := InventoryModel.new()
 	inventory.add(&"log", 1)
