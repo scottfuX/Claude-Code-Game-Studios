@@ -1,5 +1,24 @@
 extends GdUnitTestSuite
 
+func test_exhaustion_waits_for_escape_before_sleeping() -> void:
+	var run := _chapter()
+	run.inventory.tools.clear()
+	var controller: SurvivorController = auto_free(SurvivorController.new())
+	controller.process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(controller)
+	controller.configure(run, null, null)
+	_contact(run)
+	run.update(0.01)
+	run.needs.energy = 0.0
+	run.step_minute()
+	assert_bool(run.needs.collapse_due).is_true()
+	assert_bool(run.needs.is_asleep).is_false()
+	assert_str(run.clock.rate_mode).is_equal("normal")
+	controller.step_in_water(20.0)
+	assert_str(controller.state).is_equal("Free")
+	run.step_minute()
+	assert_bool(run.needs.is_asleep).is_true()
+
 class Rolls extends RunRng:
 	var values: Array[float] = [0.0]
 	func draw_unit() -> float:

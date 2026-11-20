@@ -368,6 +368,8 @@ func _survived() -> bool:
 	return clock.day >= tuning.survival_day and clock.minute_of_day / 60.0 >= clock.sunrise_hour()
 
 func _reconcile_sleep(cold: bool) -> void:
+	if in_water:
+		return
 	cold = cold or (needs.collapse_due and body.cold_or_worse())
 	var wake_cause := &""
 	if cold:
