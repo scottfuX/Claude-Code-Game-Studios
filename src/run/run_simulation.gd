@@ -8,6 +8,7 @@ var tuning: SliceTuning
 var clock: Clock
 var rng: RunRng
 var thermal: ThermalField
+var weather: WeatherController
 var body: BodyThermoregulation
 var needs: NeedsModel
 var inventory: InventoryModel
@@ -87,6 +88,10 @@ func _init(seed_value: int = 1, data: SliceTuning = null) -> void:
 	clock = Clock.new(tuning)
 	rng = RunRng.new(seed_value)
 	thermal = ThermalField.new(tuning)
+	if tuning.weather_enabled:
+		weather = WeatherController.new()
+		thermal.register_wind_source(&"weather", 3.0)
+		thermal.register_air_offset(&"weather", 0.0)
 	body = BodyThermoregulation.new(tuning)
 	needs = NeedsModel.new(tuning)
 	inventory = InventoryModel.new()
@@ -228,6 +233,8 @@ func snapshot() -> Dictionary[StringName, Variant]:
 		values[&"needs"] = needs.snapshot()
 		values[&"night_goal"] = tuning.survival_day - tuning.start_day
 		values[&"nights_survived"] = maxi(0, clock.day - tuning.start_day - int(clock.minute_of_day < ceili(clock.sunrise_hour() * 60.0)))
+	if weather != null:
+		values[&"weather"] = weather.snapshot()
 	return values
 
 func _integrate_minute() -> void:
@@ -237,12 +244,20 @@ func _integrate_minute() -> void:
 	var was_skipping := was_asleep or clock.rate_mode == &"wait"
 	var activity := &"idle" if was_asleep else movement
 	var work := &"idle" if was_asleep else _work_activity(actions.action)
+	var snowfall_gain := 0.0
+	if weather != null:
+		weather.step_minute((clock.day - 1) * 1440 + clock.minute_of_day, rng)
+		var conditions := weather.snapshot()
+		thermal.update_wind_source(&"weather", conditions[&"wind_mps"])
+		thermal.update_air_offset(&"weather", conditions[&"air_offset_c"])
+		if thermal.components(position)[&"shelter_bonus"] <= 0.0:
+			snowfall_gain = conditions[&"wetness_per_hour"]
 	thermal.begin_minute(clock.day, clock.minute_of_day / 60.0)
 	for fire: FireController in fires:
 		fire.step_minute(position)
 	thermal.seal_sources(minute_sequence)
 	last_felt_temp_c = thermal.effective_temp_c(position)
-	body.step_minute(last_felt_temp_c, activity, work)
+	body.step_minute(last_felt_temp_c, activity, work, snowfall_gain)
 	var resting := false
 	if activity == &"idle" and actions.action == &"" and (not tuning.chapter_needs_enabled or clock.rate_mode == &"wait"):
 		for fire: FireController in fires:
