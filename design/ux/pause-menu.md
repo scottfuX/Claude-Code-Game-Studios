@@ -1,6 +1,6 @@
 # UX Spec: Pause Menu
 
-> **Status**: Ready for implementation pending Scott review
+> **Status**: Ready for implementation — ADR-0018 Accepted
 > **Author**: Scott (direction) + Devin (autonomous drafting)
 > **Last Updated**: 2026-11-20
 > **Journey Phase(s)**: Inferred from game concept; no journey study
@@ -9,9 +9,9 @@
 > **Accessibility Tier**: Standard (owner committed); no implementation compliance claimed
 > **Template**: UX Spec
 > **Related GDDs**: [Screens & Menus](../gdd/screens-and-menus.md), [Save/Load](../gdd/save-load.md)
-> **Related ADRs**: Accepted ADR-0001/0002; [ADR-0018 Proposed](../../docs/architecture/adr-0018-shell-navigation-end-shot-and-run-checkpoint.md)
+> **Related ADRs**: Accepted ADR-0001/0002; [ADR-0018 Accepted](../../docs/architecture/adr-0018-shell-navigation-end-shot-and-run-checkpoint.md)
 > **Related UX Specs**: [Title](main-menu.md), [Terminal](death-screen.md), [Pause](pause-menu.md), [HUD](hud.md)
-> **Decision label**: Default (reversible, pending Scott review). Applies individually to every rule, size, copy fixture, table row and acceptance target below. Ready means design contracts supplied, not ADR acceptance or implementation approval.
+> **Decision label**: Default (reversible; accepted under Scott delegation via ADR-0018). Applies individually to every rule, size, copy fixture, table row and acceptance target below. ADR-0018 records acceptance; runtime and platform verification remain separate.
 
 Use [interaction patterns](interaction-patterns.md) for Buttons, Focus Management, Escape/Cancel, Push/Pop/Replace, Loading/Empty/Error and Reconnect Recovery. Follow paper/ink [art bible](../art/art-bible.md) and [accessibility requirements](../accessibility-requirements.md).
 
@@ -131,10 +131,10 @@ All headings, ordinal-word survival copy, action labels, status, confirmations a
 ## 15. Open Questions / Own Calls
 | ID | Decision / gap | Disposition |
 |---|---|---|
-| P1 | Resolved expanded pause design | Screens/Save GDDs + ADR-0018 replace resume-only scaffold with save/title/switch/quit; Ready for implementation pending Scott review |
+| P1 | Resolved expanded pause design | Screens/Save GDDs + ADR-0018 replace resume-only scaffold with save/title/switch/quit; Ready for implementation — ADR-0018 Accepted |
 | A1 | Standard tier | Committed; implementation compliance unverified |
 | J1 | No player journey map | Arrival inferred; does not claim user research |
-| U1 | Layout/copy/timings | Default (reversible, pending Scott review) |
-| C1 | Architecture/GDD exceptions | ADR-0018 Proposed: early skip/Locked exception, narrowed Terrain save and pulled-forward scope await Scott; existing Accepted records not silently superseded |
+| U1 | Layout/copy/timings | Default (reversible; accepted under Scott delegation via ADR-0018) |
+| C1 | Architecture/GDD exceptions | ADR-0018 Accepted: early skip/Locked exception, narrowed Terrain save and pulled-forward checkpoint scope explicitly amend earlier constraints for this slice |
 
 Contract blockers are resolved at design level by linked docs; wider Tap-out/Results, Settings, kit and diary remain out of scope. No code, translations, TR test evidence or runtime behavior changed by this spec.

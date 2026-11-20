@@ -1,10 +1,10 @@
 # Screens & Menus
 
-> **Status**: Designed — pending Scott review
+> **Status**: Designed — ADR-0018 Accepted
 > **Author**: Scott (direction) + Devin (autonomous drafting)
 > **Last Updated**: 2026-11-20
 > **Last Verified**: 2026-11-20 — document/code survey only; not runtime verified
-> **Decision label**: Default (reversible, pending Scott review). This label applies to every rule, table row, formula, copy fixture and acceptance target below; none is ADR acceptance or implementation evidence.
+> **Decision label**: Default (reversible; accepted under Scott delegation via ADR-0018). This label applies to every rule, table row, formula, copy fixture and acceptance target below; ADR acceptance is recorded in ADR-0018, not evidence of runtime verification.
 > **Implements Pillar**: Know More Each Run; Hard to Live, Beautiful to Watch
 
 ## Summary
@@ -55,7 +55,7 @@ Shot elapsed = sum of finite nonnegative real deltas while no router pause gate 
 Repeated starts/quits are idempotent pending commands. Old run responses cannot navigate a new run. Disconnect retains safety pause; reconnect alone never resumes shot/gameplay. Empty/invalid terminal snapshot displays “Run status unavailable” and safe title navigation, never invented diagnosis. Missing save hides Continue; disappearing save at activation restores title/error. Fresh-start discard confirmation does not erase the old save until initialization succeeds.
 
 ## Dependencies
-Accepted ADR-0001, ADR-0002, ADR-0003, ADR-0007, ADR-0008; Proposed [ADR-0018](../../docs/architecture/adr-0018-shell-navigation-end-shot-and-run-checkpoint.md). Wider Screens & Menus depends on Inventory/Kit/Diary/Results; those wider routes remain deferred.
+Accepted ADR-0001, ADR-0002, ADR-0003, ADR-0007, ADR-0008; Accepted [ADR-0018](../../docs/architecture/adr-0018-shell-navigation-end-shot-and-run-checkpoint.md). Wider Screens & Menus depends on Inventory/Kit/Diary/Results; those wider routes remain deferred.
 
 ## Tuning Knobs
 Shot 8s, earliest skip 1s, restore fade 1s, minimum menu text 20px. All are defaults under the decision label, not settings exposed in this slice.
@@ -82,4 +82,4 @@ Title, pause and results follow the linked UX specs. Confirmations never inherit
 - [ ] 720p/1080p/4K, 40% string expansion, minimum 20px and contrast meet Standard requirements; retained evidence required.
 
 ## Open Questions
-All rules are Default (reversible, pending Scott review). ADR-0018 acceptance remains Scott's decision. This design resolves UX contract gaps, not implementation readiness against Accepted architecture: early skip conflicts with Emotional Feedback's unskippable eight-second reading and Locked-only-pause policy; terrain persistence is narrowed in Save/Load. No existing approved GDD/ADR is silently amended.
+All rules are Default (reversible; accepted under Scott delegation via ADR-0018). Accepted ADR-0018 explicitly amends Emotional Feedback's unskippable eight-second reading and Locked-only-pause policy with a terminal-only skip after one unpaused second; terrain visual persistence is narrowed in Save/Load. These are bounded accepted amendments, not runtime verification or permission to expand other mechanics.

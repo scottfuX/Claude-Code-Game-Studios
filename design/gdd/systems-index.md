@@ -254,7 +254,7 @@ Order 1 breaks dependency order on purpose: Morale's GDD defines the inputs it n
 
 ---
 
-Default (reversible, pending Scott review): #28 is Designed for run checkpoints only (settings deferred); #32 for title/pause/results only (kit/diary/wider Results deferred). ADR-0018 remains Proposed; Designed is not Approved.
+Default (reversible; accepted under Scott delegation via ADR-0018): #28 is Designed for run checkpoints only (settings deferred); #32 for title/pause/results only (kit/diary/wider Results deferred). ADR-0018 is Accepted; design/ADR status is not runtime verification.
 
 ## Progress Tracker
 

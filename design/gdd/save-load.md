@@ -1,10 +1,10 @@
 # Save/Load — Run Checkpoint Slice
 
-> **Status**: Designed — pending Scott review
+> **Status**: Designed — ADR-0018 Accepted
 > **Author**: Scott (direction) + Devin (autonomous drafting)
 > **Last Updated**: 2026-11-20
 > **Last Verified**: 2026-11-20 — document/code survey only; not runtime verified
-> **Decision label**: Default (reversible, pending Scott review). This label applies to every rule, table row, formula, copy fixture and acceptance target below; none is ADR acceptance or implementation evidence.
+> **Decision label**: Default (reversible; accepted under Scott delegation via ADR-0018). This label applies to every rule, table row, formula, copy fixture and acceptance target below; ADR acceptance is recorded in ADR-0018, not evidence of runtime verification.
 > **Implements Pillar**: Know More Each Run
 
 ## Summary
@@ -55,7 +55,7 @@ Leaving the game does not erase a night I have not yet lost.
 Current first-night/chapter inventory includes tools, not just carried fuel. Rebuild thermal registrations from restored fire/other source owners before first sample. Needs asleep state may restore physiological sleep; Free means no timed action, not forcibly waking a sleeping survivor.
 
 ### Extension and explicit resets
-Snow footprints/trail marks and transient audio/feedback reset to defaults. This is a deliberate exception to Terrain's exact-mark restore contract, pending Scott review; do not claim full Terrain GDD compliance. Physical cell depths/compaction/broken ice require Terrain DTO when enabled, not trail-visual replay. Shelter/snare/food-site progression must register if enabled in the selected profile, or profile validation refuses Continue; resetting finite-resource progression would duplicate resources and is not an acceptable optional reset. UI focus, pause tokens, queued input/events and action attempts are never restored. Loading/safety tokens are fresh.
+Snow footprints/trail marks and transient audio/feedback reset to defaults. This is a deliberate exception to Terrain's exact-mark restore contract, accepted under ADR-0018; do not claim full Terrain GDD compliance. Physical cell depths/compaction/broken ice require Terrain DTO when enabled, not trail-visual replay. Shelter/snare/food-site progression must register if enabled in the selected profile, or profile validation refuses Continue; resetting finite-resource progression would duplicate resources and is not an acceptable optional reset. UI focus, pause tokens, queued input/events and action attempts are never restored. Loading/safety tokens are fresh.
 
 ## Formulas
 Schema version = 1. Slot count = 1. Restore fade = 1 real second gated by loading ownership; gameplay delta remains zero. Timestamp is metadata, never offline survival progression. Export preserves RNG stream state in addition to seed for deterministic continuation.
@@ -64,10 +64,10 @@ Schema version = 1. Slot count = 1. Restore fade = 1 real second gated by loadin
 Disk-full/permission/rename failure preserves prior checkpoint; manual save failure retains paused run with Retry/Cancel, autosave failure uses a nonmodal warning and retries only on a later request. Concurrent save/terminal is serialized on the coordinator boundary; terminal wins before commit. Restore duplicate IDs, invalid profile, NaN/out-of-map position or inconsistent totals fails as a unit. Missing required owner is corruption; no partial “best effort” survival state. Starting a new profile confirms discard and only invalidates old checkpoint after successful mount.
 
 ## Dependencies
-ADR-0001 lifecycle/DTOs, ADR-0002 gates, ADR-0003 ordered minutes/RNG, ADR-0007 action/terminal precedence, ADR-0008 physiology; [ADR-0018](../../docs/architecture/adr-0018-shell-navigation-end-shot-and-run-checkpoint.md) Proposed. Owner DTO ports remain to implement.
+ADR-0001 lifecycle/DTOs, ADR-0002 gates, ADR-0003 ordered minutes/RNG, ADR-0007 action/terminal precedence, ADR-0008 physiology; [ADR-0018](../../docs/architecture/adr-0018-shell-navigation-end-shot-and-run-checkpoint.md) Accepted. Owner DTO ports require implementation verification.
 
 ## Tuning Knobs
-One slot, sunrise cadence, one-second fade and schema v1 are Default (reversible, pending Scott review); no player settings added.
+One slot, sunrise cadence, one-second fade and schema v1 are Default (reversible; accepted under Scott delegation via ADR-0018); no player settings added.
 
 ## Visual/Audio Requirements
 Localized Saving/Save failed/Checkpoint unavailable statuses, no fabricated successful toast. Fade conceals staged restoration; do not replay old action sounds or end-shot feedback.
@@ -91,4 +91,4 @@ Title advertises Continue only after validation. Paused manual save stays pendin
 - [ ] Explicit visual resets tested; new required owner without adapter refuses Continue.
 
 ## Open Questions
-All contracts are Default (reversible, pending Scott review). Scott must review narrowed Terrain persistence, pulled-forward scope and operational deletion-failure policy. Platform atomic replacement and durable flush guarantees need implementation/platform tests; no corruption-proof or crash-proof claim is made.
+All contracts are Default (reversible; accepted under Scott delegation via ADR-0018). ADR-0018 accepts narrowed Terrain visual persistence, pulled-forward checkpoint scope and the operational deletion-failure policy. Platform atomic replacement and durable flush guarantees need implementation/platform tests; no corruption-proof or crash-proof claim is made.

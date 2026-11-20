@@ -1,9 +1,9 @@
 # ADR-0018: Shell navigation, end shot and run checkpoint
 
 ## Status
-Proposed
+Accepted
 
-Default (reversible, pending Scott review) applies to every decision and interface below. Only Scott accepts ADRs. This document resolves missing design contracts, not acceptance of exceptions to earlier Accepted records.
+Accepted on 2026-11-20 under Scott's explicit delegation for PR #28. Reversible defaults remain revisable, but acceptance is no longer pending. This record explicitly amends earlier Accepted constraints only for the bounded menu/checkpoint slice: terminal skip after one second, checkpoint persistence in MVP, and reset of footprint/trail visuals.
 
 ## Date
 2026-11-20
@@ -30,8 +30,8 @@ Keep the shell persistent and gameplay run-scoped while adding deliberate naviga
 | Field | Value |
 |---|---|
 | **Depends On** | ADR-0001, ADR-0002, ADR-0003, ADR-0007, ADR-0008 |
-| **Enables** | Title, terminal navigation and bounded run checkpoint implementation after acceptance |
-| **Blocks** | Production handoff of new lifecycle/restore ports until Scott review and acceptance |
+| **Enables** | Title, terminal navigation and bounded run checkpoint implementation |
+| **Blocks** | Production handoff without owner DTO, lifecycle, input and filesystem verification |
 | **Ordering Note** | Compose owners first, then DTO validation/restore, then navigation; no ranges in dependency IDs |
 
 ## Context
@@ -56,7 +56,7 @@ Terminal closes gameplay UI, cancels save admission, invalidates/deletes checkpo
 `owners → detached DTOs → validator → SaveStore`; `UI intents → shell/coordinator → owner result`.
 
 ### Key Interfaces
-| Boundary | Proposed application port |
+| Boundary | Application port |
 |---|---|
 | Shell | start_run(config: RunConfig) -> Result; stop_run(reason: StringName) -> void; return_to_title() -> Result |
 | RunConfig | profile, seed, restore DTO or null; validated before mount |
@@ -72,7 +72,7 @@ Results contain accepted/reason and run/sequence identity where run-bound. stop_
 - Direct owner DTO restoration must not publish minute events, consume items, roll RNG or complete work.
 - Loading fade owns a fresh pause gate for one second; no open pause menu; release only loading token afterward.
 - Explicit pause uses UI source plus run-tagged token through coordinator ports. Router continues real-time input; no SceneTree pause in UI.
-- Terminal skip is a narrow Proposed exception to Locked-only-pause, not permission to route arbitrary gameplay actions.
+- Terminal skip is a narrow Accepted exception to Locked-only-pause, not permission to route arbitrary gameplay actions.
 - Quiesce/copy on main ownership boundary before I/O; terminal cancels pending save and wins before replacement admission.
 - Manual save errors retain paused run; autosave errors preserve prior slot and warn. Invalid load quarantines and hides Continue.
 - Terminal deletion failure blocks navigation/close behind Retry. Crash/OS-kill during failed invalidation remains a documented limitation, not a one-life guarantee.
@@ -84,7 +84,7 @@ Rejected: hidden lifetime and scene aliases violate ADR-0001.
 ### Alternative 2: Serialize presentation snapshots or scene nodes
 Rejected: incomplete owner/RNG state, mutable aliases and transient transaction replay.
 ### Alternative 3: Never skip terminal shot
-Preserves earlier UX/Emotional Feedback but conflicts with requested optional skip; proposed one-second floor retains a brief protected arrival.
+Preserves earlier UX/Emotional Feedback but conflicts with requested optional skip; the accepted one-second floor retains a brief protected arrival.
 
 ## Consequences
 ### Positive
@@ -93,7 +93,7 @@ Explicit mount/stop results, honest Continue and isolated restores; no run-state
 Owner adapters, staged validation and filesystem error UX add scope; no settings persistence. Strict terminal deletion failure can strand navigation until storage recovers.
 
 ## Risks
-Default (reversible, pending Scott review): early skip narrows Emotional Feedback's eight-second authored shot and prior death UX no-skip rule. ADR-0002 Locked policy needs a terminal-only exception; ADR-0001/ADR-0016 MVP boundaries and Screens/Save milestone scope need review. Terrain exact footprint restore is intentionally not met by this slice. These are proposed amendments, not silently superseded Accepted requirements. Full Tap-out/Run Results design remains deferred.
+Accepted bounded amendments: early skip narrows Emotional Feedback's eight-second authored shot and prior death UX no-skip rule; ADR-0002 admits only the terminal skip exception. ADR-0001/ADR-0016 MVP boundaries now include this checkpoint slice. Terrain exact footprint/trail-visual restore is intentionally narrowed; physical Terrain and other enabled finite-resource owners still require adapters. These amendments do not authorize wider mechanics. Full Tap-out/Run Results design remains deferred; filesystem platform verification remains an implementation obligation.
 
 ## GDD Requirements Addressed
 | GDD | Requirements | Coverage |
@@ -105,7 +105,7 @@ Default (reversible, pending Scott review): early skip narrows Emotional Feedbac
 No invented hardware budget. Measure save/export/validation latency and memory on nominated devices; file I/O must not cause an unbounded active-play stall. UI exposes pending states and prevents duplicate requests. Atomic persistence and identity safety outrank cosmetic transition timing.
 
 ## Migration Plan
-1. Scott reviews Proposed conflicts and scope; amend Accepted records explicitly on acceptance.
+1. Record Scott's delegated acceptance and compile these bounded amendments in the control manifest.
 2. Add shell result ports and coordinator gates; implement owner adapters/SaveStore and fake-I/O tests.
 3. Implement title/pause/results and localized strings; retain CLI routes.
 4. Verify normal/empty/error paths, pause timing and platform replacement; no schema migration beyond rejection in v1.
@@ -120,4 +120,4 @@ No invented hardware budget. Measure save/export/validation latency and memory o
 
 ## Related
 [Screens](../../design/gdd/screens-and-menus.md), [Save/Load](../../design/gdd/save-load.md), [main menu](../../design/ux/main-menu.md), [death](../../design/ux/death-screen.md), [pause](../../design/ux/pause-menu.md).
-Control manifest includes Accepted ADRs only; do not add Proposed rules there.
+Control manifest includes this Accepted record; acceptance does not itself establish runtime or platform verification.
