@@ -1,5 +1,18 @@
 extends GdUnitTestSuite
 
+func test_world_resource_controls_grid_and_ice_break_formula() -> void:
+	var world := WorldTuning.new()
+	world.lake_bounds = Rect2(0, 0, 8, 8)
+	world.ice_cell_size = 1.0
+	world.ice_normal_cm = 30
+	world.ice_safe_cm = 20
+	world.ice_break_k = 0.1
+	var lake := LakeSurface.new(RunRng.new(4), world)
+	assert_vector(lake.size).is_equal(Vector2i(8, 8))
+	var tuning := SliceTuning.new()
+	tuning.world = world
+	assert_float(MishapResolver.new(tuning).ice_break_chance(10)).is_equal_approx(0.05, 0.000001)
+
 func test_seeded_thin_bands_thickness_and_cell_queries() -> void:
 	var rng := RunRng.new(92)
 	var lake := LakeSurface.new(rng)
@@ -27,7 +40,7 @@ func test_break_is_once_only_open_water_and_blocks_crossing() -> void:
 	assert_bool(lake.break_ice(cell)).is_true()
 	assert_bool(lake.break_ice(cell)).is_false()
 	assert_bool(lake.break_ice(Vector2i(-1, 0))).is_false()
-	assert_bool(lake.break_ice(LakeSurface.SIZE)).is_false()
+	assert_bool(lake.break_ice(lake.size)).is_false()
 	assert_int(changes.size()).is_equal(1)
 	assert_str(lake.surface_at(p)[&"kind"]).is_equal("water")
 	assert_bool(lake.can_traverse(p - Vector3.RIGHT, p + Vector3.RIGHT)).is_false()

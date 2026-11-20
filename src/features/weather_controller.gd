@@ -25,13 +25,10 @@ func step_minute(minute: int, rng: RunRng) -> void:
 			changed = true
 		if now >= _transition_minute:
 			var roll := rng.draw_unit()
-			match state:
-				&"Clear": state = &"Windy" if roll < 0.5 else &"Snowing"
-				&"Windy": state = &"Clear" if roll < 0.4 else &"Snowing"
-				&"Snowing": state = &"Clear" if roll < 0.5 else &"Windy"
+			state = tuning.next_states[state][0 if roll < tuning.transition_first_chance[state] else 1]
 			_transition_minute = now + _duration(tuning.dwell_min, tuning.dwell_max, rng)
 			changed = true
-		if now >= 1440 and now % 1440 == 360 and rng.draw_unit() < tuning.snap_chance:
+		if now >= 1440 and now % 1440 == tuning.snap_start_minute and rng.draw_unit() < tuning.snap_chance:
 			_snap_end = now + _duration(tuning.snap_min, tuning.snap_max, rng)
 			changed = true
 		_last_minute = now

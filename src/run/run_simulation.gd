@@ -96,8 +96,8 @@ func _init(seed_value: int = 1, data: SliceTuning = null) -> void:
 	clock = Clock.new(tuning)
 	rng = RunRng.new(seed_value)
 	if tuning.large_map_enabled:
-		map_layout = LargeMapLayout.new(rng)
-		lake = LakeSurface.new(rng)
+		map_layout = LargeMapLayout.new(rng, tuning.world)
+		lake = LakeSurface.new(rng, tuning.world)
 	thermal = ThermalField.new(tuning)
 	if map_layout != null:
 		map_layout.publish_zones(thermal)
@@ -107,7 +107,7 @@ func _init(seed_value: int = 1, data: SliceTuning = null) -> void:
 		thermal.register_air_offset(&"weather", 0.0)
 	body = BodyThermoregulation.new(tuning)
 	needs = NeedsModel.new(tuning)
-	inventory = InventoryModel.new()
+	inventory = InventoryModel.new(tuning)
 	if tuning.chapter_needs_enabled:
 		for item: StringName in tuning.starting_rations:
 			inventory.add(item, tuning.starting_rations[item])
@@ -255,11 +255,12 @@ func record_travel(from: Vector3, to: Vector3, hurrying: bool) -> void:
 	var distance := Vector2(to.x - from.x, to.z - from.z).length()
 	if distance <= 0.0:
 		return
-	var next := 0.7 - _travel_remainder
+	var spacing := tuning.world.footfall_spacing
+	var next := spacing - _travel_remainder
 	while next <= distance:
 		_contacts.append({&"position": from.lerp(to, next / distance), &"hurrying": hurrying})
-		next += 0.7
-	_travel_remainder = fposmod(_travel_remainder + distance, 0.7)
+		next += spacing
+	_travel_remainder = fposmod(_travel_remainder + distance, spacing)
 
 func debug_thin_ice_spawn() -> Vector3:
 	if not OS.is_debug_build() or lake == null:
@@ -285,7 +286,7 @@ func _resolve_contacts() -> void:
 			break
 		var p: Vector3 = contact[&"position"]
 		var surface := lake.surface_at(p)
-		var debug_break: bool = OS.is_debug_build() and _debug_break_next and surface[&"kind"] == &"ice" and surface[&"ice_thickness_cm"] < 15.0
+		var debug_break: bool = OS.is_debug_build() and _debug_break_next and surface[&"kind"] == &"ice" and surface[&"ice_thickness_cm"] < tuning.world.ice_safe_cm
 		if not debug_break and not mishaps.check_ice(surface, 0.0, contact[&"hurrying"], rng):
 			continue
 		_debug_break_next = false

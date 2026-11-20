@@ -29,10 +29,10 @@ func step_minute(felt: float, movement: StringName = &"idle", work: StringName =
 	if core_temp_c >= tuning.max_core and rate_c_per_hour > 0:
 		rate_c_per_hour = 0.0
 	core_temp_c = clampf(core_temp_c + rate_c_per_hour / 60.0, tuning.death_temp, tuning.max_core)
-	var gain := 0.03 if movement == &"wade" else 0.0
+	var gain := tuning.body_wade_wetness_per_hour if movement == &"wade" else 0.0
 	if is_finite(snowfall_gain):
-		gain += clampf(snowfall_gain, 0.0, 0.2)
-	var drying := 0.6 if felt >= 10.0 else (0.1 if felt >= 0.0 else 0.0)
+		gain += clampf(snowfall_gain, 0.0, tuning.snowfall_wetness_cap)
+	var drying := tuning.body_hot_drying_per_hour if felt >= tuning.body_hot_drying_threshold else (tuning.body_warm_drying_per_hour if felt >= tuning.body_warm_drying_threshold else 0.0)
 	wetness = clampf(wetness + (gain - drying) / 60.0, 0.0, 1.0)
 	refresh_stage()
 

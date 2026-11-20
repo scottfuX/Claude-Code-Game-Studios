@@ -2,7 +2,7 @@ extends GdUnitTestSuite
 
 func test_dimensions_zones_and_safe_camps() -> void:
 	var layout := LargeMapLayout.new(RunRng.new(20261119))
-	assert_float(LargeMapLayout.HALF_EXTENT * 2).is_equal(240.0)
+	assert_float(LargeMapLayout.DEFAULTS.half_extent * 2).is_equal(240.0)
 	assert_bool(layout.contains(Vector3(119.9, 0, -119.9))).is_true()
 	assert_bool(layout.contains(Vector3(120.1, 0, 0))).is_false()
 	assert_str(layout.zone_at(Vector3.ZERO)).is_equal("open")
@@ -11,8 +11,8 @@ func test_dimensions_zones_and_safe_camps() -> void:
 	assert_str(layout.zone_at(Vector3(60, 0, 80))).is_equal("forest")
 	assert_str(layout.zone_at(Vector3(0, 0, 80))).is_equal("drift")
 	assert_str(layout.zone_at(Vector3(0, 0, -115))).is_equal("ridge")
-	assert_int(LargeMapLayout.CAMPS.size()).is_equal(3)
-	for camp: Vector3 in LargeMapLayout.CAMPS:
+	assert_int(LargeMapLayout.DEFAULTS.camps.size()).is_equal(3)
+	for camp: Vector3 in LargeMapLayout.DEFAULTS.camps:
 		assert_str(layout.zone_at(camp)).is_equal("lee")
 		assert_float(camp.length()).is_less_equal(60.0)
 	var field := ThermalField.new()
@@ -45,15 +45,15 @@ func test_seeded_layout_count_ranges_placement_spacing_and_stable_ids() -> void:
 			assert_bool(layout.contains(p)).is_true()
 			assert_bool(layout.is_in_lake(p)).is_false()
 			assert_str(layout.zone_at(p)).is_not_equal("drift")
-			assert_float(p.length()).is_greater_equal(LargeMapLayout.RINGS[ring].x)
-			assert_float(p.length()).is_less(LargeMapLayout.RINGS[ring].y)
+			assert_float(p.length()).is_greater_equal(LargeMapLayout.DEFAULTS.rings[ring].x)
+			assert_float(p.length()).is_less(LargeMapLayout.DEFAULTS.rings[ring].y)
 			for j in i:
 				var prior: Dictionary = layout.nodes[j]
-				assert_float(p.distance_to(prior[&"position"])).is_greater_equal(maxf(LargeMapLayout.SPACING[kind], LargeMapLayout.SPACING[prior[&"kind"]]))
+				assert_float(p.distance_to(prior[&"position"])).is_greater_equal(maxf(LargeMapLayout.DEFAULTS.spacing[kind], LargeMapLayout.DEFAULTS.spacing[prior[&"kind"]]))
 		for ring in 3:
-			for kind_index in LargeMapLayout.KINDS.size():
-				var key := StringName("%d_%s" % [ring, LargeMapLayout.KINDS[kind_index]])
-				var base: int = LargeMapLayout.COUNTS[kind_index][ring]
+			for kind_index in LargeMapLayout.DEFAULTS.kinds.size():
+				var key := StringName("%d_%s" % [ring, LargeMapLayout.DEFAULTS.kinds[kind_index]])
+				var base: int = LargeMapLayout.DEFAULTS.ring_counts[kind_index][ring]
 				assert_int(int(actual.get(key, 0))).is_between(roundi(base * 0.8), roundi(base * 1.2))
 
 func test_guaranteed_deadfalls_and_seeded_yield_ranges() -> void:

@@ -24,7 +24,7 @@ func _on_fell_in_water(event: ImmersionEvent) -> void:
 		return
 	_last_immersion = event.sequence
 	state = &"In-water"
-	_struggle_s = 4.0
+	_struggle_s = simulation.tuning.world.struggle_seconds
 	_escape = simulation.lake.nearest_safe_exit(event.position)
 	global_position = event.position
 	velocity = Vector3.ZERO
@@ -39,8 +39,8 @@ func step_in_water(delta: float) -> void:
 		var direction := _escape - p
 		if direction.length_squared() > 0.0001:
 			facing = direction.normalized()
-		p = p.move_toward(_escape, 1.2 * swim_s)
-	global_position = p + Vector3.DOWN * 0.4
+		p = p.move_toward(_escape, simulation.tuning.world.swim_speed * swim_s)
+	global_position = p + Vector3.DOWN * simulation.tuning.world.immersion_depth
 	simulation.position = global_position
 	simulation.movement = &"wade"
 	if _struggle_s == 0 and p.distance_to(_escape) < 0.01:

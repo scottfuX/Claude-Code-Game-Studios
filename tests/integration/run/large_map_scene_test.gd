@@ -14,14 +14,14 @@ func test_chapter_scene_uses_run_layout_and_legacy_scene_is_unchanged() -> void:
 	assert_vector(ground_shape.size).is_equal(Vector3(240, 0.3, 240))
 	assert_float(ground_body.position.y + ground_shape.size.y / 2).is_equal(0.0)
 	var lake := chapter.world.get_child(6) as MeshInstance3D
-	assert_vector((lake.mesh as PlaneMesh).size).is_equal(LargeMapLayout.LAKE.size)
+	assert_vector((lake.mesh as PlaneMesh).size).is_equal(LargeMapLayout.DEFAULTS.lake_bounds.size)
 	assert_int((lake.material_override as StandardMaterial3D).shading_mode).is_equal(BaseMaterial3D.SHADING_MODE_UNSHADED)
 	assert_object(chapter.world.layout).is_same(chapter.simulation.map_layout)
 	assert_int(chapter.world.interactables.size()).is_equal(chapter.simulation.map_layout.nodes.size())
 	assert_bool(chapter.world.is_on_snow(Vector3(60, 0, 0))).is_false()
 	assert_bool(chapter.world.is_on_snow(Vector3(0, 0, 50))).is_true()
 	assert_bool(chapter.world.can_place_fire(Vector3(60, 0, 0))).is_false()
-	for camp: Vector3 in LargeMapLayout.CAMPS:
+	for camp: Vector3 in LargeMapLayout.DEFAULTS.camps:
 		assert_bool(chapter.world.can_place_fire(camp)).is_true()
 	for i in chapter.world.interactables.size():
 		assert_str(chapter.world.interactables[i].gather_node.node_id).is_equal(String(chapter.simulation.map_layout.nodes[i][&"id"]))

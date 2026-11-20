@@ -36,11 +36,11 @@ func test_five_metre_band_endpoints_midpoint_and_default_open() -> void:
 		assert_float(field.effective_temp_c(p)).is_equal_approx(c[&"air"] + c[&"zone"] - c[&"wind_chill"] + c[&"heat"] + c[&"shelter_bonus"], 0.000001)
 
 func test_all_six_zones_and_shared_boundary_normalization() -> void:
-	for kind: StringName in ThermalField.ZONES:
+	for kind: StringName in SliceTuning.new().thermal_zones:
 		var field := ThermalField.new()
 		assert_bool(field.register_zone(&"zone", kind, _rectangle(0, 20))).is_true()
-		assert_float(field.components(Vector3(10, 0, 10))[&"zone"]).is_equal(ThermalField.ZONES[kind].x)
-		assert_float(field.wind_eff(Vector3(10, 0, 10))).is_equal_approx(3.0 * ThermalField.ZONES[kind].y, 0.000001)
+		assert_float(field.components(Vector3(10, 0, 10))[&"zone"]).is_equal(field.tuning.thermal_zones[kind].x)
+		assert_float(field.wind_eff(Vector3(10, 0, 10))).is_equal_approx(3.0 * field.tuning.thermal_zones[kind].y, 0.000001)
 	var shared := ThermalField.new()
 	shared.register_zone(&"a", &"forest", _rectangle(-20, 0))
 	shared.register_zone(&"b", &"lake", _rectangle(0, 20))

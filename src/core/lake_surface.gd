@@ -2,30 +2,36 @@ class_name LakeSurface extends RefCounted
 
 signal ice_broken(cell: Vector2i)
 
-const CELL_SIZE := 0.5
-const SIZE := Vector2i(180, 110)
-const BOUNDS := LargeMapLayout.LAKE
+var tuning: WorldTuning
+var cell_size: float
+var size: Vector2i
+var bounds: Rect2
 var thin_cells: Dictionary[Vector2i, float] = {}
 var broken_cells: Dictionary[Vector2i, bool] = {}
 
-func _init(rng: RunRng) -> void:
-	for x in SIZE.x:
-		var inlet_width := 10 + mini(4, floori(rng.draw_unit() * 5))
-		for z in SIZE.y:
-			if z < inlet_width or x < 8:
-				thin_cells[Vector2i(x, z)] = 5.0 + 5.0 * rng.draw_unit()
+func _init(rng: RunRng, data: WorldTuning = null) -> void:
+	tuning = data if data != null else preload("res://assets/data/world_defaults.tres")
+	cell_size = tuning.ice_cell_size
+	bounds = tuning.lake_bounds
+	size = Vector2i(roundi(bounds.size.x / cell_size), roundi(bounds.size.y / cell_size))
+	for x in size.x:
+		var width_count := tuning.inlet_width_cells.y - tuning.inlet_width_cells.x + 1
+		var inlet_width := tuning.inlet_width_cells.x + mini(width_count - 1, floori(rng.draw_unit() * width_count))
+		for z in size.y:
+			if z < inlet_width or x < tuning.thin_shore_cells:
+				thin_cells[Vector2i(x, z)] = lerpf(tuning.thin_ice_cm.x, tuning.thin_ice_cm.y, rng.draw_unit())
 
 func surface_at(p: Vector3) -> Dictionary[StringName, Variant]:
-	if not p.is_finite() or not BOUNDS.has_point(Vector2(p.x, p.z)):
+	if not p.is_finite() or not bounds.has_point(Vector2(p.x, p.z)):
 		return {&"kind": &"snow", &"ice_thickness_cm": 0.0}
-	var cell := Vector2i(floori((p.x - BOUNDS.position.x) / CELL_SIZE), floori((p.z - BOUNDS.position.y) / CELL_SIZE))
-	return {&"kind": &"water" if broken_cells.has(cell) else &"ice", &"cell": cell, &"ice_thickness_cm": thin_cells.get(cell, 25.0)}
+	var cell := Vector2i(floori((p.x - bounds.position.x) / cell_size), floori((p.z - bounds.position.y) / cell_size))
+	return {&"kind": &"water" if broken_cells.has(cell) else &"ice", &"cell": cell, &"ice_thickness_cm": thin_cells.get(cell, tuning.ice_normal_cm)}
 
 func cell_center(cell: Vector2i) -> Vector3:
-	return Vector3(BOUNDS.position.x + (cell.x + 0.5) * CELL_SIZE, 0, BOUNDS.position.y + (cell.y + 0.5) * CELL_SIZE)
+	return Vector3(bounds.position.x + (cell.x + 0.5) * cell_size, 0, bounds.position.y + (cell.y + 0.5) * cell_size)
 
 func break_ice(cell: Vector2i) -> bool:
-	if cell.x < 0 or cell.y < 0 or cell.x >= SIZE.x or cell.y >= SIZE.y or broken_cells.has(cell):
+	if cell.x < 0 or cell.y < 0 or cell.x >= size.x or cell.y >= size.y or broken_cells.has(cell):
 		return false
 	broken_cells[cell] = true
 	ice_broken.emit(cell)
@@ -34,20 +40,20 @@ func break_ice(cell: Vector2i) -> bool:
 func can_traverse(from: Vector3, to: Vector3) -> bool:
 	if not from.is_finite() or not to.is_finite():
 		return false
-	var steps := maxi(1, ceili(from.distance_to(to) / (CELL_SIZE * 0.5)))
+	var steps := maxi(1, ceili(from.distance_to(to) / (cell_size * 0.5)))
 	for i in range(1, steps + 1):
 		if surface_at(from.lerp(to, float(i) / steps))[&"kind"] == &"water":
 			return false
 	return true
 
 func nearest_safe_exit(p: Vector3) -> Vector3:
-	var candidates: Array[Vector3] = [Vector3(BOUNDS.position.x - 0.6, 0, clampf(p.z, BOUNDS.position.y, BOUNDS.end.y)), Vector3(BOUNDS.end.x + 0.6, 0, clampf(p.z, BOUNDS.position.y, BOUNDS.end.y)), Vector3(clampf(p.x, BOUNDS.position.x, BOUNDS.end.x), 0, BOUNDS.position.y - 0.6), Vector3(clampf(p.x, BOUNDS.position.x, BOUNDS.end.x), 0, BOUNDS.end.y + 0.6)]
+	var candidates: Array[Vector3] = [Vector3(bounds.position.x - tuning.shore_clearance, 0, clampf(p.z, bounds.position.y, bounds.end.y)), Vector3(bounds.end.x + tuning.shore_clearance, 0, clampf(p.z, bounds.position.y, bounds.end.y)), Vector3(clampf(p.x, bounds.position.x, bounds.end.x), 0, bounds.position.y - tuning.shore_clearance), Vector3(clampf(p.x, bounds.position.x, bounds.end.x), 0, bounds.end.y + tuning.shore_clearance)]
 	var best := candidates[0]
 	for candidate: Vector3 in candidates:
 		if candidate.distance_squared_to(p) < best.distance_squared_to(p):
 			best = candidate
-	for x in SIZE.x:
-		for z in SIZE.y:
+	for x in size.x:
+		for z in size.y:
 			var cell := Vector2i(x, z)
 			if thin_cells.has(cell) or broken_cells.has(cell):
 				continue

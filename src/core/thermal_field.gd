@@ -6,7 +6,6 @@ var hour: float = 13.0
 var _sources: Dictionary[StringName, Dictionary] = {}
 var _volumes: Dictionary[StringName, Dictionary] = {}
 const BOUNDARY_EPSILON: float = 0.0001
-const ZONES: Dictionary[StringName, Vector2] = {&"open": Vector2(0, 0.8), &"forest": Vector2(1, 0.4), &"lake": Vector2(-3, 1), &"lee": Vector2(0, 0.3), &"drift": Vector2(0, 0.6), &"ridge": Vector2(0, 1)}
 var _wind_id: StringName = &""
 var _wind: float = 3.0
 var _air_offsets: Dictionary[StringName, float] = {}
@@ -118,7 +117,7 @@ func unregister_air_offset(id: StringName) -> void:
 
 ## Map supplies non-overlapping polygons; open snow is the uncovered background.
 func register_zone(id: StringName, kind: StringName, polygon: PackedVector2Array) -> bool:
-	if id == &"" or id == &"open" or _zones.has(id) or not ZONES.has(kind) or polygon.size() < 3:
+	if id == &"" or id == &"open" or _zones.has(id) or not tuning.thermal_zones.has(kind) or polygon.size() < 3:
 		return false
 	for point: Vector2 in polygon:
 		if not point.is_finite():
@@ -129,7 +128,7 @@ func register_zone(id: StringName, kind: StringName, polygon: PackedVector2Array
 	var bounds := Rect2(polygon[0], Vector2.ZERO)
 	for point: Vector2 in polygon:
 		bounds = bounds.expand(point)
-	bounds = bounds.grow(2.5)
+	bounds = bounds.grow(tuning.zone_blend_width / 2.0)
 	for x in range(floori(bounds.position.x / 10.0), floori(bounds.end.x / 10.0) + 1):
 		for y in range(floori(bounds.position.y / 10.0), floori(bounds.end.y / 10.0) + 1):
 			var cell := Vector2i(x, y)
@@ -152,7 +151,7 @@ func zone_weights(position: Vector3) -> Dictionary[StringName, float]:
 		for i in polygon.size():
 			distance = minf(distance, p.distance_to(Geometry2D.get_closest_point_to_segment(p, polygon[i], polygon[(i + 1) % polygon.size()])))
 		var signed_distance := distance if Geometry2D.is_point_in_polygon(p, polygon) else -distance
-		var weight := clampf(0.5 + signed_distance / 5.0, 0.0, 1.0)
+		var weight := clampf(0.5 + signed_distance / tuning.zone_blend_width, 0.0, 1.0)
 		if weight > 0:
 			weights[id] = weight
 			total += weight
@@ -169,7 +168,7 @@ func _zone_values(position: Vector3) -> Vector2:
 	var weights := zone_weights(position)
 	for id: StringName in weights:
 		var kind: StringName = &"open" if id == &"open" else _zones[id][&"kind"]
-		result += ZONES[kind] * weights[id]
+		result += tuning.thermal_zones[kind] * weights[id]
 	return result
 
 ## Registers a unique valid source; rejected records contribute nothing.

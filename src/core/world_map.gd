@@ -25,7 +25,7 @@ func break_ice(cell: Vector2i) -> bool:
 	return lake_surface != null and lake_surface.break_ice(cell)
 
 func half_extent() -> float:
-	return LargeMapLayout.HALF_EXTENT if layout != null else TUNING.half_extent
+	return layout.tuning.half_extent if layout != null else TUNING.half_extent
 
 func zone_at(p: Vector3) -> StringName:
 	return layout.zone_at(p) if layout != null else &"open"
@@ -183,12 +183,14 @@ func can_place_fire(position: Vector3) -> bool:
 	return true
 
 func _build_large_map() -> void:
-	_plane(Vector3.ZERO, Vector2(240, 240), SceneAssets.SNOW)
-	_box_collision(Vector3(0, -0.15, 0), Vector3(240, 0.3, 240))
+	var extent := layout.tuning.half_extent
+	var width := extent * 2
+	_plane(Vector3.ZERO, Vector2(width, width), SceneAssets.SNOW)
+	_box_collision(Vector3(0, -0.15, 0), Vector3(width, 0.3, width))
 	for side in [-1.0, 1.0]:
-		_box_collision(Vector3(side * 120, 1, 0), Vector3(0.5, 3, 240))
-		_box_collision(Vector3(0, 1, side * 120), Vector3(240, 3, 0.5))
-	var lake := LargeMapLayout.LAKE
+		_box_collision(Vector3(side * extent, 1, 0), Vector3(0.5, 3, width))
+		_box_collision(Vector3(0, 1, side * extent), Vector3(width, 3, 0.5))
+	var lake := layout.tuning.lake_bounds
 	var ice := SceneAssets.material(Color("b5d7df"))
 	ice.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_plane(Vector3(lake.get_center().x, 0.015, lake.get_center().y), lake.size, ice)
@@ -222,14 +224,14 @@ func _build_large_map() -> void:
 			var p := Vector3(x + sin(z * 2.0) * 2, 0, z + cos(x) * 2)
 			if zone_at(p) == &"forest" and _clear_of_nodes(p, 3.0):
 				_place(PINE if (x + z) % 3 != 0 else BARE, p, x + z, 1.1 + absf(sin(x * z)) * 0.6)
-	for camp: Vector3 in LargeMapLayout.CAMPS:
+	for camp: Vector3 in layout.tuning.camps:
 		_place(ROCK, camp + Vector3(-3, 0, -3), 0, 1.5)
 
 func _clear_of_nodes(p: Vector3, clearance: float) -> bool:
 	for entry: WorldInteractable in interactables:
 		if entry.position.distance_to(p) < clearance:
 			return false
-	for camp: Vector3 in LargeMapLayout.CAMPS:
+	for camp: Vector3 in layout.tuning.camps:
 		if camp.distance_to(p) < 5:
 			return false
 	return true
@@ -239,7 +241,7 @@ func _build_thin_ice() -> void:
 	var cells := MultiMesh.new()
 	cells.transform_format = MultiMesh.TRANSFORM_3D
 	var plane := PlaneMesh.new()
-	plane.size = Vector2.ONE * LakeSurface.CELL_SIZE
+	plane.size = Vector2.ONE * lake_surface.cell_size
 	cells.mesh = plane
 	cells.instance_count = lake_surface.thin_cells.size()
 	var index := 0
@@ -256,7 +258,7 @@ func _build_thin_ice() -> void:
 func _show_open_water(cell: Vector2i) -> void:
 	var water := SceneAssets.material(Color("243d4f"))
 	water.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	_plane(lake_surface.cell_center(cell) + Vector3.UP * 0.025, Vector2.ONE * LakeSurface.CELL_SIZE, water)
+	_plane(lake_surface.cell_center(cell) + Vector3.UP * 0.025, Vector2.ONE * lake_surface.cell_size, water)
 
 func _plane(p: Vector3, size: Vector2, material: Material) -> void:
 	var mesh := MeshInstance3D.new()

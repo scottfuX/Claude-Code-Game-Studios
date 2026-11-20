@@ -1,5 +1,13 @@
 extends GdUnitTestSuite
 
+func test_external_mishap_and_item_coefficients_are_injected() -> void:
+	var tuning := SliceTuning.new()
+	tuning.tinder_quality = {&"bark": 0.5}
+	tuning.tinder_fail = {&"strike": 0.2}
+	tuning.damp_fail = {&"strike": 0.1}
+	assert_float(InventoryModel.new(tuning).tinder_quality(&"bark")).is_equal(0.5)
+	assert_float(MishapResolver.new(tuning).failure_chance(&"strike", 2, 0, 0, 1, 0.5)).is_equal_approx(0.55, 0.000001)
+
 class Rolls extends RunRng:
 	var roll: float = 0.0
 	func draw_unit() -> float:

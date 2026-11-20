@@ -12,10 +12,14 @@ var _chapter_data: ChapterContentTuning
 var _wet_counts: Dictionary[StringName, float] = {}
 var _immersions: Dictionary[int, bool] = {}
 const SOAKABLE: Array[StringName] = [&"stick", &"log", &"bark", &"grass"]
-const TINDER_QUALITY: Dictionary[StringName, float] = {&"bark": 0.9, &"grass": 0.7, &"stick": 0.3}
+var tuning: SliceTuning
+
+## Injects item material defaults without introducing an inventory singleton.
+func _init(data: SliceTuning = null) -> void:
+	tuning = data if data != null else preload("res://assets/data/slice_defaults.tres")
 
 func tinder_quality(item: StringName) -> float:
-	return TINDER_QUALITY.get(item, 0.0)
+	return tuning.tinder_quality.get(item, 0.0)
 
 func _init(chapter_data: ChapterContentTuning = null) -> void:
 	_chapter_data = chapter_data if chapter_data != null else preload("res://assets/data/chapter_content_defaults.tres")
