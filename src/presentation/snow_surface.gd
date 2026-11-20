@@ -1,5 +1,6 @@
 class_name SnowSurface extends MeshInstance3D
 
+@export var tuning: PlayfieldTuning = preload("res://assets/data/playfield_defaults.tres")
 var deformation := SnowDeformation.new()
 var _survivor: SurvivorController
 var _last_press := Vector3.INF
@@ -30,7 +31,7 @@ func _initialize_contacts() -> void:
 		if child is WorldInteractable or child is StaticBody3D or child is Node3D and child.get_child_count() > 0:
 			var p := (child as Node3D).global_position
 			if Vector2(p.x, p.z).length() > 0.1:
-				deformation.clear(p, 0.85)
+				deformation.clear(p, tuning.snow_prop_clear_radius)
 
 func _physics_process(_delta: float) -> void:
 	if _survivor == null or _survivor.simulation == null or _survivor.frozen:
@@ -38,15 +39,15 @@ func _physics_process(_delta: float) -> void:
 	var sim := _survivor.simulation
 	var p := _survivor.global_position
 	var working := sim.actions.action != &""
-	if working or not _last_press.is_finite() or p.distance_to(_last_press) > 0.07:
-		deformation.press(p, 0.48 if working else 0.30, 0.95 if working else 0.72)
+	if working or not _last_press.is_finite() or p.distance_to(_last_press) > tuning.snow_press_min_travel:
+		deformation.press(p, tuning.snow_work_press_radius if working else tuning.snow_body_press_radius, tuning.snow_work_press_strength if working else tuning.snow_body_press_strength)
 		_last_press = p
 	for fire: FireController in sim.fires:
 		if not _cleared_fires.has(fire):
-			deformation.clear(fire.position, 1.3)
+			deformation.clear(fire.position, tuning.snow_fire_clear_radius)
 			_cleared_fires[fire] = true
 	if sim.actions.action == &"clear_snow":
-		deformation.clear(p + _survivor.facing * 0.7, 1.1)
+		deformation.clear(p + _survivor.facing * tuning.snow_action_clear_distance, tuning.snow_action_clear_radius)
 
 func _process(delta: float) -> void:
 	deformation.upload(delta)

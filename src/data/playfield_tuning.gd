@@ -5,6 +5,15 @@ class_name PlayfieldTuning extends Resource
 @export var walk_speed: float = 1.4
 @export var fresh_snow_speed_factor: float = 0.85
 @export var snow_speed_probe_distance: float = 0.65
+@export var snow_body_press_radius: float = 0.30
+@export var snow_body_press_strength: float = 0.72
+@export var snow_work_press_radius: float = 0.48
+@export var snow_work_press_strength: float = 0.95
+@export var snow_press_min_travel: float = 0.07
+@export var snow_prop_clear_radius: float = 0.85
+@export var snow_fire_clear_radius: float = 1.3
+@export var snow_action_clear_radius: float = 1.1
+@export var snow_action_clear_distance: float = 0.7
 @export var critical_speed: float = 0.35
 @export var hurry_multiplier: float = 1.3
 @export var capsule_radius: float = 0.3

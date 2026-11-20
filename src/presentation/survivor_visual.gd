@@ -162,7 +162,7 @@ func _contact(foot: int) -> void:
 	_last_contact = controller.global_position
 	var where := _skeleton.to_global(_skeleton.get_bone_global_pose(_feet[foot]).origin)
 	if controller.snow != null:
-		controller.snow.deformation.press(where, 0.19, 1.0, 1.65, rotation.y)
+		controller.snow.deformation.press(where, tuning.snow_foot_press_radius, tuning.snow_foot_press_strength, tuning.snow_foot_press_aspect, rotation.y)
 	else:
 		footprints.stamp(where, rotation.y)
 	foot_contact.emit(where, foot)

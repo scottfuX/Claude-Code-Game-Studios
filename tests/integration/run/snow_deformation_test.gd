@@ -3,12 +3,32 @@ extends GdUnitTestSuite
 func test_speed_samples_fresh_ground_beyond_current_body_press() -> void:
 	var surface: SnowSurface = auto_free(SnowSurface.new())
 	var survivor: SurvivorController = auto_free(SurvivorController.new())
+	survivor.process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(survivor)
 	survivor.tuning = PlayfieldTuning.new()
 	survivor.snow = surface
-	surface.deformation.press(Vector3.ZERO, 0.30, 0.72)
+	surface.deformation.press(Vector3.ZERO, survivor.tuning.snow_body_press_radius, survivor.tuning.snow_body_press_strength)
 	assert_float(survivor.snow_speed_factor(Vector3.FORWARD)).is_equal(survivor.tuning.fresh_snow_speed_factor)
 	surface.deformation.clear(Vector3.FORWARD * survivor.tuning.snow_speed_probe_distance, 0.3)
 	assert_float(survivor.snow_speed_factor(Vector3.FORWARD)).is_equal(1.0)
+
+func test_body_and_work_pressure_use_external_tuning() -> void:
+	var surface: SnowSurface = auto_free(SnowSurface.new())
+	var survivor: SurvivorController = auto_free(SurvivorController.new())
+	survivor.process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(survivor)
+	survivor.simulation = RunSimulation.new()
+	surface.set("_survivor", survivor)
+	surface.tuning = PlayfieldTuning.new()
+	surface.tuning.snow_body_press_radius = 0.9
+	surface.tuning.snow_body_press_strength = 0.25
+	surface._physics_process(0.0)
+	assert_float(surface.deformation.compaction_at(Vector3(0.35, 0, 0))).is_equal_approx(0.25, 0.001)
+	surface.tuning.snow_work_press_radius = 1.8
+	surface.tuning.snow_work_press_strength = 0.8
+	survivor.simulation.actions.start(&"gather_sticks", 1.0, 1.0)
+	surface._physics_process(0.0)
+	assert_float(surface.deformation.compaction_at(Vector3(0.8, 0, 0))).is_equal_approx(0.8, 0.001)
 	assert_float(survivor.snow_speed_factor(Vector3.RIGHT)).is_equal(survivor.tuning.fresh_snow_speed_factor)
 	survivor.snow = null
 	assert_float(survivor.snow_speed_factor(Vector3.FORWARD)).is_equal(1.0)
