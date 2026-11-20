@@ -258,6 +258,7 @@ func _process(delta: float) -> void:
 	flush_autosave()
 	_update_pause_menu()
 	_check_smolder()
+	hud.hold_cue(tr(&"HUD_ICE_BROKE"), simulation.in_water)
 	_update_target()
 	_update_lighting()
 	if _trail_visual != null:

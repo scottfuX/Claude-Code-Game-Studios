@@ -1,5 +1,21 @@
 extends GdUnitTestSuite
 
+func test_hud_holds_ice_cue_for_the_state_and_releases_with_normal_lifetime() -> void:
+	var hud: SurvivalHud = auto_free(SurvivalHud.new())
+	add_child(hud)
+	var run := RunSimulation.new()
+	var snapshot := run.snapshot()
+	snapshot[&"real_delta_s"] = 10.0
+	hud.hold_cue("The ice gave way!", true)
+	hud.render_snapshot(snapshot)
+	assert_float(hud.get("_cue_remaining")).is_greater(0.0)
+	hud.hold_cue("", false)
+	snapshot[&"real_delta_s"] = 1.0
+	hud.render_snapshot(snapshot)
+	assert_float(hud.get("_cue_remaining")).is_greater(0.0)
+	hud.render_snapshot(snapshot)
+	assert_float(hud.get("_cue_remaining")).is_equal(0.0)
+
 func test_exhaustion_waits_for_escape_before_sleeping() -> void:
 	var run := _chapter()
 	run.inventory.tools.clear()

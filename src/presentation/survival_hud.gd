@@ -30,6 +30,7 @@ var _debug_open: bool = false
 var _help_open: bool = false
 var _cue_text: String = ""
 var _cue_remaining: float = 0.0
+var _cue_held: bool = false
 var _invalid_reported: bool = false
 
 func _ready() -> void:
@@ -93,6 +94,12 @@ func show_cue(message: String) -> void:
 	_cue_text = message
 	_cue_remaining = model.tuning.cue_s
 
+## Holds a localized state cue, then gives it the usual lifetime on release.
+func hold_cue(message: String, held: bool) -> void:
+	_cue_held = held
+	if held:
+		show_cue(message)
+
 ## Reopens controls independently of the first-fire onboarding latch.
 func toggle_help() -> void:
 	_help_open = not _help_open
@@ -113,7 +120,7 @@ func render_snapshot(snapshot: Dictionary) -> void:
 	if not model.update(snapshot, dt, paused) and not _invalid_reported:
 		push_warning("Invalid HUD snapshot; holding last valid band and arc")
 		_invalid_reported = true
-	if not paused:
+	if not paused and not _cue_held:
 		_cue_remaining = maxf(0.0, _cue_remaining - maxf(0.0, dt))
 	var terminal: StringName = snapshot.get(&"terminal", &"")
 	var needs: Dictionary = snapshot.get(&"needs", {})
