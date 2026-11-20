@@ -1,176 +1,140 @@
 # UX Spec: Pause Menu
 
-> **Status**: Approved — Resume-only MVP design review; implementation and visual verification pending
-> **Author**: Devin (ux-designer), non-interactive authoring requested by owner
-> **Last Updated**: 2026-11-19
-> **Journey Phase(s)**: Inferred from game brief; no player journey map exists
-> **Platform Target**: PC macOS / Windows; keyboard/mouse primary, partial gamepad; no touch
-> **Accessibility Tier**: Standard — confirmed and committed by Scott (owner), 2026-11-19 (A1 resolved)
+> **Status**: Ready for implementation pending Scott review
+> **Author**: Scott (direction) + Devin (autonomous drafting)
+> **Last Updated**: 2026-11-20
+> **Journey Phase(s)**: Inferred from game concept; no journey study
+> **Screen / Flow Name**: PauseOverlay
+> **Platform Target**: PC macOS / Windows; keyboard/mouse and gamepad; no touch
+> **Accessibility Tier**: Standard (owner committed); no implementation compliance claimed
 > **Template**: UX Spec
-> **Related GDDs**: [Input contexts](../gdd/input-and-action-map.md), [Time Rule 8](../gdd/time-and-day-cycle.md), [HUD](../gdd/hud.md)
-> **Related ADRs**: Accepted ADR-0002, ADR-0016; [control manifest](../../docs/architecture/control-manifest.md)
-> **Related UX Specs**: [HUD](hud.md), [Backpack](inventory.md), [Title](main-menu.md)
+> **Related GDDs**: [Screens & Menus](../gdd/screens-and-menus.md), [Save/Load](../gdd/save-load.md)
+> **Related ADRs**: Accepted ADR-0001/0002; [ADR-0018 Proposed](../../docs/architecture/adr-0018-shell-navigation-end-shot-and-run-checkpoint.md)
+> **Related UX Specs**: [Title](main-menu.md), [Terminal](death-screen.md), [Pause](pause-menu.md), [HUD](hud.md)
+> **Decision label**: Default (reversible, pending Scott review). Applies individually to every rule, size, copy fixture, table row and acceptance target below. Ready means design contracts supplied, not ADR acceptance or implementation approval.
 
-All controls use [interaction patterns](interaction-patterns.md): Button, Focus Management, Escape / Cancel, Screen Push / Pop / Replace, Loading State / Empty State / Error State and Reconnect Recovery. Paper-and-ink UI follows [art bible §4/§7](../art/art-bible.md). [Accessibility requirements](../accessibility-requirements.md) govern the committed Standard tier and separately identified proposals; no runtime, contrast, assistive-tech or visual verification is claimed.
+Use [interaction patterns](interaction-patterns.md) for Buttons, Focus Management, Escape/Cancel, Push/Pop/Replace, Loading/Empty/Error and Reconnect Recovery. Follow paper/ink [art bible](../art/art-bible.md) and [accessibility requirements](../accessibility-requirements.md).
 
 ## 1. Purpose & Player Need
-
-“I need a genuine break, without losing my place or accidentally ending my run.” Resume is the only required MVP command. This is the only player-requested pause surface. Disconnect/loading safety gates remain separate authorities. Trace TR-input-and-action-map-001…028 (ADR-0002), Time Rule 8 / AC21, HUD pause semantics (ADR-0016).
+I need a safe interruption, reliable return and explicit way to leave without losing the live run.
+Player goal: make one intentional navigation choice. Game goal: acknowledge the owner result before removing focus or world.
 
 ## 2. Player Context on Arrival
-
-The player may be under pressure, mid-work or browsing the live backpack. They want relief from simultaneous survival demands, and fear that closing one overlay could restart the world unexpectedly. The visual target is a quiet, unambiguous “Paused”, retaining the previous view without demanding attention.
+Esc from gameplay/backpack, or terminal shot; retain invoker and any backpack selection.
+Retain understandable identity and focus; no fabricated save, cause, rewards or measured-user-research claim.
 
 ## 3. Navigation Position
-
-Gameplay or [backpack](inventory.md) → pause overlay → exact previous context. No automatic return to Gameplay while backpack remains open. Main-menu/settings navigation is deferred, not an invisible executable feature. Terminal state, if already committed before pause admission, wins and uses [death screen](death-screen.md).
+RUN playing → RUN paused → exact previous context; successful save/title tears down; terminal pause → Resume Shot only or confirmed Quit.
+Modal overlay above retained world/backpack; terminal pause overlays the shot.
+No world input may leak through a visible menu.
 
 ## 4. Entry & Exit Points
-
-| Trigger | Route | Focus / ownership |
+| Trigger | Entry / exit | Focus / owner result |
 |---|---|---|
-| `pause_menu` from gameplay/backpack | Push pause | Resume; request own UI source and F2 pause token |
-| Resume / B / Esc / Start | Pop pause | Release only own pause token + UI source, restore invoker |
-| Disconnect while paused | Router recovery over pause | Retain explicit pause token; deliberate recovery returns here |
-| Teardown / terminal | Remove run-owned layer | Release own token exactly once, invalidate callbacks |
+| Routed pause_menu | Push overlay | Resume / Resume Shot |
+| Activate action | Request owner, pending state | Remove focus only on accepted transition |
+| Cancel confirmation | Return to invoker | No mutation; restore invoking button |
+| Owner failure | Remain safe title/paused/terminal error | Restore invoker, readable reason and Retry |
+| Teardown | Invalidate run callbacks | Release only own token/source once |
 
-Closing pause does not override loading/disconnect tokens. Held inputs must be released and re-pressed before delivery.
+Opening requests own UI source and pause token. Resume releases only owned token/source and restores retained backpack/sleep/gameplay context; never releases disconnect/loading tokens. Save & Return cancels active action without outcome then checkpoints at quiescence; only success tears down. Switch profile confirms discard, mounts fresh run, never counts as advancing a night. Quit confirms then saves live run before close. During END_SHOT this menu contracts to Resume Shot / Quit; no save/switch, and Resume Shot only resumes presentation timer.
 
 ## 5. Layout Specification
 
+### 5.1 ASCII Wireframe
 ```text
-world / retained backpack, visually subdued
-          [ Paused ]
-          [ Resume ]
+       [ Paused ]
+       [ Resume ]
+       [ Save & Return to Title ]
+       [ Start / Switch chapter ]
+       [ Quit ]
+       [ localized status ]
 ```
 
-| Component | Zone / size | Pattern |
-|---|---|---|
-| Title | Centre safe rectangle, upper centre | Static heading |
-| Resume | Below heading; width 320 px at 1080p, grows for text | Primary Button |
-| Background | Existing world/backpack snapshot | Pause Stack; noninteractive, no focus |
-| Recovery overlay | Above pause when router requests | Reconnect Recovery, not this menu's token |
+### 5.2 Layout Zones
+Centred 16:9 safe rectangle, inset 5%; title/outcome above 320px reference-width vertical action stack at 1080p. Grow width/height for localized labels. Status below stack; scroll overflow without hiding focus.
 
-Inset 5% of centred 16:9 rectangle; no arbitrary survival metrics, settings list, save/load, “tap out” or quit-to-title button. MVP absence of quit-to-title avoids promising run persistence or implementing destructive navigation without its GDD.
+### 5.3 Component Inventory
+Live localized heading, Buttons, readable status/error label, modal confirmation with Cancel/Confirm and retained invoking identity. Retained world is noninteractive and subdued. Buttons ≥44×44 reference pixels. Reuse HUD fallback font/paper-ink style rather than inventing a theme.
+
+### 5.4 Information Hierarchy
+Outcome/title first, available next actions second, pending/error reason third. No numeric survival HUD, rewards list or unrelated Settings.
 
 ## 6. States & Variants
-
-| State | Trigger | Behavior |
+| State | Display | Behavior |
 |---|---|---|
-| Opening / loading | Request pending | “Pausing”; Resume disabled until owner acknowledges gate |
-| Paused | Gate acknowledged | “Paused”; Resume enabled |
-| Empty / missing world | No valid retained run | “Run unavailable”; Resume disabled; host navigation required, no fabricated run |
-| Error | Gate request rejected / invalid token | “Could not pause”; do not display false Paused state; safe Back dismisses failed layer without releasing others' tokens |
-| Closing / pending | Resume accepted | Suppress duplicate releases; restore previous source/focus |
-| Recovery | Pad disconnect | Explicit instructions, no timeout; router owns safety gate |
+| Loading | Loading / Starting / Saving | Owner pending; block duplicates, do not claim success |
+| Ready | Resume, Save & Return to Title, Start Three-Night Chapter / Switch to First Night, Quit. | Routed activation once |
+| Empty | Run unavailable | No fabricated run/cause; host recovery required |
+| Confirmation | Quit game? / Discard saved run? | Cancel initial focus; opening accept never confirms |
+| Error | Could not start / save / continue | Retain safe owner state, reason and Retry/Cancel |
+| Disconnect | Recovery overlay | Keep own pause, deliberate recovery; no auto-resume |
 
-No timer auto-resumes. On error that persists with no valid run, host/application close remains possible; a future title recovery command needs the lifecycle contract rather than a UI-only reset.
+Manual save failure stays paused; autosave failures warn without trapping play. Terminal checkpoint deletion failure blocks results navigation/close behind Retry; OS force-close cannot be guaranteed safe. Missing save is not an error; corrupt save hides Continue and reports quarantine warning.
 
 ## 7. Interaction Map
-
-| Input | Action | Response |
-|---|---|---|
-| Tab / arrows / D-pad | Focus Resume only | Persistent outline; no focus on world |
-| Enter/Space/A / click Resume | Request Resume once | Press feedback and optional quiet confirm cue |
-| B / Esc / Start | Same safe Resume/back intent | One routed action, not two token releases |
-| Right-click / wheel | No-op | No world cancel/zoom |
+| Input | Action |
+|---|---|
+| Tab/Shift-Tab; arrows/D-pad/left stick | Cycle visible enabled actions in displayed order, both directions |
+| Enter/Space / A-Cross / left click release | ui_accept activates once; release outside cancels |
+| Esc / B-Circle | Cancel modal; Resume / Resume Shot |
+| Start/Options | pause_menu routed to coordinator; never duplicate accept/back |
+| Confirm/interact during shot | Only terminal coordinator may admit eligible skip |
+| Right click / wheel | No world cancel/zoom; wheel scrolls overflowing panel only |
+Hover never steals pad/keyboard focus; modal cannot leak focus.
 
 ## 8. Data Requirements
-
-| Data | Owner / format | Update trigger | Null handling |
-|---|---|---|---|
-| Pause acknowledgement / owned token | Coordinator F2 / opaque token | Acquire/release result | Pausing/error, never claim freeze from UI context alone |
-| Return context and validity | Coordinator / source + run ID | Push/pop/teardown | Disable Resume if no valid run |
-| Focus identity | Retained screen / stable row identifier | Return | Missing row falls back to nearest surviving predecessor, first valid row, then Close; gameplay has no focus |
-| Glyphs / recovery | InputRouter / binding + gate state | Device/recovery event | Text action fallback |
+| Data | Owner / format | Refresh / null behavior |
+|---|---|---|
+| Start/close/save capability and result | Shell/SaveStore; accepted/reason | Startup/response; disable unavailable action with reason |
+| Run/profile/terminal identity and clock | Coordinator detached values | Run-bound response; reject stale, neutral fallback |
+| Checkpoint validity | SaveStore validated envelope | BOOT/save/delete/load; hide Continue on invalid/absent |
+| Shot elapsed/completion | Coordinator real-time gate | Presentation notice only; UI never decides death |
+| Glyphs/context/recovery | InputRouter semantic actions | Device change; action-name fallback |
+| Labels/status | CSV localization keys | Locale change; dev missing key, release empty + log |
 
 ## 9. Events Fired
-
-| Player action | Request / payload | Receiver | Notes |
-|---|---|---|---|
-| Open | `request_ui_context(pause,true)`, `request_pause(pause)`; source/run ID | Coordinator | Retain returned token |
-| Resume / Back | `release_pause(token)`, `request_ui_context(pause,false)` | Coordinator | Only owned token, once |
-| Focus navigation | None | Presentation | No simulation mutation |
-| Recovery acknowledgement | Existing router recovery intent / gate identity | InputRouter/Coordinator | Cannot release explicit pause token |
-
-- [ ] Pause mid-work: game minutes, physiology, Fire, Morale and action duration freeze until all relevant tokens release.
-- [ ] Resume over backpack restores UI and current selection, not Gameplay; closing pause during disconnect leaves safety pause intact.
-- [ ] A failed pause acknowledgement displays “Could not pause”, not “Paused”.
+| Intent | Receiver / payload | Ownership |
+|---|---|---|
+| Start / retry | Shell start_run(profile, fresh seed, null) | New subtree; no UI-created world |
+| Continue | Shell start_run(validated profile/seed/DTO) | Fresh staged restore, Locked one-second loading fade |
+| Save/title | Shell return_to_title(), live run identity | Coordinator quiesces; SaveStore success precedes stop_run |
+| Confirm Quit | Shell close intent | Save if live; no save if terminal/title |
+| Pause / resume | Coordinator UI source + request_pause/release_pause token | Run-tagged token, once, retain others |
+| Eligible skip | Coordinator run/terminal identity | No direct terminal mutation |
+Callbacks from stopped runs are ignored. Restoration uses a loading pause gate with pause menu closed, then releases it after one-second fade; other gates still win.
 
 ## 10. Transitions & Animations
-
-| Transition | Trigger | Type | Duration | Easing | Interruptible | Reduced-motion proposal |
-|---|---|---|---|---|---|---|
-| Enter | Owner accepts navigation | Opacity only | 150 ms | Linear | Yes, terminal wins | Instant |
-| Exit | Accepted close/navigation | Opacity only | 100 ms | Linear | Yes | Instant |
-| Pending / error / refresh | Owner response | Static label replacement | Immediate | None | Yes | Identical |
-
-These are author defaults, not new player settings. Input context changes immediately, not after a fade. Transition cosmetic failure must not strand focus or keep a token alive. Terminal presentation's authored end shot takes precedence over these menu timings.
+Menu opacity enter 150ms / exit 100ms defaults, instant if reduced-motion support is approved. Context changes immediately, not after cosmetic fade. Terminal shot lasts eight unpaused seconds unless optional eligible skip; run-owned pause freezes it. Terminal wins over menu transitions; no fade may retain a stale token. Save/restore loading remains until owner completion, never a fabricated fixed-duration load.
 
 ## 11. Input Method Completeness Checklist
-
-Checked boxes describe specification coverage, NOT executed tests.
-**Keyboard**
-- [x] Tab / Shift-Tab cycle Resume only; arrow keys traverse lists or button stacks.
-- [x] Enter / Space through `ui_accept` activates focused control once; Esc through `pause_menu` follows §7.
-- [x] Every mouse action has a keyboard path; focus outline remains visible; modal focus cannot escape.
-**Gamepad**
-- [x] D-pad or left stick follows the same order; A/Cross = `ui_accept`, B/Circle = `ui_cancel`; Start/Options = `pause_menu`.
-- [x] No analog precision, trigger/bumper shortcut, drag, hold or chord required.
-- [x] Active-pad disconnect uses InputRouter safety overlay. Reconnection alone does not resume; deliberate resume and release/re-press are required. Keyboard recovery remains reachable.
-**Mouse**
-- [x] All buttons/rows have readable default, hover, focus, pressed, disabled and pending states per Button/List patterns; hover never steals keyboard/gamepad focus.
-- [x] Targets at least 44×44 reference pixels; left-click selects/activates once on release; release outside cancels.
-- [x] Right-click is no-op; wheel scrolls only the list under pointer, otherwise no-op.
-Touch: not supported. Menu `ui_*` mappings are semantic InputRouter bindings, not permission for per-control raw event listeners.
+Specification targets, not executed evidence:
+- [ ] Keyboard-only navigation/accept/cancel reaches every action and restores focus after modal/error.
+- [ ] Pad-only D-pad/stick/A/B/Start reaches same actions; disconnect requires deliberate recovery.
+- [ ] Mouse buttons and scroll have keyboard/pad equivalents; no raw per-control listeners.
+- [ ] Held input requires release/repress across every context transition; one event has one meaning.
 
 ## 12. Accessibility
-
-Standard is confirmed and committed by Scott (owner), 2026-11-19; A1 is resolved. Detailed A2–A6 proposals and QQ-09 delivery scope remain open. Proposed menu floor 24 px at 1080p; at 720p use at least 18 px. Require adjustable text with reflow for Standard release delivery; the proposed range is 100–200%, not a new MVP settings addition. Remapping, text adjustment, colorblind support and applicable speaker-identified subtitles remain Standard release requirements even while their shared settings implementation is deferred. This is a screen design requirement, not a claim that an implemented build meets Standard. The template's generic Standard narration assumption differs from the project tier table: accessible names and announcement strings below are implementation hooks; comprehensive menu narration remains unapproved scope.
-
-| Text / control | Background | Required contrast | Measured |
-|---|---|---|---|
-| All labels, disabled reasons, status | Paper backing over snow/night/fire | 4.5:1 ordinary text | Not measured |
-| Large title / meaningful outlines | Paper/ink panel | 3:1 | Not measured |
-
-No color-only states: focus uses outline, pending/error uses words, wetness uses shape plus label. Do not depend on an audio cue to understand an action. Focus order: Resume only; cycle in both directions, omit disabled command stops only if their reasons are still readable in the selected-row description. Modal Cancel is the initial focus; closing restores invoker or safe first control. Focus never enters the passive world/HUD.
-
-Accessible name includes visible label; selected rows include qualitative condition and action availability. Proposed announcement on arrival: “Paused.”; pending changes announce “Working”, rejection announces localized owner reason once, and focus restoration announces destination name. No periodic numeric reading or interruption by repeated live snapshots. Menu narration and reduced motion remain proposals, not delivered features. Keep at most four conceptual streams (title, content, selection/actions, status), below the 7±2 heuristic; this is not user-research evidence.
+Standard tier remains committed. All text ≥20px at target resolutions; wrap/reflow, no shrinking below floor, 40% expansion and planned adjustable text up to 200%. Visible outline and label identify focus, pending/error uses words rather than color/audio alone. Text contrast ≥4.5:1; large text/control boundaries ≥3:1, measured over snow/night/fire before sign-off. No required time-limited input; skip is optional, all next actions wait indefinitely. Accessible names match visible labels; announce arrival/result/rejection once, not repeated snapshots. Remapping, text adjustment and applicable subtitles remain project Standard requirements; full narration/reduced-motion implementation remains unapproved scope.
 
 ## 13. Localization Considerations
-
-All strings use localization keys, never text baked into sketches. Minimum 40% expansion; character budgets are test fixtures, not permission to truncate meaning. No ellipsis for actions or failure reasons: wrap and grow/scroll panel. CJK uses font fallback and stable spacing; never shrink below font floor. RTL mirrors panel alignment, reading/focus order and text, not device glyph artwork or world projection.
-
-| Text role | English fixture limit | Expansion fixture | Overflow |
-|---|---|---|---|
-| Title | 24 characters | 34 | Wrap |
-| Action label | 24 | 34 | Grow button, then wrap |
-| Row identity / condition | 48 | 68 | Wrap row |
-| Status / confirmation / error | 96 | 135 | Grow status region, scroll if needed |
-
-Layout-critical: actions and status must survive the expansion fixture, 200% planned text and RTL. No numeric gameplay values are introduced by localization.
+All headings, ordinal-word survival copy, action labels, status, confirmations and error reasons use CSV keys (existing assets/localization/hud.csv pipeline or dedicated registered CSV). Never bake text into art, concatenate English ordinals or show raw filesystem errors. English fixture labels ≤32 characters, status ≤135; budgets test expansion, not permission to truncate meaning. CJK font fallback; RTL mirrors layout/focus reading order, not glyph artwork. Grow/wrap then scroll; never ellipsize actions/reasons.
 
 ## 14. Acceptance Criteria
+- [ ] All entry/exit paths above tested with normal/empty/invalid/error owner results and duplicate/stale intents.
+- [ ] Resume retains invoker; manual save failure preserves paused run; successful save precedes title/quit; switch confirms discard.
+- [ ] Confirmations never accept invoking press; keyboard/pad/mouse parity, focus visible and trapped.
+- [ ] 720p through 4K, 4:3/16:9/16:10/21:9 safe area, 40% expansion, 200% planned text and contrast checked with retained screenshots.
+- [ ] No gameplay mutation/direct SceneTree pause; no stale callback or token leakage; terminal precedence preserved.
+- [ ] No runtime/visual compliance claimed until implementation and evidence exist.
 
-Implementation targets below remain unexecuted.
-- [ ] First panel frame appears within 200 ms and usable local data within 500 ms on nominated minimum hardware; maintain 60 fps ±5 during navigation (hardware nomination QQ-01 pending).
-- [ ] At 1280×720 and 3840×2160, 4:3/16:9/16:10/21:9, safe content does not overlap, clip or escape the inset; expanded strings and planned 200% text reflow without hiding actions.
-- [ ] Every §7 action works with keyboard alone, D-pad/face buttons alone and mouse alone; no double command from one input and no held action on return.
-- [ ] Every §6 loading/empty/error case has its stated safe escape; stale response from an old run cannot navigate or change a row.
-- [ ] Every §9 request goes to its owner once with listed identity; no UI mutation of gameplay state or direct SceneTree pause.
-- [ ] All ordinary text measures at least 4.5:1, large text/control boundaries 3:1 over snow, fire and night; grayscale preserves all meaning and focus.
-- [ ] Enter and exit obey §10; proposed reduced-motion mode uses instant menu transitions if that setting is approved.
-- [ ] All localized action/status fixture lengths in §13 wrap without clipping; focus remains visible when scrolled.
+## 15. Open Questions / Own Calls
+| ID | Decision / gap | Disposition |
+|---|---|---|
+| P1 | Resolved expanded pause design | Screens/Save GDDs + ADR-0018 replace resume-only scaffold with save/title/switch/quit; Ready for implementation pending Scott review |
+| A1 | Standard tier | Committed; implementation compliance unverified |
+| J1 | No player journey map | Arrival inferred; does not claim user research |
+| U1 | Layout/copy/timings | Default (reversible, pending Scott review) |
+| C1 | Architecture/GDD exceptions | ADR-0018 Proposed: early skip/Locked exception, narrowed Terrain save and pulled-forward scope await Scott; existing Accepted records not silently superseded |
 
-## 15. Open questions / own calls
-
-| ID | Decision / gap | Owner / deadline | Disposition |
-|---|---|---|---|
-| A1 | Standard tier confirmed and committed | Scott (owner); resolved 2026-11-19 | Tier criterion available for UX review; implementation compliance and A2–A6 not approved by this decision |
-| J1 | Player journey map not yet created | Design; before implementation planning | Author from `.claude/docs/templates/player-journey.md`; arrival context here is inferred |
-| U1 | Menu fade timings, layout sizes, target sizes and text budgets above | Scott + UI/art; before implementation | Reasonable author defaults, not measured outcomes |
-| P1 | Resume-only MVP scaffold | Scott; before implementation | No settings/save/quit lifecycle invented; future menu expansion needs Screens & Menus GDD |
-| P2 | Missing-run recovery belongs to host lifecycle | Technical design; before production handoff | Not an implemented restart route; error text must not imply recovery succeeded |
-
-
-Cross-reference audit: named patterns reused, no new reusable pattern required; linked navigation matches sibling specs. Session-state and session-log writes are intentionally excluded by this task. No TR registry changes: these specs refine existing requirements rather than allocate new architecture TRs.
+Contract blockers are resolved at design level by linked docs; wider Tap-out/Results, Settings, kit and diary remain out of scope. No code, translations, TR test evidence or runtime behavior changed by this spec.
