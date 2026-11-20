@@ -153,7 +153,7 @@ func add_site(site_id: StringName, position: Vector3, label: String) -> WorldInt
 	return entry
 
 ## Rejects occupied ground while leaving authoritative site limits to the simulation.
-func can_place_fire(position: Vector3, footprint: float = 0.0) -> bool:
+func can_place_fire(position: Vector3, footprint: float = FireController.PLACEMENT_RADIUS) -> bool:
 	if _shelter_reserved and disc_intersects_plot(position, footprint, SHELTER_TRANSFORM, SHELTER_BOUNDS):
 		return false
 	if chapter_sites and (not is_on_snow(position) or position.distance_to(HARE_TRAIL) <= footprint + TUNING.resource_clearance):

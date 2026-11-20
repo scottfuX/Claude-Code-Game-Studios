@@ -95,6 +95,8 @@ func test_authored_chapter_sites_reserve_empty_plot_and_leave_outdoor_fire() -> 
 	assert_bool(world.shelter_plot(Vector3.ZERO, FireController.PLACEMENT_RADIUS).is_empty()).is_false()
 	assert_int(world.hare_approach(Vector3.ZERO).size()).is_equal(4)
 	assert_bool(world.hare_approach(Vector3(0, 5, 0)).is_empty()).is_true()
+	assert_bool(world.can_place_fire(WorldMap.SHELTER_APRON)).is_true()
+	assert_bool(world.can_place_fire(WorldMap.SHELTER_TRANSFORM.origin)).is_false()
 	assert_object(scene.simulation.create_fire(WorldMap.SHELTER_TRANSFORM.origin + Vector3.FORWARD)).is_null()
 	var fire := scene.simulation.create_fire(WorldMap.SHELTER_APRON)
 	assert_object(fire).is_not_null()
