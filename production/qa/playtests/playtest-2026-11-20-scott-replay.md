@@ -12,13 +12,13 @@ Replay the feel-pass build; record snow contact, visual stability and animation 
 
 ## First Impressions (First 5 minutes)
 
-Timing within the session was not recorded. The three supplied English translations are preserved below. **Original Chinese was not supplied; the Chinese column is a back-translation, not a verbatim quote from Scott.**
+Timing within the session was not recorded. Scott's verbatim Chinese notes and the supplied English translations are preserved below.
 
-| 中文回译（非原话） | English supplied translation |
+| Scott's verbatim Chinese | English supplied translation |
 |---|---|
-| 雪没有厚度，踩上去没有陷进去或凹凸不平的感觉。 | the snow has no depth, there's no sense of sinking in or unevenness when stepping |
-| 屏幕有时候会闪烁。 | the screen flickers at times |
-| 现在动画多了一些，但不符合当时的情境，看起来很奇怪。 | there are more animations now, but they don't fit the situation and feel strange |
+| 雪没有深度，踩下去没有起伏感； | the snow has no depth, there's no sense of sinking in or unevenness when stepping |
+| 画面然后会出现闪屏； | the screen flickers at times |
+| 动作是多了，但是不符合当时的场景，感觉很奇怪； | there are more animations now, but they don't fit the situation and feel strange |
 
 ## Gameplay Flow
 
