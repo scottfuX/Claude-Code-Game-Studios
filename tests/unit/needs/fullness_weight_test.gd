@@ -1,6 +1,19 @@
 extends GdUnitTestSuite
 
 const CHAPTER = preload("res://assets/data/three_day_survival.tres")
+const DEFAULTS = preload("res://assets/data/slice_defaults.tres")
+
+
+func test_invalid_weight_and_capacity_use_default_tuning() -> void:
+	var tuning := CHAPTER.duplicate() as SliceTuning
+	tuning.start_weight_kg = NAN
+	tuning.stomach_capacity_kcal = 0.0
+	var n := NeedsModel.new(tuning)
+	assert_float(n.weight_kg).is_equal(DEFAULTS.start_weight_kg)
+	assert_float(n.energy_cap()).is_equal(100.0)
+	assert_float(n.fullness()).is_equal_approx(100.0 * tuning.stomach_start_kcal / DEFAULTS.stomach_capacity_kcal, 0.00001)
+	assert_bool(n.accept_food(DEFAULTS.stomach_capacity_kcal - n.stomach_kcal)).is_true()
+	assert_float(n.fullness()).is_equal(100.0)
 
 
 func test_stomach_pays_first_and_activity_uses_highest_effort() -> void:

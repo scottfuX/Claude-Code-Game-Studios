@@ -4,6 +4,7 @@ signal needs_stage_changed(need: StringName, stage: StringName)
 signal sleep_changed(asleep: bool, cause: StringName)
 
 const STORE_EPSILON: float = 0.00000001
+const DEFAULTS = preload("res://assets/data/slice_defaults.tres")
 
 var tuning: SliceTuning
 var energy: float = 90.0
@@ -24,11 +25,11 @@ var _start_weight_kg: float
 var _stomach_capacity_kcal: float
 
 func _init(data: SliceTuning = null) -> void:
-	tuning = data if data != null else preload("res://assets/data/slice_defaults.tres")
+	tuning = data if data != null else DEFAULTS
 	energy = tuning.energy_start
 	hydration = clampf(tuning.hydration_start, 0.0, 100.0)
-	_start_weight_kg = tuning.start_weight_kg if is_finite(tuning.start_weight_kg) and tuning.start_weight_kg >= 50.0 else 72.0
-	_stomach_capacity_kcal = tuning.stomach_capacity_kcal if is_finite(tuning.stomach_capacity_kcal) and tuning.stomach_capacity_kcal > 0.0 else 1500.0
+	_start_weight_kg = tuning.start_weight_kg if is_finite(tuning.start_weight_kg) and tuning.start_weight_kg >= 50.0 else DEFAULTS.start_weight_kg
+	_stomach_capacity_kcal = tuning.stomach_capacity_kcal if is_finite(tuning.stomach_capacity_kcal) and tuning.stomach_capacity_kcal > 0.0 else DEFAULTS.stomach_capacity_kcal
 	stomach_kcal = clampf(tuning.stomach_start_kcal, 0.0, _stomach_capacity_kcal)
 	weight_kg = _start_weight_kg
 	if tuning.chapter_needs_enabled:
