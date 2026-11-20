@@ -69,7 +69,7 @@ For the player this system is mostly invisible except in three moments that matt
     | 5 | cooking pot 锅 | 1 | carried for continuity; used from the VS (Water) |
     | 6 | tarp 篷布 | 1 | VS (Shelter) |
     | 7 | sleeping bag 睡袋 | 1 | carried; bonus active from the VS |
-    | 8 | paracord 伞绳 | 1 | VS (Shelter, Food) |
+    | 8 | paracord 伞绳 | 1 | VS (Food; not consumed by the [Chapter 2 shelter](shelter.md#core-rules)) |
     | 9 | fishing kit 渔具 | 1 | VS (Food) |
     | 10 | snare wire 套索线 | 1 | VS (Food) |
 

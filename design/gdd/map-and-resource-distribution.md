@@ -92,7 +92,7 @@ The MVP map is deliberately small — 240 × 240 m playable — because walking 
 | Character Controller & Animation (approved) | out | drop position and facing; bounds | Map |
 | Gathering | out | resource nodes with kind and remaining yield | Map (placement) / Gathering (yield use) |
 | Interaction & Timed Actions (approved) | out | nodes register as interactables with their actions | Map / Interaction |
-| Fire | out | good camp sites (unlabelled), flat-ground rule inputs | Map / Fire |
+| Fire | out | good camp sites (unlabelled), flat-ground rule inputs; proposed Chapter 2 reservation input below | Map / Fire |
 | Mishaps & Failure (approved) | — | via Terrain's ice thickness | Terrain |
 | Wildlife, Water, Food, Shelter (VS) | out | reserved ranges and sites | Map |
 | Time & Day Cycle (approved) | — | none (map is time-independent) | — |
@@ -156,6 +156,8 @@ place each node at a random point (seeded) inside the ring ∩ allowed zones, re
 **Downstream:** Terrain (content), Thermal (zones), Camera (bounds), Character (drop, bounds), Gathering (hard: nodes), Interaction (interactables), Fire (camp sites), Wildlife / Water / Food / Shelter (VS sites), Save/Load.
 
 **Bidirectional check:** the systems index lists Map → Terrain (matches) and Gathering, Water, Wildlife as dependents (matches). Terrain lists Map as the author of heightmap, types, depths and ice (matches; ice thin spots 5–10 cm here sit within Terrain's 5–10). Thermal lists Map as the zone source with the four zones open/forest/lake/lee (matches; this GDD adds drift field and scoured ridge using values inside Thermal's ranges — Thermal's table should list them at its next revision). Camera lists Map for bounds (matches). Character expects drop and bounds (matches). Index gap: Thermal, Camera, Character and Fire rows do not list Map — soft; add when convenient.
+
+**Chapter 2 forward link:** After the [Shelter architecture gate](shelter.md#cross-references), Map supplies the authored plot and exposes a read-only footprint intersection query (XZ, including edge contact) for [FireController's new-site check](fire.md#interactions-with-other-systems). The reservation exists before framing and never covers the separate apron. Map supplies the spatial input, not the Fire verdict; the first-night profile is unchanged.
 
 ## Visual/Audio Requirements
 

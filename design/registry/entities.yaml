@@ -259,12 +259,24 @@ items:
     source: design/gdd/item-database-and-inventory.md
     referenced_by:
       - design/gdd/item-database-and-inventory.md
+      - design/gdd/shelter.md
     category: fuel
     mass_kg: 2.5
     stack_max: 8
     fuel_value: 60
     can_get_wet: true
     added: 2026-11-17
+    revised: ""
+  - name: tarp
+    status: active
+    source: design/gdd/item-database-and-inventory.md
+    referenced_by:
+      - design/gdd/shelter.md
+    category: shelter_material
+    mass_kg: 1.2
+    stack_max: 1
+    can_get_wet: true
+    added: 2026-11-20
     revised: ""
   - name: stone
     status: active
@@ -398,6 +410,7 @@ formulas:
       - design/gdd/body-temperature.md
       - design/gdd/needs-and-weight.md
       - design/gdd/character-controller-and-animation.md
+      - design/gdd/shelter.md
     variables:
       - base_game_min
       - action_duration_mult
@@ -498,6 +511,7 @@ formulas:
     referenced_by:
       - design/gdd/thermal-environment.md
       - design/gdd/body-temperature.md
+      - design/gdd/shelter.md
     variables:
       - air_temp_c
       - zone_offset_c
