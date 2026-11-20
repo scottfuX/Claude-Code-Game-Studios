@@ -42,7 +42,7 @@ func test_visual_contacts_alternate_and_pause_blocks_them() -> void:
 	assert_str(run.simulation.actions.action).is_empty()
 	assert_int(run.simulation.rng.draw_count).is_zero()
 
-func test_crouch_respects_imported_skeleton_basis_and_leaves_physics_root_alone() -> void:
+func test_dedicated_crouch_clip_lowers_hips_without_moving_physics_root() -> void:
 	var shell: Node = auto_free(preload("res://src/run/app_shell.tscn").instantiate())
 	shell.set("save_store", SaveStore.new("user://test-checkpoints/visual_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
@@ -51,14 +51,75 @@ func test_crouch_respects_imported_skeleton_basis_and_leaves_physics_root_alone(
 	var run := shell.get("_run") as RunCoordinator
 	var visual: SurvivorVisual = run.get("_survivor_visual")
 	var skeleton: Skeleton3D = visual.get("_skeleton")
-	var pose: SurvivorPose = skeleton.get_child(skeleton.get_child_count() - 1)
+	var model: Node3D = visual.get("_model")
+	var player := model.find_child("AnimationPlayer", true, false) as AnimationPlayer
+	var tree: AnimationTree = visual.get("_tree")
+	tree.active = false
 	var hips := skeleton.find_bone(&"Hips")
 	var before := skeleton.to_global(skeleton.get_bone_global_pose(hips).origin)
 	var root_position := run.survivor.global_position
-	visual.crouch = 1.0
-	pose.call("_process_modification")
+	player.play(&"clear_snow")
+	player.seek(0.4, true)
 	var after := skeleton.to_global(skeleton.get_bone_global_pose(hips).origin)
 	assert_float(after.y).is_less(before.y - 0.3)
 	assert_float(after.x).is_equal_approx(before.x, 0.001)
 	assert_float(after.z).is_equal_approx(before.z, 0.001)
 	assert_vector(run.survivor.global_position).is_equal(root_position)
+
+func test_context_selection_has_no_work_fallback() -> void:
+	var tuning := SliceTuning.new()
+	for action: StringName in tuning.action_minutes:
+		assert_bool(SurvivorClips.ACTIONS.has(action)).is_true()
+		assert_str(SurvivorClips.select(action, 0, 37, false)).is_equal(String(action))
+	for action: StringName in [&"eat", &"eat_snow"]:
+		assert_str(SurvivorClips.select(action, 0, 37, false)).is_equal(String(action))
+	assert_str(SurvivorClips.select(&"unknown", 0, 37, false)).is_empty()
+	assert_str(SurvivorClips.select(&"", 0, 37, false)).is_equal("idle")
+	assert_str(SurvivorClips.select(&"", 0, 35, false)).is_equal("cold_idle")
+	assert_str(SurvivorClips.select(&"", 0, 35, true)).is_equal("warm_hands")
+	assert_str(SurvivorClips.select(&"", 1, 35, true)).is_equal("walk")
+	assert_str(SurvivorClips.select(&"strike", 0, 35, true)).is_equal("strike")
+	assert_str(SurvivorClips.select(&"", 0, 35, true, true)).is_equal("sleep")
+
+func test_work_faces_admitted_target_and_warming_faces_burning_fire() -> void:
+	var shell: Node = auto_free(preload("res://src/run/app_shell.tscn").instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/visual_" + str(Time.get_ticks_usec())))
+	shell.process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(shell)
+	shell.call("start_run", {})
+	var run := shell.get("_run") as RunCoordinator
+	var visual: SurvivorVisual = run.get("_survivor_visual")
+	var bush := run.world.interactables[1]
+	run.survivor.facing = Vector3.RIGHT
+	assert_bool(run.simulation.start_action(&"gather_sticks", null, bush.gather_node)).is_true()
+	var expected := SurvivorClips.facing(run.survivor.position, bush.position, Vector3.RIGHT)
+	assert_vector(visual.action_facing()).is_equal(expected)
+	visual.call("_process", 0.5)
+	assert_float(Vector3(sin(visual.rotation.y), 0, cos(visual.rotation.y)).dot(expected)).is_greater(0.98)
+	run.simulation.cancel_action()
+	var fire := run.simulation.create_fire(Vector3(1, 0, 0))
+	assert_object(visual.warming_fire()).is_null()
+	fire.stage = &"Burning"
+	assert_object(visual.warming_fire()).is_same(fire)
+	assert_vector(visual.action_facing(fire)).is_equal(Vector3.RIGHT)
+	assert_vector(SurvivorClips.facing(Vector3.ZERO, Vector3.ZERO, Vector3.FORWARD)).is_equal(Vector3.FORWARD)
+
+func test_all_contexts_have_complete_clips_and_fatigue_variants() -> void:
+	var shell: Node = auto_free(preload("res://src/run/app_shell.tscn").instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/visual_" + str(Time.get_ticks_usec())))
+	shell.process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(shell)
+	shell.call("start_run", {})
+	var run := shell.get("_run") as RunCoordinator
+	var visual: SurvivorVisual = run.get("_survivor_visual")
+	var model: Node3D = visual.get("_model")
+	var player := model.find_child("AnimationPlayer", true, false) as AnimationPlayer
+	var contexts: Array[StringName] = SurvivorClips.STATES.duplicate()
+	contexts.append_array(SurvivorClips.ACTIONS.values())
+	contexts.append(&"trudge")
+	for context: StringName in contexts:
+		for suffix: String in ["", "_tired"]:
+			var clip := player.get_animation(StringName(String(context) + suffix))
+			assert_object(clip).is_not_null()
+			assert_float(clip.length).is_greater(0.0)
+			assert_int(clip.get_track_count()).is_greater_equal(24)
