@@ -1,0 +1,73 @@
+# Initialized for Sprint 001; update story status via /dev-story and /story-done.
+# Dates are proposed planning dates, not an owner commitment.
+sprint: 1
+goal: "Prove three nights of ordered simulation, including needs and interruptible sleep, with deterministic run fixtures while the default first-night play remains unchanged."
+start: "2026-11-23"
+end: "2026-12-04"
+generated: "2026-11-20"
+updated: "2026-11-20"
+
+stories:
+  - id: "CLK-001"
+    name: "Advance day and phase through three nights"
+    file: "production/epics/game-clock/story-001-day-boundaries.md"
+    priority: must-have
+    status: ready-for-dev
+    owner: ""
+    estimate_days: 1
+    blocker: ""
+    completed: ""
+  - id: "CLK-002"
+    name: "Arbitrate sleep and wait between minutes"
+    file: "production/epics/game-clock/story-002-interruptible-rates.md"
+    priority: must-have
+    status: ready-for-dev
+    owner: ""
+    estimate_days: 1
+    blocker: ""
+    completed: ""
+  - id: "NEED-001"
+    name: "Integrate hydration and submit dehydration once"
+    file: "production/epics/needs-model/story-001-hydration-energy.md"
+    priority: must-have
+    status: ready-for-dev
+    owner: ""
+    estimate_days: 1
+    blocker: ""
+    completed: ""
+  - id: "NEED-002"
+    name: "Burn stomach calories before body weight"
+    file: "production/epics/needs-model/story-002-fullness-weight.md"
+    priority: must-have
+    status: ready-for-dev
+    owner: ""
+    estimate_days: 1
+    blocker: ""
+    completed: ""
+  - id: "NEED-003"
+    name: "Own sleep, exhaustion collapse and natural wake"
+    file: "production/epics/needs-model/story-003-sleep-state.md"
+    priority: must-have
+    status: ready-for-dev
+    owner: ""
+    estimate_days: 1.25
+    blocker: ""
+    completed: ""
+  - id: "BODY-001"
+    name: "Wake sleep from Body cold, not Fire Out"
+    file: "production/epics/body-thermoregulation/story-001-cold-wake.md"
+    priority: must-have
+    status: ready-for-dev
+    owner: ""
+    estimate_days: 1.25
+    blocker: ""
+    completed: ""
+  - id: "RUN-001"
+    name: "Resolve third-sunrise outcomes and death precedence"
+    file: "production/epics/run-coordinator/story-001-chapter-outcomes.md"
+    priority: must-have
+    status: ready-for-dev
+    owner: ""
+    estimate_days: 1.5
+    blocker: ""
+    completed: ""
