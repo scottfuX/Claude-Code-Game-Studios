@@ -95,11 +95,25 @@ func accept_drink(amount: float) -> bool:
 
 ## Adds calories only if they fit. For example, commit an approved ration only if [code]needs.accept_food(400.0)[/code] succeeds.
 func accept_food(kcal: float) -> bool:
-	if not tuning.chapter_needs_enabled or not is_finite(kcal) or kcal <= 0.0 or stomach_kcal + kcal > _stomach_capacity_kcal:
+	if not can_accept_food(kcal):
 		return false
 	stomach_kcal += kcal
 	empty_minutes = 0
 	_refresh_fullness()
+	return true
+
+## Checks the calorie side of a meal without mutating state; e.g. [code]needs.can_accept_food(500.0)[/code] before spending a ration.
+func can_accept_food(kcal: float) -> bool:
+	return tuning.chapter_needs_enabled and is_finite(kcal) and kcal > 0.0 and stomach_kcal + kcal <= _stomach_capacity_kcal
+
+## Commits a completed handful through the Needs owner; e.g. [code]needs.accept_snow()[/code] after the minute barrier.
+func accept_snow() -> bool:
+	if not tuning.chapter_needs_enabled or not is_finite(tuning.snow_hydration) or tuning.snow_hydration <= 0.0 or not is_finite(tuning.snow_energy) or tuning.snow_energy < 0.0:
+		return false
+	energy = maxf(0.0, energy - tuning.snow_energy)
+	collapse_due = not is_asleep and energy == 0.0
+	accept_drink(tuning.snow_hydration)
+	refresh_stage()
 	return true
 
 ## Returns stomach fullness as a percentage; [code]needs.fullness()[/code] starts at 80 with chapter defaults.

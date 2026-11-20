@@ -19,8 +19,19 @@ func _draw() -> void:
 	_band(anchor, alpha)
 	if view.get(&"context", &"") in [&"ritual", &"sleep"]:
 		return
+	if view.has(&"needs"):
+		_draw_need_warnings(anchor + Vector2(-4, -35))
+	else:
+		_energy(anchor + Vector2(335, 0))
+	_arc(Vector2(safe.end.x - 65, safe.position.y + 64), float(view.get(&"opacity", 1.0)))
+	var progress: float = view.get(&"progress", -1.0)
+	if progress >= 0:
+		var centre := Vector2(safe.get_center().x, safe.end.y - 68)
+		draw_arc(centre, 16, -PI / 2, TAU - PI / 2, 40, EDGE, 6, true)
+		draw_arc(centre, 16, -PI / 2, -PI / 2 + TAU * maxf(0.001, progress), 40, INK, 3, true)
+
+func _energy(energy_anchor: Vector2) -> void:
 	var energy: int = view.get(&"energy_level", 0)
-	var energy_anchor := anchor + Vector2(335, 0)
 	draw_rect(Rect2(energy_anchor, Vector2(140, 15)), EDGE)
 	var energy_color := Color("8ea89b") if energy == 0 else (Color("d2ae65") if energy == 1 else Color("d37d66"))
 	draw_rect(Rect2(energy_anchor, Vector2(140 * float(view.get(&"energy_fill", 1.0)), 15)), energy_color)
@@ -32,12 +43,29 @@ func _draw() -> void:
 		var p := energy_anchor + Vector2(155, 7)
 		draw_line(p + Vector2(-6, trend * 5), p + Vector2(0, -trend * 5), INK, 2)
 		draw_line(p + Vector2(0, -trend * 5), p + Vector2(6, trend * 5), INK, 2)
-	_arc(Vector2(safe.end.x - 65, safe.position.y + 64), float(view.get(&"opacity", 1.0)))
-	var progress: float = view.get(&"progress", -1.0)
-	if progress >= 0:
-		var centre := Vector2(safe.get_center().x, safe.end.y - 68)
-		draw_arc(centre, 16, -PI / 2, TAU - PI / 2, 40, EDGE, 6, true)
-		draw_arc(centre, 16, -PI / 2, -PI / 2 + TAU * maxf(0.001, progress), 40, INK, 3, true)
+
+func _draw_need_warnings(origin: Vector2) -> void:
+	var font := ThemeDB.fallback_font
+	var p := origin
+	for warning: Dictionary in view.get(&"needs", []):
+		var urgent: bool = warning[&"urgent"]
+		var ink := Color("f5b479") if urgent else INK
+		var width := 2.5 + 0.5 * sin(TAU * float(view[&"elapsed_s"])) if urgent else 1.5
+		var icon: PackedVector2Array
+		match warning[&"icon"]:
+			&"water":
+				icon = PackedVector2Array([Vector2(-8, -7), Vector2(-5, 7), Vector2(5, 7), Vector2(8, -7), Vector2(-8, -7)])
+			&"food":
+				icon = PackedVector2Array([Vector2(-9, -4), Vector2(-5, 6), Vector2(5, 6), Vector2(9, -4), Vector2(-9, -4)])
+			_:
+				icon = PackedVector2Array([Vector2(-5, 8), Vector2(4, -8), Vector2(9, -5), Vector2(7, -1), Vector2(-1, -5)])
+		var at := Transform2D(0.0, p + Vector2(9, -6)) * icon
+		_stroke(at, ink, width)
+		var label := tr(StringName("NEED_" + String(warning[&"stage"]).to_upper()))
+		var text_at := p + Vector2(25, 0)
+		draw_string_outline(font, text_at, label, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, 4, EDGE)
+		draw_string(font, text_at, label, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, ink)
+		p.x += 42.0 + font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 18).x
 
 func _band(anchor: Vector2, alpha: float) -> void:
 	var rect := Rect2(anchor, Vector2(220, 15))
@@ -79,6 +107,12 @@ func _arc(p: Vector2, alpha: float) -> void:
 	var ink := Color(INK, alpha)
 	draw_arc(p, 48, PI, TAU, 48, Color(EDGE, EDGE.a * alpha), 5, true)
 	draw_arc(p, 48, PI, TAU, 48, Color(Color("d3a676"), alpha) if view.get(&"twilight", false) else ink, 2, true)
+	var goal: int = view.get(&"night_goal", 0)
+	var completed: int = view.get(&"nights_survived", 0)
+	for i in goal:
+		var marker := p + Vector2((i - (goal - 1) / 2.0) * 14.0, 13.0)
+		draw_circle(marker, 3.5, Color(EDGE, EDGE.a * alpha))
+		draw_circle(marker, 2.5, ink, i < completed, 1.0, true)
 	var angle := PI + PI * float(view.get(&"arc", 0.5))
 	var dot := p + Vector2(cos(angle), sin(angle)) * 48
 	draw_circle(dot, 7, ink)

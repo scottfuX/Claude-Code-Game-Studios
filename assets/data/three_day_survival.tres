@@ -7,3 +7,7 @@ script = ExtResource("1")
 start_minute_of_day = 780
 survival_day = 4
 chapter_needs_enabled = true
+extra_deadfalls = Array[Vector3]([Vector3(0, 0, 10), Vector3(2, 0, -10), Vector3(10, 0, 0), Vector3(-10, 0, -1)])
+starting_rations = Dictionary[StringName, int]({&"pemmican": 8})
+food_kcal = Dictionary[StringName, float]({&"pemmican": 500.0})
+eat_minutes = Dictionary[StringName, float]({&"pemmican": 5.0})

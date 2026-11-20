@@ -4,6 +4,13 @@ class_name SliceTuning extends Resource
 @export_range(0, 1439) var start_minute_of_day: int = 990
 @export_range(2, 60) var survival_day: int = 2
 @export var chapter_needs_enabled: bool = false
+@export var extra_deadfalls: Array[Vector3] = []
+@export var starting_rations: Dictionary[StringName, int] = {}
+@export var food_kcal: Dictionary[StringName, float] = {}
+@export var eat_minutes: Dictionary[StringName, float] = {}
+@export var snow_minutes: int = 3
+@export var snow_hydration: float = 3.0
+@export var snow_energy: float = 1.0
 
 @export var daylight_start: float = 8.0
 @export var daylight_min: float = 5.0
