@@ -32,7 +32,9 @@ func _ready() -> void:
 
 func boot(arguments: PackedStringArray) -> void:
 	if "--three-day" in arguments or "--demo" in arguments:
-		start_run({&"profile": &"three_night" if "--three-day" in arguments else &"first_night"})
+		if not start_run({&"profile": &"three_night" if "--three-day" in arguments else &"first_night"}):
+			return_to_title()
+			_menu.show_error(&"MENU_CHECKPOINT_UNAVAILABLE" if not save_store.can_write() else &"MENU_START_ERROR")
 	else:
 		return_to_title()
 
