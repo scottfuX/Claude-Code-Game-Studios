@@ -3,6 +3,7 @@ class_name WorldInteractable extends Node3D
 var gather_node: GatherNode
 var display_name: String = ""
 var site_id: StringName = &""
+var chapter_target: bool = false
 const GATHER_ACTIONS: Array[StringName] = [&"gather_sticks", &"chop_log", &"strip_bark", &"gather_grass"]
 var _verbs: Array[StringName] = []
 var _cached_node: GatherNode

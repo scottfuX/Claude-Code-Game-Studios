@@ -5,6 +5,7 @@ signal resume_requested
 signal quit_requested
 signal switch_chapter_requested
 signal eat_requested
+signal eat_hare_requested
 
 var model := HudModel.new()
 var _canvas: HudCanvas
@@ -20,6 +21,7 @@ var _restart: Button
 var _quit: Button
 var _switch_run: Button
 var _eat_ration: Button
+var _eat_hare: Button
 var _menu_context: StringName = &""
 var _context: StringName = &"gameplay"
 var _previous_context: StringName = &""
@@ -72,6 +74,7 @@ func _ready() -> void:
 	_restart = _button(column, &"HUD_RESTART", func() -> void: restart_requested.emit())
 	_switch_run = _button(column, &"HUD_START_CHAPTER", func() -> void: switch_chapter_requested.emit())
 	_eat_ration = _button(column, &"VERB_EAT_RATION", func() -> void: eat_requested.emit())
+	_eat_hare = _button(column, &"VERB_EAT_HARE", func() -> void: eat_hare_requested.emit())
 	_quit = _button(column, &"HUD_QUIT", func() -> void: quit_requested.emit())
 	_debug = _label(_canvas)
 	_debug.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -135,7 +138,11 @@ func render_snapshot(snapshot: Dictionary) -> void:
 	_hint.visible = (ordinary and (not model.hint_gone or _help_open)) or context == &"pause"
 	var menu := context in [&"end", &"pause", &"backpack"]
 	_panel.visible = menu
-	if context != _menu_context or (_eat_ration.visible and not _canvas.get_viewport().gui_get_focus_owner()):
+	var inventory: Dictionary = snapshot.get(&"inventory", {})
+	var rations: int = inventory.get(&"pemmican", 0)
+	_eat_ration.visible = context == &"backpack" and chapter and rations > 0
+	_eat_hare.visible = context == &"backpack" and chapter and int(inventory.get(&"hare_cooked", 0)) > 0
+	if context != _menu_context or (context == &"backpack" and not _canvas.get_viewport().gui_get_focus_owner()):
 		match context:
 			&"pause":
 				_resume.grab_focus()
@@ -144,6 +151,8 @@ func render_snapshot(snapshot: Dictionary) -> void:
 			&"backpack":
 				if _eat_ration.visible:
 					_eat_ration.grab_focus()
+				elif _eat_hare.visible:
+					_eat_hare.grab_focus()
 	_menu_context = context
 	_shade.visible = menu and context != &"backpack"
 	_resume.visible = context == &"pause"
@@ -151,9 +160,6 @@ func render_snapshot(snapshot: Dictionary) -> void:
 	_quit.visible = context == &"pause"
 	_switch_run.visible = context in [&"end", &"pause"]
 	_switch_run.text = tr(&"HUD_START_FIRST_NIGHT" if chapter else &"HUD_START_CHAPTER")
-	var inventory: Dictionary = snapshot.get(&"inventory", {})
-	var rations: int = inventory.get(&"pemmican", 0)
-	_eat_ration.visible = context == &"backpack" and chapter and rations > 0
 	if context == &"end":
 		match terminal:
 			&"dawn_survived":
@@ -169,7 +175,7 @@ func render_snapshot(snapshot: Dictionary) -> void:
 		for tool: StringName in snapshot.get(&"tools", []):
 			lines.append(tr(StringName("TOOL_" + String(tool).to_upper())))
 		var any_items := false
-		for item: StringName in [&"stick", &"log", &"grass", &"bark"]:
+		for item: StringName in [&"stick", &"log", &"grass", &"bark", &"tarp", &"hare_raw", &"hare_cooked"]:
 			var count: int = inventory.get(item, 0)
 			if count > 0:
 				any_items = true

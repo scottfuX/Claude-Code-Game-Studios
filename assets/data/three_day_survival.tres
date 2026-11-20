@@ -9,5 +9,5 @@ survival_day = 4
 chapter_needs_enabled = true
 extra_deadfalls = Array[Vector3]([Vector3(0, 0, 10), Vector3(2, 0, -10), Vector3(10, 0, 0), Vector3(-10, 0, -1)])
 starting_rations = Dictionary[StringName, int]({&"pemmican": 8})
-food_kcal = Dictionary[StringName, float]({&"pemmican": 500.0})
-eat_minutes = Dictionary[StringName, float]({&"pemmican": 5.0})
+food_kcal = Dictionary[StringName, float]({&"hare_cooked": 350.0, &"pemmican": 500.0})
+eat_minutes = Dictionary[StringName, float]({&"hare_cooked": 5.0, &"pemmican": 5.0})

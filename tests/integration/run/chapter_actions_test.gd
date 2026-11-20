@@ -108,7 +108,7 @@ func test_chapter_switch_pack_and_sleep_bind_through_the_scene() -> void:
 	await get_tree().process_frame
 	run = shell.get_child(0) as RunCoordinator
 	assert_int(run.simulation.clock.minute_of_day).is_equal(780)
-	assert_int(run.world.interactables.size()).is_equal(17)
+	assert_int(run.world.interactables.size()).is_equal(19)
 	assert_bool(run.world.is_on_snow(Vector3.ZERO)).is_true()
 	assert_bool(run.world.is_on_snow(Vector3(0, 4, 0))).is_false()
 	run.simulation.needs.stomach_kcal = 200.0
