@@ -1,13 +1,16 @@
 class_name RunCoordinator extends Node3D
 
 signal restart_requested
+signal switch_chapter_requested
 
 const PLAYFIELD: PlayfieldTuning = preload("res://assets/data/playfield_defaults.tres")
 const VERB_NAMES: Dictionary[StringName, String] = {
 	&"gather_sticks": "VERB_GATHER_STICKS", &"chop_log": "VERB_CHOP_LOG", &"strip_bark": "VERB_STRIP_BARK",
 	&"gather_grass": "VERB_GATHER_GRASS", &"clear_snow": "VERB_CLEAR_SNOW", &"arrange_tinder": "VERB_ARRANGE_TINDER",
 	&"strike": "VERB_STRIKE", &"blow_embers": "VERB_BLOW_EMBERS", &"add_fuel": "VERB_ADD_FUEL",
+	&"eat_snow": "VERB_DRINK_SNOW", &"eat": "VERB_EAT_RATION",
 }
+var tuning: SliceTuning
 var simulation: RunSimulation
 var paused: bool = false
 var backpack_open: bool = false
@@ -36,8 +39,15 @@ var _demo_driver: FirstNightDemo
 @onready var sun: DirectionalLight3D = $Sun
 @onready var environment_node: WorldEnvironment = $WorldEnvironment
 
+func _enter_tree() -> void:
+	if tuning != null:
+		var run_world := get_node("WorldMap") as WorldMap
+		run_world.extra_deadfalls.assign(tuning.extra_deadfalls)
+
 func _ready() -> void:
-	simulation = RunSimulation.new(20261119)
+	simulation = RunSimulation.new(20261119, tuning)
+	var chapter := simulation.tuning.chapter_needs_enabled
+	input_router.chapter_actions_enabled = chapter
 	_gather_query = simulation.gathering.can_gather
 	for argument: String in OS.get_cmdline_user_args():
 		if not OS.is_debug_build():
@@ -46,11 +56,11 @@ func _ready() -> void:
 			var value := argument.get_slice("=", 1).to_float()
 			if is_finite(value) and value > 0:
 				_time_scale = clampf(value, 0.01, 100.0)
-		if argument == "--demo":
+		if not chapter and argument == "--demo":
 			_demo = true
-		if argument == "--demo-end":
+		if not chapter and argument == "--demo-end":
 			_demo_end = true
-		if argument == "--demo-gather":
+		if not chapter and argument == "--demo-gather":
 			_demo_gather = true
 	camera.target = survivor
 	camera.position = survivor.position + Vector3.UP * camera.tuning.camera_target_height
@@ -63,7 +73,10 @@ func _ready() -> void:
 	survivor.add_child(_survivor_visual)
 	input_router.action_pressed.connect(_on_action)
 	simulation.action_resolved.connect(_on_action_resolved)
+	simulation.needs.sleep_changed.connect(_on_sleep_changed)
 	hud.restart_requested.connect(func() -> void: restart_requested.emit())
+	hud.switch_chapter_requested.connect(func() -> void: switch_chapter_requested.emit())
+	hud.eat_requested.connect(_try_eat)
 	hud.resume_requested.connect(_resume)
 	hud.quit_requested.connect(func() -> void: get_tree().quit())
 	_environment = Environment.new()
@@ -96,7 +109,7 @@ func _process(delta: float) -> void:
 	if simulation == null:
 		return
 	paused = input_router.is_paused()
-	survivor.frozen = paused
+	survivor.frozen = paused or simulation.needs.is_asleep
 	var speed := _demo_driver.advance(delta) if _demo_driver != null and not paused else _time_scale
 	simulation.update(delta * speed, paused)
 	if simulation.terminal != &"":
@@ -104,13 +117,17 @@ func _process(delta: float) -> void:
 	_check_smolder()
 	_update_target()
 	_update_lighting()
-	hud.set_visibility_context(&"end" if simulation.terminal != &"" else (&"pause" if paused else (&"backpack" if backpack_open else &"gameplay")))
+	hud.set_visibility_context(_hud_context())
 	var snapshot := simulation.snapshot()
 	snapshot[&"prompt"] = _prompt()
 	snapshot[&"real_delta_s"] = delta
 	snapshot[&"paused"] = paused
 	snapshot[&"felt_temp_c"] = simulation.last_felt_temp_c
 	snapshot[&"tools"] = simulation.inventory.tools.duplicate()
+	if simulation.tuning.chapter_needs_enabled:
+		snapshot[&"chapter_controls"] = tr(&"HUD_CHAPTER_CONTROLS") % [
+			input_router.glyph_for(&"sleep"), input_router.glyph_for(&"drink_snow"),
+			input_router.glyph_for(&"backpack"), input_router.glyph_for(&"cancel_action")]
 	var clock_values: Dictionary = snapshot[&"clock"]
 	var twilight := simulation.tuning.twilight
 	var shrink := simulation.tuning.daylight_shrink / 2.0
@@ -121,6 +138,8 @@ func _process(delta: float) -> void:
 	hud.render_snapshot(snapshot)
 
 func _on_action(action: StringName) -> void:
+	if simulation.needs.is_asleep and action not in [&"pause_menu", &"cancel_action", &"debug_overlay"]:
+		return
 	match action:
 		&"pause_menu":
 			if simulation.terminal == &"":
@@ -145,7 +164,15 @@ func _on_action(action: StringName) -> void:
 		&"wait":
 			simulation.clock.request_rate_mode(&"normal" if simulation.clock.rate_mode == &"wait" else &"wait")
 		&"cancel_action":
-			simulation.cancel_action()
+			if simulation.needs.is_asleep:
+				if not paused:
+					simulation.clock.request_rate_mode(&"normal", &"interrupted")
+			else:
+				simulation.cancel_action()
+		&"sleep":
+			_try_sleep()
+		&"drink_snow":
+			_try_snow()
 		&"interact":
 			_try_action(0)
 		&"secondary":
@@ -156,9 +183,63 @@ func _on_action(action: StringName) -> void:
 			hud.toggle_debug()
 
 func _sync_context() -> void:
-	input_router.request_ui_context(&"backpack", backpack_open)
+	input_router.request_ui_context(&"sleep", simulation.needs.is_asleep)
+	input_router.request_ui_context(&"backpack", backpack_open and not simulation.needs.is_asleep)
 	paused = input_router.is_paused()
-	survivor.frozen = paused
+	survivor.frozen = paused or simulation.needs.is_asleep
+
+func _hud_context() -> StringName:
+	if simulation.terminal != &"":
+		return &"end"
+	if paused:
+		return &"pause"
+	if simulation.needs.is_asleep:
+		return &"sleep"
+	return &"backpack" if backpack_open else &"gameplay"
+
+func _try_sleep() -> void:
+	if not simulation.tuning.chapter_needs_enabled or paused or backpack_open or simulation.terminal != &"":
+		return
+	if simulation.actions.action != &"" or simulation.movement != &"idle":
+		_refuse(tr(&"HUD_BUSY"))
+		return
+	var near_fire := false
+	for fire: FireController in simulation.fires:
+		if fire.stage not in [&"Site", &"Cleared", &"Laid"] and fire.position.distance_to(survivor.global_position) <= PLAYFIELD.reach:
+			near_fire = true
+			break
+	if not near_fire:
+		_refuse(tr(&"HUD_SLEEP_FIRE"))
+	elif simulation.body.stage == &"Critical":
+		_refuse(tr(&"HUD_TOO_COLD_TIRED"))
+	elif not simulation.request_sleep():
+		_refuse(tr(&"HUD_NOT_SLEEPY"))
+
+func _try_snow() -> void:
+	if not simulation.tuning.chapter_needs_enabled:
+		return
+	if simulation.actions.action != &"":
+		_refuse(tr(&"HUD_BUSY"))
+	elif not world.is_on_snow(survivor.global_position):
+		_refuse(tr(&"HUD_FIND_SNOW"))
+	elif not simulation.start_snow_intake(true):
+		_refuse(tr(&"HUD_TOO_COLD_TIRED"))
+
+func _try_eat() -> void:
+	if paused or not backpack_open or simulation.terminal != &"":
+		return
+	backpack_open = false
+	_sync_context()
+	var cause := simulation.start_eating(&"pemmican")
+	if cause != &"":
+		_on_action_resolved(&"eat", false, cause)
+
+func _on_sleep_changed(asleep: bool, cause: StringName) -> void:
+	if asleep:
+		backpack_open = false
+	_sync_context()
+	if not asleep:
+		_refuse(tr(&"HUD_WOKE_COLD" if cause == &"cold" else &"HUD_WOKE"))
 
 func _resume() -> void:
 	if paused:

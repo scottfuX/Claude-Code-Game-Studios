@@ -1,7 +1,5 @@
 ; Engine configuration file.
 ; Created by /setup-engine (2026-11-16).
-; run/main_scene intentionally unset — /dev-story or the user sets it once a
-; scene exists; an empty project opens fine in the editor.
 
 config_version=5
 
@@ -72,6 +70,14 @@ camera_zoom_out={
 wait={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"physical_keycode":90)]
+}
+sleep={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":88)]
+}
+drink_snow={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":71)]
 }
 debug_overlay={
 "deadzone": 0.2,

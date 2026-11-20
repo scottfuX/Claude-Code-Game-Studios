@@ -3,6 +3,8 @@ class_name SurvivalHud extends CanvasLayer
 signal restart_requested
 signal resume_requested
 signal quit_requested
+signal switch_chapter_requested
+signal eat_requested
 
 var model := HudModel.new()
 var _canvas: HudCanvas
@@ -16,6 +18,9 @@ var _menu_text: Label
 var _resume: Button
 var _restart: Button
 var _quit: Button
+var _switch_run: Button
+var _eat_ration: Button
+var _menu_context: StringName = &""
 var _context: StringName = &"gameplay"
 var _previous_context: StringName = &""
 var _debug_open: bool = false
@@ -65,6 +70,8 @@ func _ready() -> void:
 	_menu_text.custom_minimum_size = Vector2(360, 48)
 	_resume = _button(column, &"HUD_RESUME", func() -> void: resume_requested.emit())
 	_restart = _button(column, &"HUD_RESTART", func() -> void: restart_requested.emit())
+	_switch_run = _button(column, &"HUD_START_CHAPTER", func() -> void: switch_chapter_requested.emit())
+	_eat_ration = _button(column, &"VERB_EAT_RATION", func() -> void: eat_requested.emit())
 	_quit = _button(column, &"HUD_QUIT", func() -> void: quit_requested.emit())
 	_debug = _label(_canvas)
 	_debug.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -101,6 +108,8 @@ func render_snapshot(snapshot: Dictionary) -> void:
 	if not paused:
 		_cue_remaining = maxf(0.0, _cue_remaining - maxf(0.0, dt))
 	var terminal: StringName = snapshot.get(&"terminal", &"")
+	var needs: Dictionary = snapshot.get(&"needs", {})
+	var chapter := not needs.is_empty()
 	var context := &"end" if terminal != &"" else _context
 	var ordinary := context not in [&"end", &"ritual", &"sleep", &"pause", &"backpack"]
 	_canvas.view = {
@@ -111,28 +120,54 @@ func render_snapshot(snapshot: Dictionary) -> void:
 		&"energy_level": model.energy_level, &"elapsed_s": model.elapsed_s,
 		&"progress": snapshot.get(&"progress", 0.0) if snapshot.get(&"action", &"") != &"" else -1.0,
 	}
+	if chapter:
+		_canvas.view[&"needs"] = _need_warnings(needs)
+		_canvas.view[&"night_goal"] = snapshot.get(&"night_goal", 0)
+		_canvas.view[&"nights_survived"] = snapshot.get(&"nights_survived", 0)
 	_canvas.queue_redraw()
 	_prompt.text = snapshot.get(&"prompt", "")
 	_prompt.visible = ordinary and not _prompt.text.is_empty()
 	_cue.text = _cue_text
 	_cue.visible = ordinary and _cue_remaining > 0
 	_hint.text = tr(&"HUD_FIRST_FIRE_HINT") + "\n" + tr(&"HUD_CONTROLS")
+	if chapter:
+		_hint.text += "\n" + str(snapshot.get(&"chapter_controls", ""))
 	_hint.visible = (ordinary and (not model.hint_gone or _help_open)) or context == &"pause"
 	var menu := context in [&"end", &"pause", &"backpack"]
 	_panel.visible = menu
+	if context != _menu_context or (_eat_ration.visible and not _canvas.get_viewport().gui_get_focus_owner()):
+		match context:
+			&"pause":
+				_resume.grab_focus()
+			&"end":
+				_restart.grab_focus()
+			&"backpack":
+				if _eat_ration.visible:
+					_eat_ration.grab_focus()
+	_menu_context = context
 	_shade.visible = menu and context != &"backpack"
 	_resume.visible = context == &"pause"
 	_restart.visible = context != &"backpack"
 	_quit.visible = context == &"pause"
+	_switch_run.visible = context in [&"end", &"pause"]
+	_switch_run.text = tr(&"HUD_START_FIRST_NIGHT" if chapter else &"HUD_START_CHAPTER")
+	var inventory: Dictionary = snapshot.get(&"inventory", {})
+	var rations: int = inventory.get(&"pemmican", 0)
+	_eat_ration.visible = context == &"backpack" and chapter and rations > 0
 	if context == &"end":
-		_menu_text.text = tr(&"HUD_DAWN" if terminal == &"dawn_survived" else &"HUD_DEATH")
+		match terminal:
+			&"dawn_survived":
+				_menu_text.text = tr(&"HUD_CHAPTER_DAWN" if chapter else &"HUD_DAWN")
+			&"dehydration":
+				_menu_text.text = tr(&"HUD_DEHYDRATION")
+			_:
+				_menu_text.text = tr(&"HUD_DEATH")
 	elif context == &"pause":
-		_menu_text.text = tr(&"HUD_PAUSED")
+		_menu_text.text = tr(&"HUD_CHAPTER_PAUSED" if chapter else &"HUD_PAUSED")
 	elif context == &"backpack":
 		var lines := PackedStringArray([tr(&"HUD_BACKPACK"), tr(&"HUD_PACK_LIVE"), ""])
 		for tool: StringName in snapshot.get(&"tools", []):
 			lines.append(tr(StringName("TOOL_" + String(tool).to_upper())))
-		var inventory: Dictionary = snapshot.get(&"inventory", {})
 		var any_items := false
 		for item: StringName in [&"stick", &"log", &"grass", &"bark"]:
 			var count: int = inventory.get(item, 0)
@@ -141,6 +176,8 @@ func render_snapshot(snapshot: Dictionary) -> void:
 				lines.append(tr(model.quantity_key(count)) % tr(StringName("ITEM_" + String(item).to_upper())))
 		if not any_items:
 			lines.append(tr(&"HUD_PACK_EMPTY"))
+		if chapter:
+			lines.append(tr(model.quantity_key(rations)) % tr(&"ITEM_PEMMICAN") if rations > 0 else tr(&"HUD_PACK_NO_RATIONS"))
 		_menu_text.text = "\n".join(lines)
 	if menu and context != &"backpack" and context != _previous_context:
 		if context == &"end":
@@ -157,6 +194,15 @@ func render_snapshot(snapshot: Dictionary) -> void:
 		var minute: int = clock.get(&"minute_of_day", 0)
 		_debug.text = tr(&"HUD_DEBUG") % [snapshot.get(&"core_temp_c", 0.0), snapshot.get(&"felt_temp_c", NAN), snapshot.get(&"energy", 0.0), clock.get(&"day", 1), minute / 60, minute % 60, ", ".join(fuel)]
 	_layout()
+
+func _need_warnings(needs: Dictionary) -> Array[Dictionary]:
+	var warnings: Array[Dictionary] = []
+	for entry: Array in [[&"water", &"hydration_stage", &"OK", &"Thirsty"],
+			[&"food", &"fullness_stage", &"Fed", &"Hungry"], [&"energy", &"stage", &"Rested", &"Tired"]]:
+		var stage: StringName = needs.get(entry[1], entry[2])
+		if stage != entry[2]:
+			warnings.append({&"icon": entry[0], &"stage": stage, &"urgent": stage != entry[3]})
+	return warnings
 
 func _layout() -> void:
 	var safe := _canvas.safe_rect()

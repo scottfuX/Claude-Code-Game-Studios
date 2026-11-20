@@ -3,9 +3,10 @@ class_name InputRouter extends Node
 signal action_pressed(action: StringName)
 
 enum Context { GAMEPLAY, UI, LOCKED }
-const ROUTED: Array[StringName] = [&"interact", &"secondary", &"cancel_action", &"backpack", &"pause_menu", &"camera_turn_left", &"camera_turn_right", &"camera_zoom_in", &"camera_zoom_out", &"wait", &"debug_overlay", &"help"]
+const ROUTED: Array[StringName] = [&"interact", &"secondary", &"cancel_action", &"backpack", &"pause_menu", &"camera_turn_left", &"camera_turn_right", &"camera_zoom_in", &"camera_zoom_out", &"wait", &"debug_overlay", &"help", &"sleep", &"drink_snow"]
 const MOVEMENT: Array[StringName] = [&"move_left", &"move_right", &"move_forward", &"move_back", &"move_hurry"]
 var context: Context = Context.GAMEPLAY
+var chapter_actions_enabled: bool = false
 var _blocked: Dictionary[StringName, bool] = {}
 var _ui_sources: Dictionary[StringName, bool] = {}
 var _pause_tokens: Dictionary[int, StringName] = {}
@@ -98,10 +99,13 @@ func _input(event: InputEvent) -> void:
 			return
 
 func _dispatch(action: StringName) -> bool:
+	if not chapter_actions_enabled and action in [&"sleep", &"drink_snow"]:
+		return false
 	var debug := (action == &"debug_overlay" and OS.is_debug_build()) or action == &"help"
 	if context == Context.LOCKED and action != &"pause_menu" and not debug:
 		return false
-	if context == Context.UI and action not in [&"pause_menu", &"backpack"] and not debug:
+	var wake := action == &"cancel_action" and _ui_sources.has(&"sleep") and not is_paused()
+	if context == Context.UI and action not in [&"pause_menu", &"backpack"] and not debug and not wake:
 		return false
 	action_pressed.emit(action)
 	return true

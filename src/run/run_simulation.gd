@@ -23,6 +23,8 @@ var minute_sequence: int = 0
 var _fire_target: FireController
 var _gather_target: GatherNode
 var _action_delta_s: float = 0.0
+var _food_item: StringName = &""
+var _food_revision: int = -1
 
 func _init(seed_value: int = 1, data: SliceTuning = null) -> void:
 	tuning = data if data != null else preload("res://assets/data/slice_defaults.tres")
@@ -32,6 +34,9 @@ func _init(seed_value: int = 1, data: SliceTuning = null) -> void:
 	body = BodyThermoregulation.new(tuning)
 	needs = NeedsModel.new(tuning)
 	inventory = InventoryModel.new()
+	if tuning.chapter_needs_enabled:
+		for item: StringName in tuning.starting_rations:
+			inventory.add(item, tuning.starting_rations[item])
 	mishaps = MishapResolver.new(tuning)
 	gathering = GatheringResolver.new(tuning)
 	actions = ActionRunner.new()
@@ -44,6 +49,29 @@ func request_sleep() -> bool:
 	cancel_action()
 	clock.request_rate_mode(&"sleep", &"chosen")
 	return true
+
+## Starts a handful after checking the snow plane, e.g. [code]run.start_snow_intake(world.is_on_snow(feet))[/code].
+func start_snow_intake(on_snow: bool) -> bool:
+	if not on_snow or not _can_use_consumables():
+		return false
+	return actions.start(&"eat_snow", tuning.snow_minutes, 1.0)
+
+## Prepares an owned ration; [code]run.start_eating(&"pemmican")[/code] returns an empty name on acceptance.
+func start_eating(item: StringName) -> StringName:
+	if not _can_use_consumables() or actions.action != &"":
+		return &"unavailable"
+	var revision := inventory.stack_revision(item)
+	var kcal: float = tuning.food_kcal.get(item, 0.0)
+	var minutes: float = tuning.eat_minutes.get(item, 0.0)
+	if revision < 0 or not is_finite(kcal) or kcal <= 0.0 or not is_finite(minutes) or minutes <= 0.0:
+		return &"no_ration"
+	if not needs.can_accept_food(kcal):
+		return &"stomach_full"
+	if not actions.start(&"eat", minutes, clock.seconds_per_minute(), minf(2.0, body.action_mult() * needs.action_mult())):
+		return &"unavailable"
+	_food_item = item
+	_food_revision = revision
+	return &""
 
 ## Creates at most two run-owned fire sites; geometry validation belongs to WorldMap.
 func create_fire(site_position: Vector3) -> FireController:
@@ -77,6 +105,8 @@ func cancel_action() -> void:
 	_fire_target = null
 	_gather_target = null
 	_action_delta_s = 0.0
+	_food_item = &""
+	_food_revision = -1
 
 ## Advances unpaused time, arbitrates all owed minutes before committing completion.
 func update(delta_s: float, paused: bool = false) -> void:
@@ -84,13 +114,13 @@ func update(delta_s: float, paused: bool = false) -> void:
 		return
 	if movement != &"idle":
 		cancel_action()
-	if actions.action != &"":
+	if actions.action != &"" and actions.action != &"eat_snow":
 		_action_delta_s += delta_s
 	clock.accumulate(delta_s)
 	var ticks := 0
 	while ticks < tuning.max_ticks and terminal == &"" and clock.consume_minute(_integrate_minute):
 		ticks += 1
-	if terminal == &"" and not clock.minute_owed():
+	if terminal == &"" and not clock.minute_owed() and actions.action != &"eat_snow":
 		var completed := actions.advance(_action_delta_s)
 		_action_delta_s = 0.0
 		if completed != &"":
@@ -112,6 +142,8 @@ func snapshot() -> Dictionary[StringName, Variant]:
 	var values: Dictionary[StringName, Variant] = {&"clock": clock.snapshot(), &"core_temp_c": body.core_temp_c, &"body_stage": body.stage, &"rate_c_per_hour": body.rate_c_per_hour, &"energy": needs.energy, &"energy_stage": needs.stage, &"inventory": inventory.snapshot(), &"fires": fire_values, &"terminal": terminal, &"action": actions.action, &"progress": actions.progress()}
 	if tuning.chapter_needs_enabled:
 		values[&"needs"] = needs.snapshot()
+		values[&"night_goal"] = tuning.survival_day - tuning.start_day
+		values[&"nights_survived"] = maxi(0, clock.day - tuning.start_day - int(clock.minute_of_day < ceili(clock.sunrise_hour() * 60.0)))
 	return values
 
 func _integrate_minute() -> void:
@@ -128,7 +160,7 @@ func _integrate_minute() -> void:
 	last_felt_temp_c = thermal.effective_temp_c(position)
 	body.step_minute(last_felt_temp_c, activity, work)
 	var resting := false
-	if activity == &"idle" and work == &"idle" and (not tuning.chapter_needs_enabled or clock.rate_mode == &"wait"):
+	if activity == &"idle" and actions.action == &"" and (not tuning.chapter_needs_enabled or clock.rate_mode == &"wait"):
 		for fire: FireController in fires:
 			if fire.stage == &"Burning" and position.distance_to(fire.position) < fire.warm_radius():
 				resting = true
@@ -140,10 +172,13 @@ func _integrate_minute() -> void:
 	elif _survived():
 		_end(&"dawn_survived")
 	else:
+		if actions.action != &"" and (needs.collapse_due or not _allowed(actions.action)):
+			cancel_action()
+		if actions.action == &"eat_snow" and actions.advance(1.0) == &"eat_snow":
+			var accepted := needs.accept_snow()
+			action_resolved.emit(&"eat_snow", accepted, &"" if accepted else &"unavailable")
 		if tuning.chapter_needs_enabled:
 			_reconcile_sleep(body.cold_wake_due(old_stage, was_skipping))
-		if actions.action != &"" and not _allowed(actions.action):
-			cancel_action()
 
 func _survived() -> bool:
 	if tuning.chapter_needs_enabled:
@@ -186,13 +221,28 @@ func _allowed(action: StringName) -> bool:
 	return not (needs.stage == &"Exhausted" and _work_activity(action) == &"heavy")
 
 func _work_activity(action: StringName) -> StringName:
-	if action == &"":
+	if action in [&"", &"eat", &"eat_snow"]:
 		return &"idle"
 	return &"heavy" if action in [&"clear_snow", &"chop_log"] else &"light"
 
 func _commit_completion(action: StringName) -> void:
 	if not _allowed(action):
 		cancel_action()
+		return
+	if action == &"eat":
+		var item := _food_item
+		var revision := _food_revision
+		_food_item = &""
+		_food_revision = -1
+		var kcal: float = tuning.food_kcal.get(item, 0.0)
+		var cause := &""
+		if not needs.can_accept_food(kcal):
+			cause = &"stomach_full"
+		elif not inventory.consume_prepared(item, revision):
+			cause = &"no_ration"
+		else:
+			needs.accept_food(kcal)
+		action_resolved.emit(action, cause == &"", cause)
 		return
 	var eligible := _fire_target.can_act(action, inventory) if _fire_target != null else gathering.can_gather(_gather_target, action, inventory)
 	if not eligible:
@@ -206,3 +256,6 @@ func _commit_completion(action: StringName) -> void:
 	action_resolved.emit(action, result[&"success"], result[&"cause"])
 	_fire_target = null
 	_gather_target = null
+
+func _can_use_consumables() -> bool:
+	return tuning.chapter_needs_enabled and terminal == &"" and not needs.is_asleep and body.stage != &"Critical" and movement == &"idle"

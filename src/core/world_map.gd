@@ -5,6 +5,7 @@ const BARE: PackedScene = preload("res://assets/models/bare_tree_flat.glb")
 const ROCK: PackedScene = preload("res://assets/models/rock_flat.glb")
 const TUNING: PlayfieldTuning = preload("res://assets/data/playfield_defaults.tres")
 var interactables: Array[WorldInteractable] = []
+var extra_deadfalls: Array[Vector3] = []
 var _obstacles: Array[Vector3] = []
 
 func _ready() -> void:
@@ -34,14 +35,18 @@ func _ready() -> void:
 			_stick(bush, Vector3(sin(angle) * 0.2, 0.4, cos(angle) * 0.2), Vector3(0.2, angle, 0.3), 0.85, 0.035)
 	var logs: Array[Vector3] = [Vector3(2.8, 0, -2), Vector3(-4, 0, 3), Vector3(6, 0, 1), Vector3(-2, 0, -7)]
 	for p: Vector3 in logs:
-		var log_node := _gather(&"deadfall", "TARGET_DEADFALL", p, TUNING.deadfall_logs, 0, TUNING.deadfall_bark)
-		_stick(log_node, Vector3(0, 0.2, 0), Vector3(0, 0.5, PI / 2), 2.0, 0.2)
-		for branch in 3:
-			_stick(log_node, Vector3(branch * 0.5 - 0.4, 0.24, 0), Vector3(0.9, 0, 0.7), 0.9, 0.04)
+		_deadfall(p)
 	for p: Vector3 in [Vector3(-2.4, 0, -1), Vector3(4, 0, 5), Vector3(0, 0, 6), Vector3(4, 0, -7)]:
 		var grass := _gather(&"grass", "TARGET_DRY_GRASS", p, TUNING.grass_reserve)
 		for blade in 7:
 			_stick(grass, Vector3((blade % 3) * 0.1, 0.18, (blade / 3) * 0.1), Vector3(0.2, blade, 0.2), 0.4, 0.015, Color("8c805c"))
+	for p: Vector3 in extra_deadfalls:
+		_deadfall(p)
+
+## Checks the snow plane at the player's feet, e.g. [code]world.is_on_snow(survivor.global_position)[/code].
+func is_on_snow(feet: Vector3) -> bool:
+	var p := to_local(feet)
+	return p.is_finite() and absf(p.x) < TUNING.half_extent and absf(p.z) < TUNING.half_extent and absf(p.y) < TUNING.capsule_radius
 
 ## Selects the nearest live interactable within reach and in the facing hemisphere.
 func nearest(position: Vector3, facing: Vector3) -> WorldInteractable:
@@ -88,6 +93,12 @@ func _gather(kind: StringName, label: String, p: Vector3, reserve: int, bonus: i
 	add_child(entry)
 	interactables.append(entry)
 	return entry
+
+func _deadfall(p: Vector3) -> void:
+	var log_node := _gather(&"deadfall", "TARGET_DEADFALL", p, TUNING.deadfall_logs, 0, TUNING.deadfall_bark)
+	_stick(log_node, Vector3(0, 0.2, 0), Vector3(0, 0.5, PI / 2), 2.0, 0.2)
+	for branch in 3:
+		_stick(log_node, Vector3(branch * 0.5 - 0.4, 0.24, 0), Vector3(0.9, 0, 0.7), 0.9, 0.04)
 
 func _place(scene: PackedScene, p: Vector3, yaw: float, scale_value: float) -> void:
 	var instance := scene.instantiate() as Node3D
