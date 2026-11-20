@@ -182,7 +182,9 @@ func _build_large_map() -> void:
 		_box_collision(Vector3(side * 120, 1, 0), Vector3(0.5, 3, 240))
 		_box_collision(Vector3(0, 1, side * 120), Vector3(240, 3, 0.5))
 	var lake := LargeMapLayout.LAKE
-	_plane(Vector3(lake.get_center().x, 0.015, lake.get_center().y), lake.size, SceneAssets.material(Color("b5d7df")))
+	var ice := SceneAssets.material(Color("b5d7df"))
+	ice.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_plane(Vector3(lake.get_center().x, 0.015, lake.get_center().y), lake.size, ice)
 	for node: Dictionary in layout.nodes:
 		var kind: StringName = node[&"kind"]
 		var label: String = {&"bush": "TARGET_DRY_BUSH", &"deadfall": "TARGET_DEADFALL", &"birch": "TARGET_BIRCH", &"grass": "TARGET_DRY_GRASS", &"stone": "TARGET_STONE_PILE"}[kind]
