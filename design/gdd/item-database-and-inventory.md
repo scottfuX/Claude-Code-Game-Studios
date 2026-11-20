@@ -217,6 +217,8 @@ For the player this system is mostly invisible except in three moments that matt
 
 **Downstream:** Gathering, Fire, Needs & Weight (hard: food values), Body Temperature (`insulation`), Character Controller (load, speed, hauling flag), Interaction, Mishaps, Morale (`item_lost`), Shelter, Water, Food, Kit Selection (VS), HUD, Screens & Menus, Save/Load.
 
+The [Food chapter proposal](food.md#core-rules) reuses Rule 11's pemmican count and wire. It supplies two chapter-only item rows; Inventory owns the wear, catch transfer, batch replacement and consumption plans.
+
 **Bidirectional check:** the systems index lists Item DB with no dependencies (matches: its upstreams are soft). Needs & Weight lists `food_kcal`, `drink_hydration`, `eat_minutes` and "MVP kit ≈ 2 days of food" as provisional on this GDD — all supplied (pemmican 8 × 500 kcal). Body Temperature lists `insulation` from Item DB / Kit with MVP 1.0 — matches (I3, sleep bonus inactive). Morale lists `loss{item_lost, item_class}` and keepsakes — matches. Gap: the index row for Character Controller does not list Item DB (load and speed are soft inputs — fix when that GDD is written).
 
 ## Visual/Audio Requirements

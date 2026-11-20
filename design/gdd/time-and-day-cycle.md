@@ -188,6 +188,8 @@ All four must be > 0 (a zero rate would freeze time; rejected at load).
 
 **Downstream (depend on Time):** Thermal Environment, Body Temperature, Needs & Weight, Fire, Morale & Mental State, Emotional Feedback (lighting), HUD, Interaction (time conversion), Weather & Cold Snaps, Medical Check-ins, Rival Simulation & Ranking, Self-Filmed Diary, Tap-out & Run Results, Save/Load & Settings.
 
+[Food (three-day chapter)](food.md) reads the last fully processed game minute for availability; it does not request a rate or mutate Clock state.
+
 **Bidirectional check:** Morale & Mental State lists Time as a hard upstream with `hour`, `day`, `is_night`, `sunrise_window` and the game-minute tick — all provided here (matches). Morale's `day ≤ 60` assumption is guaranteed by `run_max_days`. The systems index row for Time lists no dependencies — consistent (mode requests are inputs, not dependencies). The index overview's "day-over-day cold ramp" belongs to Thermal Environment — index note corrected.
 
 ## Visual/Audio Requirements
