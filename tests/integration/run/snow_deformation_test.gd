@@ -1,5 +1,18 @@
 extends GdUnitTestSuite
 
+func test_speed_samples_fresh_ground_beyond_current_body_press() -> void:
+	var surface: SnowSurface = auto_free(SnowSurface.new())
+	var survivor: SurvivorController = auto_free(SurvivorController.new())
+	survivor.tuning = PlayfieldTuning.new()
+	survivor.snow = surface
+	surface.deformation.press(Vector3.ZERO, 0.30, 0.72)
+	assert_float(survivor.snow_speed_factor(Vector3.FORWARD)).is_equal(survivor.tuning.fresh_snow_speed_factor)
+	surface.deformation.clear(Vector3.FORWARD * survivor.tuning.snow_speed_probe_distance, 0.3)
+	assert_float(survivor.snow_speed_factor(Vector3.FORWARD)).is_equal(1.0)
+	assert_float(survivor.snow_speed_factor(Vector3.RIGHT)).is_equal(survivor.tuning.fresh_snow_speed_factor)
+	survivor.snow = null
+	assert_float(survivor.snow_speed_factor(Vector3.FORWARD)).is_equal(1.0)
+
 func test_fresh_press_clear_and_persistence() -> void:
 	var snow := SnowDeformation.new(128, 16)
 	assert_float(snow.compaction_at(Vector3.ZERO)).is_zero()
