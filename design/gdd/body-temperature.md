@@ -184,6 +184,7 @@ Thresholds must strictly decrease; otherwise the table is rejected at load.
 - **Mishaps & Failure** — `cold_hands_penalty`.
 - **Character Controller & Animation** — `move_speed_mult`, stage animations.
 - **Interaction & Timed Actions** — `body_action_mult`, Critical `allowed_actions`.
+- **[Food (three-day chapter)](food.md)** — respects Critical admission and cancellation through Interaction; Food has no direct Body writes.
 - **Emotional Feedback, HUD** — presentation.
 - **Injury & Pain, Medical Check-ins, Tap-out & Run Results (VS)**, **Save/Load (Alpha)**.
 

@@ -178,6 +178,8 @@ Downhill gives no speed bonus in snow (deep snow brakes the descent); on lake ic
 
 **Downstream:** Map & Resource Distribution (authors into this format), Character Controller & Animation (hard: speed, sink, slope, wading), Camera (heights), Mishaps (ice thickness, surface type), Wildlife Behavior (VS), Ambient & Foley Audio (footsteps), Emotional Feedback / rendering (trail shader), Body Temperature and Needs & Weight (wade activity, via Character), Save/Load.
 
+[Food (three-day chapter)](food.md) relies on Map's validation of ice, drift depth and slope along the authored approach; Terrain does not resolve catches.
+
 **Bidirectional check:** the systems index lists Terrain with no dependencies (matches) and Map, Character, Camera, Wildlife, Ambient & Foley as dependents (matches). Body Temperature and Needs & Weight define the `wade` activity values (+0.45 °C/h; +120 kcal/h, −3.5 energy/h) and Needs adds hydration ×1.5 — this GDD supplies the rule for when wading applies (TS6). Mishaps' index row does not list Terrain (ice thickness, surface) — soft; fix when Mishaps is designed.
 
 ## Visual/Audio Requirements
