@@ -3,6 +3,7 @@ class_name SurvivorClips extends RefCounted
 
 const ACTIONS: Dictionary[StringName, StringName] = {
 	&"gather_sticks": &"gather_sticks", &"gather_grass": &"gather_grass",
+	&"gather_stones": &"gather_stones",
 	&"chop_log": &"chop_log", &"strip_bark": &"strip_bark",
 	&"clear_snow": &"clear_snow", &"arrange_tinder": &"arrange_tinder",
 	&"strike": &"strike", &"blow_embers": &"blow_embers", &"add_fuel": &"add_fuel",
@@ -80,12 +81,13 @@ static func _sequences() -> Dictionary:
 	var bark_pull := _with(bark_hold, {&"Chest": Vector3(10, 14, 0), &"RightUpperArm": Vector3(-24, 18, -12), &"RightLowerArm": Vector3(-60, 0, 0)})
 	var mouth := _with(stand, {&"RightUpperArm": Vector3(-55, 12, -8), &"RightLowerArm": Vector3(-125, 0, 0), &"Head": Vector3(8, 0, 0)})
 	var sleep := _with(_stance(0.42, 40, -15, -20), {&"Head": Vector3(25, 0, 12), &"LeftLowerArm": Vector3(-100, 0, 0), &"RightLowerArm": Vector3(-105, 0, 0)})
+	var gather := [[0.0, ready], [0.4, reach], [0.72, _with(reach, {&"Chest": Vector3(24, -10, 0)})], [0.92, tuck], [1.25, tuck], [1.8, ready]]
 	return {
 		&"idle": [[0.0, stand], [1.0, _with(stand, {&"offset": Vector3(0.018, 0, 0), &"Head": Vector3(0, 4, 0)})], [2.4, stand]],
 		&"cold_idle": [[0.0, hug], [0.7, hug], [0.95, _with(hug, {&"LeftUpperLeg": Vector3(-24, 0, -3), &"LeftLowerLeg": Vector3(45, 0, 0)})], [1.1, hug], [1.8, hug], [2.1, _with(hug, {&"RightUpperLeg": Vector3(-22, 0, 3), &"RightLowerLeg": Vector3(42, 0, 0)})], [2.3, hug], [3.0, hug]],
 		&"warm_hands": [[0.0, warm], [0.6, _with(warm, {&"LeftUpperArm": Vector3(-60, -18, 12), &"RightUpperArm": Vector3(-64, 18, -12)})], [0.9, warm], [1.3, _with(warm, {&"LeftLowerArm": Vector3(-58, 0, 0), &"RightLowerArm": Vector3(-38, 0, 0)})], [1.6, warm], [2.4, warm]],
 		&"gather_sticks": [[0.0, ready], [0.35, reach], [0.65, reach], [1.05, tuck], [1.25, snap], [1.38, tuck], [1.7, tuck], [2.1, ready]],
-		&"gather_grass": [[0.0, ready], [0.4, reach], [0.72, _with(reach, {&"Chest": Vector3(24, -10, 0)})], [0.92, tuck], [1.25, tuck], [1.8, ready]],
+		&"gather_grass": gather, &"gather_stones": gather,
 		&"clear_snow": [[0.0, low], [0.4, scoop], [0.7, scoop], [1.05, toss], [1.3, toss], [1.8, low]],
 		&"arrange_tinder": [[0.0, low], [0.4, cup], [0.9, place], [1.2, place], [1.7, low]],
 		&"add_fuel": [[0.0, low], [0.25, cup], [0.65, place], [0.9, place], [1.25, low]],
