@@ -122,6 +122,12 @@ func start_action(action: StringName, fire: FireController = null, node: GatherN
 	_gather_target = node
 	return true
 
+## Returns the current fire or gathering target, or null when idle.
+func active_action_target() -> RefCounted:
+	if actions.action == &"":
+		return null
+	return _fire_target if _fire_target != null else _gather_target
+
 ## Cancels active work and clears the stored target without a result or draw.
 func cancel_action() -> void:
 	actions.cancel()

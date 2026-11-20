@@ -93,6 +93,10 @@ func test_authored_chapter_sites_reserve_empty_plot_and_leave_outdoor_fire() -> 
 	scene.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(scene)
 	var world := scene.world
+	var snow := world.get_node("SnowSurface") as SnowSurface
+	assert_float(snow.deformation.extent).is_equal(world.half_extent() * 2.0 + 4.0)
+	snow.deformation.clear(Vector3(33, 0, -33), 1.0)
+	assert_float(snow.deformation.compaction_at(Vector3(33, 0, -33))).is_equal(1.0)
 	assert_bool(world.shelter_plot(Vector3.ZERO).is_empty()).is_false()
 	assert_int(world.hare_approach(Vector3.ZERO).size()).is_equal(4)
 	assert_bool(world.hare_approach(Vector3(0, 5, 0)).is_empty()).is_true()

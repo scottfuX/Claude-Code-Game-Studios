@@ -17,12 +17,8 @@ var _shelter_reserved: bool = false
 var _obstacles: Array[Vector3] = []
 
 func _ready() -> void:
-	var ground := MeshInstance3D.new()
-	var plane := PlaneMesh.new()
 	var extent := half_extent()
-	plane.size = Vector2.ONE * (extent * 2 + 4)
-	ground.mesh = plane
-	ground.material_override = SceneAssets.SNOW
+	var ground := SnowSurface.new(extent * 2.0 + 4.0)
 	add_child(ground)
 	_box_collision(Vector3(0, -0.15, 0), Vector3(extent * 2, 0.3, extent * 2))
 	for side in [-1.0, 1.0]:
