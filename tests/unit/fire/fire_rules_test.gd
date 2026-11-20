@@ -1,5 +1,23 @@
 extends GdUnitTestSuite
 
+func test_wet_fire_penalty_survives_publication_and_reaches_body() -> void:
+	var wet := RunSimulation.new()
+	var dry := RunSimulation.new()
+	for run: RunSimulation in [wet, dry]:
+		run.body.core_temp_c = 35
+		var fire := run.create_fire(Vector3.ZERO)
+		fire.stage = &"Burning"
+		fire.fuel = 120
+	wet.fires[0].burning_wetness = 1.0
+	wet.step_minute()
+	dry.step_minute()
+	assert_float(wet.fires[0].burning_wetness).is_equal_approx(0.95, 0.00001)
+	assert_float(wet.last_felt_temp_c).is_less(dry.last_felt_temp_c)
+	assert_float(wet.body.core_temp_c).is_less(dry.body.core_temp_c)
+	for minute in 25:
+		wet.fires[0].step_minute()
+	assert_float(wet.fires[0].burning_wetness).is_equal(0.0)
+
 
 func test_add_fuel_chooses_largest_available_item_that_fits() -> void:
 	var fire := FireController.new(&"fire", Vector3.ZERO, ThermalField.new())

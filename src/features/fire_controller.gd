@@ -119,7 +119,7 @@ func step_minute(survivor_position: Vector3 = Vector3.ZERO) -> void:
 			_expire_smolder()
 	elif stage in [&"Kindling", &"Burning"]:
 		fuel = maxf(0.0, fuel - burn_rate())
-		burning_wetness = 0.0
+		burning_wetness = maxf(0.0, burning_wetness - tuning.fire_drying_per_minute)
 		_derive_flame()
 	elif stage == &"Embers":
 		ember_minutes += 1
