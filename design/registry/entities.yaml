@@ -131,6 +131,7 @@ items:
     referenced_by:
       - design/gdd/item-database-and-inventory.md
       - design/gdd/needs-and-weight.md
+      - design/gdd/food.md
     category: food
     mass_kg: 0.1
     stack_max: 8
@@ -138,6 +139,45 @@ items:
     eat_minutes: 5
     mvp_kit_units: 8
     added: 2026-11-17
+    revised: ""
+  - name: snare_wire
+    status: active
+    source: design/gdd/item-database-and-inventory.md
+    referenced_by:
+      - design/gdd/item-database-and-inventory.md
+      - design/gdd/food.md
+    category: tool
+    mass_kg: 0.2
+    stack_max: 1
+    durability_max: 50
+    can_get_wet: false
+    added: 2026-11-20
+    revised: ""
+  - name: hare_raw
+    status: active
+    source: design/gdd/food.md
+    referenced_by:
+      - design/gdd/food.md
+    category: misc
+    mass_kg: 0.4
+    stack_max: 1
+    can_get_wet: false
+    notes: "Chapter proposal, pending owner sign-off. No nutrition fields; not edible."
+    added: 2026-11-20
+    revised: ""
+  - name: hare_cooked
+    status: active
+    source: design/gdd/food.md
+    referenced_by:
+      - design/gdd/food.md
+    category: food
+    mass_kg: 0.15
+    stack_max: 2
+    food_kcal: 350
+    eat_minutes: 5
+    can_get_wet: false
+    notes: "Chapter proposal, pending owner sign-off. No hydration; two portions per hare."
+    added: 2026-11-20
     revised: ""
   - name: sleeping_bag
     status: active
@@ -623,6 +663,7 @@ constants:
     source: design/gdd/interaction-and-timed-actions.md
     referenced_by:
       - design/gdd/interaction-and-timed-actions.md
+      - design/gdd/food.md
     value: 1.5
     unit: m
     notes: "Targeting reach; cone +/-50 deg; fire priority bonus 0.3; switch hysteresis 0.15."
@@ -729,6 +770,7 @@ constants:
     source: design/gdd/needs-and-weight.md
     referenced_by:
       - design/gdd/needs-and-weight.md
+      - design/gdd/food.md
     value: 1500
     unit: kcal
     notes: "fullness 0-100 = stomach_kcal / 15. Item DB food_kcal values must be sized against it."
@@ -816,6 +858,7 @@ constants:
       - design/gdd/morale-and-mental-state.md
       - design/gdd/thermal-environment.md
       - design/gdd/body-temperature.md
+      - design/gdd/food.md
     value: 1
     unit: game minutes
     notes: "All per-game-hour rates integrate on this tick; ticks never skip, including during sleep."
