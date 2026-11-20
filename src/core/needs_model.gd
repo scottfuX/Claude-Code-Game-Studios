@@ -82,7 +82,7 @@ func _step_stores(movement: StringName, work: StringName, shivering: bool) -> vo
 		empty_minutes += 1
 	_refresh_fullness()
 
-## Adds intake already approved by its caller; inventory transactions are separate.
+## Adds valid hydration and resets dehydration grace. For example, [code]needs.accept_drink(3.0)[/code] restores one snow intake.
 func accept_drink(amount: float) -> bool:
 	if not tuning.chapter_needs_enabled or not is_finite(amount) or amount <= 0.0:
 		return false
@@ -92,6 +92,7 @@ func accept_drink(amount: float) -> bool:
 	_refresh_hydration()
 	return true
 
+## Adds calories only if they fit. For example, commit an approved ration only if [code]needs.accept_food(400.0)[/code] succeeds.
 func accept_food(kcal: float) -> bool:
 	if not tuning.chapter_needs_enabled or not is_finite(kcal) or kcal <= 0.0 or stomach_kcal + kcal > _stomach_capacity_kcal:
 		return false
@@ -100,17 +101,21 @@ func accept_food(kcal: float) -> bool:
 	_refresh_fullness()
 	return true
 
+## Returns stomach fullness as a percentage; [code]needs.fullness()[/code] starts at 80 with chapter defaults.
 func fullness() -> float:
 	return 100.0 * stomach_kcal / _stomach_capacity_kcal
 
+## Returns loss relative to starting weight; [code]needs.weight_lost_frac() * 100.0[/code] gives percentage lost.
 func weight_lost_frac() -> float:
 	return (_start_weight_kg - weight_kg) / _start_weight_kg
 
+## Returns the weight-adjusted ceiling; compare [code]needs.energy >= needs.energy_cap()[/code] to check whether energy is full.
 func energy_cap() -> float:
 	if not tuning.chapter_needs_enabled:
 		return 100.0
 	return maxf(tuning.energy_cap_floor, 100.0 * (1.0 - tuning.energy_cap_loss_mult * weight_lost_frac()))
 
+## Admits voluntary sleep for the given phase. Call [code]needs.request_sleep(true)[/code] at night before requesting the sleep rate.
 func request_sleep(is_night: bool) -> bool:
 	var threshold := tuning.sleep_night_threshold if is_night else tuning.sleep_day_threshold
 	if not tuning.chapter_needs_enabled or is_asleep or energy >= threshold:
@@ -119,6 +124,7 @@ func request_sleep(is_night: bool) -> bool:
 	sleep_changed.emit(true, &"chosen")
 	return true
 
+## Applies proposed exhaustion only after terminal checks; [code]needs.apply_collapse(&"cold")[/code] immediately reconciles a forced wake.
 func apply_collapse(wake_cause: StringName = &"") -> void:
 	if not collapse_due or is_asleep:
 		return
@@ -130,6 +136,7 @@ func apply_collapse(wake_cause: StringName = &"") -> void:
 	else:
 		sleep_changed.emit(true, &"exhaustion")
 
+## Wakes an active sleeper once. For example, [code]needs.wake(&"interrupted")[/code] reconciles a switch to normal speed.
 func wake(cause: StringName) -> bool:
 	if not is_asleep:
 		return false

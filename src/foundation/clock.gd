@@ -70,6 +70,7 @@ func _apply_mode(mode: StringName) -> void:
 	rate_mode = mode
 	rate_mode_changed.emit(mode)
 
+## Checks for a pending normal request before the minute barrier settles.
 func normal_requested() -> bool:
 	return _requested_mode == &"normal"
 

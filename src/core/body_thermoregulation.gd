@@ -50,12 +50,15 @@ func is_dead() -> bool:
 func is_shivering() -> bool:
 	return stage in [&"Chilled", &"Cold"]
 
+## Tests the forced-wake stage floor; [code]body.cold_or_worse()[/code] is true at Cold, Hypothermic and Critical.
 func cold_or_worse() -> bool:
 	return STAGES.find(stage) >= STAGES.find(&"Cold")
 
+## Reports a post-step worsening during a skip; for example, [code]body.cold_wake_due(&"Chilled", true)[/code] in Cold.
 func cold_wake_due(previous_stage: StringName, skipping: bool) -> bool:
 	return skipping and STAGES.find(stage) > STAGES.find(previous_stage)
 
+## Publishes Body's accepted alarm. Call [code]body.publish_cold_wake()[/code] once if cold won and the run continues.
 func publish_cold_wake() -> void:
 	wake_request.emit(&"cold")
 
