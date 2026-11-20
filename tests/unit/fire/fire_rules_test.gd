@@ -1,5 +1,23 @@
 extends GdUnitTestSuite
 
+func test_mixed_stack_consumption_preserves_sampled_moisture() -> void:
+	var inventory := InventoryModel.new()
+	inventory.add(&"log", 1)
+	inventory.soak_carried(1)
+	inventory.add(&"log", 1)
+	var fire := FireController.new(&"fire", Vector3.ZERO, ThermalField.new())
+	fire.stage = &"Burning"
+	fire.fuel = 60
+	assert_bool(fire.commit_action(&"add_fuel", inventory)).is_true()
+	assert_float(inventory.wetness(&"log")).is_equal(0.5)
+	assert_int(inventory.count(&"log")).is_equal(1)
+	assert_bool(inventory.consume(&"log", 2)).is_false()
+	assert_float(inventory.wetness(&"log")).is_equal(0.5)
+	inventory.consume(&"log", 1)
+	assert_float(inventory.wetness(&"log")).is_equal(0.0)
+	inventory.add(&"log", 1)
+	assert_float(inventory.wetness(&"log")).is_equal(0.0)
+
 func test_wet_fire_penalty_survives_publication_and_reaches_body() -> void:
 	var wet := RunSimulation.new()
 	var dry := RunSimulation.new()

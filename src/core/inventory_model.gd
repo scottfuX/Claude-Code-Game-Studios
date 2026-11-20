@@ -9,7 +9,7 @@ var _wire_uses: int = 0
 var _wire_revision: int = 0
 var _chapter_data: ChapterContentTuning
 
-var _wet_counts: Dictionary[StringName, int] = {}
+var _wet_counts: Dictionary[StringName, float] = {}
 var _immersions: Dictionary[int, bool] = {}
 const SOAKABLE: Array[StringName] = [&"stick", &"log", &"bark", &"grass"]
 const TINDER_QUALITY: Dictionary[StringName, float] = {&"bark": 0.9, &"grass": 0.7, &"stick": 0.3}
@@ -55,8 +55,9 @@ func consume(item: StringName, amount: int) -> bool:
 	if amount < 0 or count(item) < amount:
 		return false
 	if amount > 0:
+		var remaining_wet := wetness(item) * (count(item) - amount)
 		_counts[item] = count(item) - amount
-		_wet_counts[item] = maxi(0, _wet_counts.get(item, 0) - amount)
+		_wet_counts[item] = remaining_wet
 		_revisions[item] = _revisions.get(item, 0) + 1
 	return true
 
