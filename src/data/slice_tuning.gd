@@ -78,3 +78,6 @@ class_name SliceTuning extends Resource
 @export var tinder_grass: int = 3
 @export var kindling_sticks: int = 4
 @export var max_fire_sites: int = 2
+
+@export var smolder_pulse_hz: float = 2.0
+@export var smolder_glow_energy: float = 1.5

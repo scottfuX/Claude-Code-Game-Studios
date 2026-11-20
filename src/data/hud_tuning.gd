@@ -8,3 +8,6 @@ class_name HudTuning extends Resource
 @export var hint_minutes: int = 10
 @export var plenty_threshold: int = 5
 @export var cue_s: float = 1.5
+
+@export var hint_until_fire: bool = false
+@export var energy_trend_hold_s: float = 2.0

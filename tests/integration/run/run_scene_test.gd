@@ -60,14 +60,15 @@ func test_scene_routes_gathering_and_backpack_keeps_work_and_time_running() -> v
 	assert_str(run.simulation.actions.action).is_equal("gather_sticks")
 	run.input_router.action_pressed.emit(&"backpack")
 	assert_int(run.input_router.context).is_equal(InputRouter.Context.UI)
-	run.call("_process", 1.5)
+	var tick := run.simulation.clock.seconds_per_minute()
+	run.call("_process", tick)
 	assert_int(run.simulation.clock.minute_of_day).is_equal(991)
-	assert_float(run.simulation.actions.elapsed_s).is_equal(1.5)
+	assert_float(run.simulation.actions.elapsed_s).is_equal(tick)
 	run.input_router.action_pressed.emit(&"pause_menu")
 	assert_int(run.input_router.context).is_equal(InputRouter.Context.UI)
 	run.call("_process", 10.0)
 	assert_int(run.simulation.clock.minute_of_day).is_equal(991)
-	assert_float(run.simulation.actions.elapsed_s).is_equal(1.5)
+	assert_float(run.simulation.actions.elapsed_s).is_equal(tick)
 	run.input_router.action_pressed.emit(&"pause_menu")
 	assert_int(run.input_router.context).is_equal(InputRouter.Context.UI)
 	run.call("_process", 4.0)
@@ -251,7 +252,7 @@ func test_f3_toggles_numeric_debug_surface_only_in_debug_builds() -> void:
 	key.physical_keycode = KEY_F3
 	key.pressed = true
 	run.input_router.call("_input", key)
-	run.call("_process", 1.5)
+	run.call("_process", run.simulation.clock.seconds_per_minute())
 	if OS.is_debug_build():
 		assert_bool(debug.visible).is_true()
 		assert_str(debug.text).contains("Core")
@@ -302,3 +303,24 @@ func test_lit_fire_without_an_available_verb_never_requests_tinder() -> void:
 	run.simulation.inventory.consume(&"log", 1)
 	run.call("_update_target")
 	assert_str(run.call("_prompt")).is_empty()
+
+func test_missing_material_prompt_and_help_reopen() -> void:
+	var shell: Node = auto_free(SHELL.instantiate())
+	shell.process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(shell)
+	var run := shell.get_child(0) as RunCoordinator
+	var fire := run.simulation.create_fire(Vector3(0, 0, -1))
+	fire.stage = &"Cleared"
+	run.add_fire_site(fire)
+	run.call("_update_target")
+	assert_str(run.call("_prompt")).contains("4 more sticks")
+	run.simulation.inventory.add(&"stick", 2)
+	assert_str(run.call("_prompt")).contains("2 more sticks")
+	run.simulation.inventory.add(&"grass", 3)
+	assert_str(run.call("_prompt")).not_contains("grass")
+	fire.stage = &"Smoldering"
+	run.call("_update_target")
+	assert_str(run.call("_prompt")).contains("Blow embers now")
+	assert_bool(InputMap.action_has_event(&"help", InputMap.action_get_events(&"help")[0])).is_true()
+	run.input_router.action_pressed.emit(&"help")
+	assert_bool(run.hud.get("_help_open")).is_true()

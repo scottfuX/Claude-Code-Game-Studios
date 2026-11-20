@@ -18,10 +18,14 @@ var _site_fires: Dictionary[StringName, FireController] = {}
 var _gather_query: Callable
 var _verbs: Array[StringName] = []
 var _pause_token: int = 0
+var _atmosphere: WinterAtmosphere
 var _environment: Environment
 var _demo: bool = false
 var _demo_end: bool = false
 var _demo_gather: bool = false
+var _smolder_stage: Dictionary[StringName, StringName] = {}
+var _survivor_visual: SurvivorVisual
+var _footprints: FootprintPool
 var _demo_driver: FirstNightDemo
 
 @onready var input_router: InputRouter = $InputRouter
@@ -51,6 +55,12 @@ func _ready() -> void:
 	camera.target = survivor
 	camera.position = survivor.position + Vector3.UP * camera.tuning.camera_target_height
 	survivor.configure(simulation, input_router, camera)
+	_footprints = FootprintPool.new()
+	add_child(_footprints)
+	_survivor_visual = SurvivorVisual.new()
+	_survivor_visual.controller = survivor
+	_survivor_visual.footprints = _footprints
+	survivor.add_child(_survivor_visual)
 	input_router.action_pressed.connect(_on_action)
 	simulation.action_resolved.connect(_on_action_resolved)
 	hud.restart_requested.connect(func() -> void: restart_requested.emit())
@@ -63,6 +73,16 @@ func _ready() -> void:
 	_environment.fog_enabled = true
 	_environment.fog_density = 0.007
 	environment_node.environment = _environment
+	_atmosphere = WinterAtmosphere.new()
+	sun.directional_shadow_max_distance = _atmosphere.tuning.sun_shadow_distance
+	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
+	sun.shadow_opacity = _atmosphere.tuning.sun_shadow_opacity
+	_atmosphere.simulation = simulation
+	_atmosphere.survivor = survivor
+	_atmosphere.sunlight = sun
+	_atmosphere.environment = _environment
+	add_child(_atmosphere)
+	_survivor_visual.foot_contact.connect(_atmosphere.footstep)
 	if _demo:
 		_demo_driver = FirstNightDemo.new(self, _time_scale)
 	if _demo_end:
@@ -82,6 +102,7 @@ func _process(delta: float) -> void:
 	simulation.update(delta * speed, paused)
 	if simulation.terminal != &"":
 		input_router.set_context(InputRouter.Context.LOCKED)
+	_check_smolder()
 	_update_target()
 	_update_lighting()
 	hud.set_visibility_context(&"end" if simulation.terminal != &"" else (&"pause" if paused else (&"backpack" if backpack_open else &"gameplay")))
@@ -130,6 +151,8 @@ func _on_action(action: StringName) -> void:
 			_try_action(0)
 		&"secondary":
 			_try_action(1)
+		&"help":
+			hud.toggle_help()
 		&"debug_overlay":
 			hud.toggle_debug()
 
@@ -185,6 +208,8 @@ func _try_action(index: int) -> void:
 			_make_fire()
 		return
 	if index >= _verbs.size():
+		if _target_fire != null:
+			_refuse(_fire_requirement())
 		return
 	var action := _verbs[index]
 	if not simulation.start_action(action, _target_fire, _target.gather_node):
@@ -222,13 +247,33 @@ func _prompt() -> String:
 	if _target == null:
 		return tr(&"HUD_MAKE_FIRE") % input_router.glyph_for(&"secondary") if simulation.fires.size() < simulation.tuning.max_fire_sites else ""
 	if _verbs.is_empty():
-		return "" if _target_fire != null else tr(&"HUD_NEED_TINDER") % tr(_target.display_name)
+		return _fire_requirement() if _target_fire != null else tr(&"HUD_NEED_TINDER") % tr(_target.display_name)
+	if _target_fire != null and _target_fire.stage == &"Smoldering":
+		return tr(&"HUD_VERB") % [input_router.glyph_for(&"interact"), tr(&"HUD_BLOW_NOW")]
 	var result: String = tr(&"HUD_VERB") % [input_router.glyph_for(&"interact"), tr(VERB_NAMES[_verbs[0]])]
 	if _verbs.size() > 1:
 		result += "     " + tr(&"HUD_VERB") % [input_router.glyph_for(&"secondary"), tr(VERB_NAMES[_verbs[1]])]
 	return result
 
+func _fire_requirement() -> String:
+	if _target_fire == null or _target_fire.stage not in [&"Cleared", &"Out", &"Laid"]:
+		return ""
+	var sticks := _target_fire.missing_sticks(simulation.inventory)
+	var tinder := _target_fire.missing_tinder(simulation.inventory)
+	if sticks > 0:
+		return tr(&"HUD_NEED_BOTH" if tinder else &"HUD_NEED_STICKS") % sticks
+	return tr(&"HUD_NEED_TINDER_KIND") if tinder else ""
+
+func _check_smolder() -> void:
+	for fire: FireController in simulation.fires:
+		if _smolder_stage.get(fire.id, &"") == &"Smoldering" and fire.stage == &"Laid":
+			hud.show_cue(tr(&"HUD_EMBER_EXPIRED"))
+		_smolder_stage[fire.id] = fire.stage
+
 func _on_action_resolved(action: StringName, success: bool, cause: StringName) -> void:
+	if action == &"blow_embers":
+		for fire: FireController in simulation.fires:
+			_smolder_stage[fire.id] = fire.stage
 	var verb := tr(VERB_NAMES.get(action, "VERB_WORKING"))
 	_refuse(tr(&"HUD_DONE") % verb if success else tr(&"HUD_FAILED") % [verb, tr(StringName("CAUSE_" + String(cause).to_upper()))])
 
@@ -254,3 +299,4 @@ func _update_lighting() -> void:
 	_environment.background_color = Color(0.02, 0.04, 0.10).lerp(Color(0.6939, 0.7835, 0.8963), daylight)
 	_environment.fog_light_color = _environment.background_color
 	_environment.fog_light_energy = lerpf(0.45, 1.0, daylight)
+	_atmosphere.set_daylight(daylight)

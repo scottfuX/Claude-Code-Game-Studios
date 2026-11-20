@@ -38,6 +38,18 @@ func can_act(action: StringName, inventory: InventoryModel) -> bool:
 			return stage in [&"Kindling", &"Burning", &"Embers"] and item != &"" and fuel + tuning.fuel_values[item] <= tuning.fuel_cap
 	return false
 
+## Returns the remaining kindling count without exposing fuel units.
+func missing_sticks(inventory: InventoryModel) -> int:
+	return maxi(0, tuning.kindling_sticks - kindling_count - inventory.count(&"stick"))
+
+## Reports whether neither supported tinder recipe is stocked.
+func missing_tinder(inventory: InventoryModel) -> bool:
+	return inventory.count(&"bark") < tuning.tinder_bark and inventory.count(&"grass") < tuning.tinder_grass
+
+## Returns normalized remaining smolder lifetime for presentation.
+func smolder_remaining() -> float:
+	return clampf(1.0 - float(smolder_minutes) / maxi(1, tuning.smolder_life), 0.0, 1.0)
+
 ## Commits one prevalidated completion; refusals preserve all materials.
 func commit_action(action: StringName, inventory: InventoryModel, success: bool = true) -> bool:
 	if not can_act(action, inventory):

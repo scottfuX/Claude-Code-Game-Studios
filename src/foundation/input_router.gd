@@ -3,7 +3,7 @@ class_name InputRouter extends Node
 signal action_pressed(action: StringName)
 
 enum Context { GAMEPLAY, UI, LOCKED }
-const ROUTED: Array[StringName] = [&"interact", &"secondary", &"cancel_action", &"backpack", &"pause_menu", &"camera_turn_left", &"camera_turn_right", &"camera_zoom_in", &"camera_zoom_out", &"wait", &"debug_overlay"]
+const ROUTED: Array[StringName] = [&"interact", &"secondary", &"cancel_action", &"backpack", &"pause_menu", &"camera_turn_left", &"camera_turn_right", &"camera_zoom_in", &"camera_zoom_out", &"wait", &"debug_overlay", &"help"]
 const MOVEMENT: Array[StringName] = [&"move_left", &"move_right", &"move_forward", &"move_back", &"move_hurry"]
 var context: Context = Context.GAMEPLAY
 var _blocked: Dictionary[StringName, bool] = {}
@@ -98,7 +98,7 @@ func _input(event: InputEvent) -> void:
 			return
 
 func _dispatch(action: StringName) -> bool:
-	var debug := action == &"debug_overlay" and OS.is_debug_build()
+	var debug := (action == &"debug_overlay" and OS.is_debug_build()) or action == &"help"
 	if context == Context.LOCKED and action != &"pause_menu" and not debug:
 		return false
 	if context == Context.UI and action not in [&"pause_menu", &"backpack"] and not debug:
