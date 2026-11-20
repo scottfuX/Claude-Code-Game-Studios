@@ -1,4 +1,4 @@
-// Devin: persistent snow heightfield. Desktop Compatibility; five vertex reads, one fragment read.
+// Persistent snow heightfield. Compatibility: five vertex reads, one fragment read.
 shader_type spatial;
 
 const float WORLD_SIZE = 64.0;
