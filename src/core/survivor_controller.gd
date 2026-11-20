@@ -6,6 +6,7 @@ var router: InputRouter
 var camera: SurvivalCamera
 var frozen: bool = false
 var facing: Vector3 = Vector3.FORWARD
+var snow: SnowSurface
 
 ## Injects run-scoped ports before physics activation.
 func configure(run: RunSimulation, input: InputRouter, view: SurvivalCamera) -> void:
@@ -31,6 +32,8 @@ func _physics_process(delta: float) -> void:
 	var direction := camera.move_direction(movement)
 	var hurry: bool = input[&"hurry"] and simulation.body.stage in [&"Warm", &"Chilled", &"Cold"] and simulation.needs.stage != &"Exhausted"
 	var speed := tuning.critical_speed if simulation.body.stage == &"Critical" else tuning.walk_speed * maxf(tuning.speed_multiplier_floor, simulation.body.move_speed_mult() * simulation.needs.move_speed_mult() * (tuning.hurry_multiplier if hurry else 1.0))
+	if snow != null:
+		speed *= snow.deformation.speed_factor(global_position, tuning.fresh_snow_speed_factor)
 	velocity.x = move_toward(velocity.x, direction.x * speed, tuning.acceleration * delta)
 	velocity.z = move_toward(velocity.z, direction.z * speed, tuning.acceleration * delta)
 	velocity.y = -tuning.grounded_down_speed if is_on_floor() else velocity.y - tuning.gravity * delta

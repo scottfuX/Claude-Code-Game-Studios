@@ -6,6 +6,8 @@ class_name SurvivorVisualTuning extends Resource
 @export var footprint_min_travel: float = 0.12
 @export var blend_response: float = 8.0
 @export var stride_speed: float = 1.4
+@export var snow_knee_lift: float = 0.32
+@export var snow_bob: float = 0.035
 @export var breath_radians: float = 0.025
 @export var breath_hz: float = 0.32
 @export var shiver_radians: float = 0.035

@@ -3,6 +3,7 @@ class_name PlayfieldTuning extends Resource
 @export var half_extent: float = 30.0
 @export var acceleration: float = 8.0
 @export var walk_speed: float = 1.4
+@export var fresh_snow_speed_factor: float = 0.85
 @export var critical_speed: float = 0.35
 @export var hurry_multiplier: float = 1.3
 @export var capsule_radius: float = 0.3

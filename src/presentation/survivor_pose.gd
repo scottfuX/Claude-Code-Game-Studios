@@ -24,6 +24,12 @@ func _process_modification() -> void:
 	var shiver := sin(t * TAU * data.shiver_hz) * data.shiver_radians if cold else 0.0
 	var fatigue := data.fatigue_radians if sim.needs.stage in TIRED else 0.0
 	var crouch := visual.crouch
+	var snow_effort := 0.0
+	if visual.controller.snow != null and sim.actions.action == &"":
+		snow_effort = (1.0 - visual.controller.snow.deformation.compaction_at(visual.controller.global_position)) * clampf(visual.controller.velocity.length() / data.stride_speed, 0.0, 1.0)
+	var step := sin(t * TAU * 1.6)
+	_rotate(&"LeftUpperLeg", Vector3(-maxf(0, step) * data.snow_knee_lift * snow_effort, 0, 0))
+	_rotate(&"RightUpperLeg", Vector3(-maxf(0, -step) * data.snow_knee_lift * snow_effort, 0, 0))
 	_rotate(&"Chest", Vector3(breath + fatigue + crouch * 0.35, shiver, visual.lean))
 	_rotate(&"LeftUpperLeg", Vector3(-crouch * 0.8, 0, 0))
 	_rotate(&"RightUpperLeg", Vector3(-crouch * 0.8, 0, 0))
@@ -43,7 +49,7 @@ func _process_modification() -> void:
 	if hips >= 0:
 		var skeleton := get_skeleton()
 		var pose := skeleton.get_bone_global_pose(hips)
-		pose.origin += skeleton.global_basis.inverse() * Vector3(0, -crouch * 0.35, 0)
+		pose.origin += skeleton.global_basis.inverse() * Vector3(0, -crouch * 0.35 + absf(step) * data.snow_bob * snow_effort, 0)
 		skeleton.set_bone_global_pose(hips, pose)
 	for foot: StringName in FEET:
 		var index: int = _bones[foot]

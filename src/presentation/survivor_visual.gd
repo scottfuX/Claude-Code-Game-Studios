@@ -111,7 +111,10 @@ func _contact(foot: int) -> void:
 	_last_foot = foot
 	_last_contact = controller.global_position
 	var where := _skeleton.to_global(_skeleton.get_bone_global_pose(_feet[foot]).origin)
-	footprints.stamp(where, rotation.y)
+	if controller.snow != null:
+		controller.snow.deformation.press(where, 0.19, 1.0, 1.65, rotation.y)
+	else:
+		footprints.stamp(where, rotation.y)
 	foot_contact.emit(where, foot)
 
 func _hide_shadows(node: Node) -> void:
