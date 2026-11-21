@@ -24,10 +24,22 @@ func test_chapter_scene_uses_run_layout_and_legacy_scene_is_unchanged() -> void:
 	assert_float(ground_body.position.y + ground_shape.size.y / 2).is_equal(0.0)
 	var lake := chapter.world.get_child(6) as MeshInstance3D
 	assert_vector((lake.mesh as PlaneMesh).size).is_equal(LargeMapLayout.DEFAULTS.lake_bounds.size)
-	assert_int((lake.material_override as StandardMaterial3D).shading_mode).is_equal(BaseMaterial3D.SHADING_MODE_PER_PIXEL)
-	assert_float((lake.material_override as StandardMaterial3D).roughness).is_equal_approx(0.32, 0.000001)
-	var shore := chapter.world.get_child(7) as MeshInstance3D
-	assert_vector((shore.mesh as PlaneMesh).size).is_equal(LargeMapLayout.DEFAULTS.lake_bounds.size + Vector2(4, 4))
+	var ice := lake.material_override as ShaderMaterial
+	assert_str(ice.shader.resource_path).is_equal("res://src/presentation/spatial_env_ice_shore.gdshader")
+	var mask := (ice.get_shader_parameter("thin_map") as Texture2D).get_image()
+	assert_vector(mask.get_size()).is_equal(Vector2i(30, 19))
+	for cell: Vector2i in chapter.simulation.lake.thin_cells:
+		assert_float(mask.get_pixel(cell.x / 6, cell.y / 6).r).is_greater(0.0)
+	var framed := 0
+	for decor: Node3D in get_tree().get_nodes_in_group(&"spawn_decor"):
+		if not chapter.world.is_ancestor_of(decor):
+			continue
+		framed += 1
+		assert_float(decor.position.length()).is_between(8.0, 20.0)
+		assert_bool(WorldMap.disc_intersects_plot(decor.position, 2.5, WorldMap.SHELTER_TRANSFORM, WorldMap.SHELTER_BOUNDS)).is_false()
+		for node: Dictionary in chapter.simulation.map_layout.nodes:
+			assert_float(decor.position.distance_to(node[&"position"])).is_greater_equal(3.0)
+	assert_int(framed).is_greater_equal(6)
 	assert_object(chapter.world.layout).is_same(chapter.simulation.map_layout)
 	assert_int(chapter.world.interactables.size()).is_equal(chapter.simulation.map_layout.nodes.size() + 2)
 	assert_bool(chapter.world.is_on_snow(Vector3(60, 0, 0))).is_false()

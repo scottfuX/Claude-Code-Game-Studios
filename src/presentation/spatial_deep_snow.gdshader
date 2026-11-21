@@ -1,5 +1,6 @@
 // Persistent snow heightfield. Compatibility: five vertex reads, one fragment read.
 shader_type spatial;
+#include "res://src/presentation/lake_outline.gdshaderinc"
 
 const float FRESH_HEIGHT = 0.28;
 const float PACKED_HEIGHT = 0.025;
@@ -20,7 +21,8 @@ float height_at(vec2 p) {
 	float c = compact(p);
 	float drift = sin(p.x * 0.63 + sin(p.y * 0.38)) * cos(p.y * 0.47) * 0.035;
 	float berm = 0.065 * smoothstep(0.03, 0.25, c) * (1.0 - smoothstep(0.25, 0.65, c));
-	float lake_distance = length(max(max(lake_bounds.xy - p, p - lake_bounds.zw), vec2(0.0)));
+	vec2 center = (lake_bounds.xy + lake_bounds.zw) * 0.5;
+	float lake_distance = -lake_edge(p - center, (lake_bounds.zw - lake_bounds.xy) * 0.5);
 	float shore_blend = smoothstep(0.0, lake_shore_width, lake_distance);
 	shore_blend = mix(1.0, shore_blend, step(lake_bounds.x, lake_bounds.z) * step(lake_bounds.y, lake_bounds.w));
 	return (mix(FRESH_HEIGHT + drift, PACKED_HEIGHT, c) + berm) * shore_blend;
@@ -35,8 +37,9 @@ void vertex() {
 }
 
 void fragment() {
-	float lake_mask = step(lake_bounds.x, snow_position.x) * step(lake_bounds.y, snow_position.y)
-		* step(snow_position.x, lake_bounds.z) * step(snow_position.y, lake_bounds.w);
+	vec2 center = (lake_bounds.xy + lake_bounds.zw) * 0.5;
+	float enabled = step(lake_bounds.x, lake_bounds.z) * step(lake_bounds.y, lake_bounds.w);
+	float lake_mask = enabled * step(0.0, lake_edge(snow_position - center, (lake_bounds.zw - lake_bounds.xy) * 0.5));
 	ALPHA = 1.0 - lake_mask;
 	ALPHA_SCISSOR_THRESHOLD = 0.5;
 	float c = compact(snow_position);

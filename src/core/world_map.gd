@@ -191,16 +191,25 @@ func _build_large_map() -> void:
 	for side in [-1.0, 1.0]:
 		_box_collision(Vector3(side * extent, 1, 0), Vector3(0.5, 3, width))
 		_box_collision(Vector3(0, 1, side * extent), Vector3(width, 3, 0.5))
-	var ice := SceneAssets.material(Color("72a9d8"))
-	ice.roughness = 0.32
-	ice.metallic_specular = 0.75
+	var ice := ShaderMaterial.new()
+	ice.shader = preload("res://src/presentation/spatial_env_ice_shore.gdshader")
+	ice.set_shader_parameter("lake_size", lake.size)
+	var grid := lake_surface.size if lake_surface != null else Vector2i.ONE
+	const MASK_BLOCK: int = 6
+	var mask := Image.create(ceili(grid.x / float(MASK_BLOCK)), ceili(grid.y / float(MASK_BLOCK)), false, Image.FORMAT_RF)
+	for y in mask.get_height():
+		for x in mask.get_width():
+			var thin := 0.0
+			var count := 0
+			for row in range(y * MASK_BLOCK, mini((y + 1) * MASK_BLOCK, grid.y)):
+				for column in range(x * MASK_BLOCK, mini((x + 1) * MASK_BLOCK, grid.x)):
+					thin += 1.0 if lake_surface != null and lake_surface.thin_cells.has(Vector2i(column, row)) else 0.0
+					count += 1
+			mask.set_pixel(x, y, Color(thin / count, 0, 0, 1))
+	ice.set_shader_parameter("thin_map", ImageTexture.create_from_image(mask))
 	_plane(Vector3(lake.get_center().x, 0.015, lake.get_center().y), lake.size, ice)
-	var shore := ShaderMaterial.new()
-	shore.shader = preload("res://src/presentation/spatial_env_ice_shore.gdshader")
-	shore.set_shader_parameter("lake_size", lake.size)
-	_plane(Vector3(lake.get_center().x, 0.01, lake.get_center().y), lake.size + Vector2(4, 4), shore)
 	if lake_surface != null:
-		_build_thin_ice()
+		lake_surface.ice_broken.connect(_show_open_water)
 	for node: Dictionary in layout.nodes:
 		var kind: StringName = node[&"kind"]
 		var label: String = {&"bush": "TARGET_DRY_BUSH", &"deadfall": "TARGET_DEADFALL", &"birch": "TARGET_BIRCH", &"grass": "TARGET_DRY_GRASS", &"stone": "TARGET_STONE_PILE"}[kind]
@@ -226,6 +235,7 @@ func _build_large_map() -> void:
 					var angle := branch * TAU / 5.0
 					_stick(entry, Vector3(sin(angle) * 0.2, 0.3, cos(angle) * 0.2), Vector3(0.2, angle, 0.3), 0.85 if kind == &"bush" else 0.4, 0.035 if kind == &"bush" else 0.015)
 	_build_forest()
+	_build_spawn_frame()
 	for camp: Vector3 in layout.tuning.camps:
 		_place(ROCK, camp + Vector3(-3, 0, -3), 0, 1.5)
 
@@ -257,25 +267,15 @@ func _clear_of_nodes(p: Vector3, clearance: float) -> bool:
 			return false
 	return true
 
-func _build_thin_ice() -> void:
-	var patches := MultiMeshInstance3D.new()
-	var cells := MultiMesh.new()
-	cells.transform_format = MultiMesh.TRANSFORM_3D
-	var plane := PlaneMesh.new()
-	plane.size = Vector2.ONE * lake_surface.cell_size
-	cells.mesh = plane
-	cells.instance_count = lake_surface.thin_cells.size()
-	var index := 0
-	for cell: Vector2i in lake_surface.thin_cells:
-		cells.set_instance_transform(index, Transform3D(Basis.IDENTITY, lake_surface.cell_center(cell) + Vector3.UP * 0.02))
-		index += 1
-	patches.multimesh = cells
-	var ice := SceneAssets.material(Color("7f9cb1"))
-	ice.roughness = 0.45
-	ice.metallic_specular = 0.6
-	patches.material_override = ice
-	add_child(patches)
-	lake_surface.ice_broken.connect(_show_open_water)
+func _build_spawn_frame() -> void:
+	var trees := [Vector3(-10, 0, -8), Vector3(10, 0, -9), Vector3(-12, 0, 0), Vector3(12, 0, 2), Vector3(-9, 0, 8), Vector3(8, 0, 9), Vector3(-15, 0, -11), Vector3(15, 0, -12)]
+	var rocks := [Vector3(-8, 0, 5), Vector3(9, 0, -4), Vector3(-12, 0, -5), Vector3(11, 0, 9)]
+	for points: Array in [trees, rocks]:
+		for p: Vector3 in points:
+			if not _clear_of_nodes(p, 3.0) or disc_intersects_plot(p, 2.5, SHELTER_TRANSFORM, SHELTER_BOUNDS) or p.distance_to(Geometry3D.get_closest_point_to_segment(p, Vector3.ZERO, HARE_APPROACH)) < 2.5:
+				continue
+			var instance := _place(PINE if points == trees else ROCK, p, p.x, 1.35)
+			instance.add_to_group(&"spawn_decor")
 
 func _show_open_water(cell: Vector2i) -> void:
 	var water := SceneAssets.material(Color("243d4f"))
