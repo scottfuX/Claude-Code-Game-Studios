@@ -1,5 +1,31 @@
 extends GdUnitTestSuite
 
+func test_retained_chop_checkpoint_progress_and_legacy_default() -> void:
+	for fraction: float in [0.0, 0.4, 1.0]:
+		var node := GatherNode.new(&"deadfall", 4)
+		node.action_progress[&"chop_log"] = fraction
+		var restored := GatherNode.new(&"deadfall", 4)
+		assert_bool(restored.restore_state(JSON.parse_string(JSON.stringify(node.export_state())))).is_true()
+		assert_float(restored.action_progress.get(&"chop_log", -1.0)).is_equal(fraction)
+		var legacy := node.export_state()
+		legacy.erase("action_progress")
+		assert_bool(restored.restore_state(legacy)).is_true()
+		assert_dict(restored.action_progress).is_empty()
+
+func test_invalid_retained_progress_does_not_mutate_node() -> void:
+	var node := GatherNode.new(&"deadfall", 4)
+	node.action_progress[&"chop_log"] = 0.4
+	var initial := node.export_state()
+	for progress: Variant in [{"chop_log": -0.1}, {"chop_log": 1.1}, {"chop_log": NAN}, {"chop_log": INF}, {"chop_log": "0.5"}, {"strip_bark": 0.5}, {"unknown": 0.5}, []]:
+		var bad := initial.duplicate(true)
+		bad.action_progress = progress
+		assert_bool(node.restore_state(bad)).is_false()
+		assert_dict(node.export_state()).is_equal(initial)
+	var stone := GatherNode.new(&"stone", 4)
+	var bad := stone.export_state()
+	bad.action_progress = {"chop_log": 0.5}
+	assert_bool(stone.restore_state(bad)).is_false()
+
 func test_birch_stones_and_deadfall_reserves() -> void:
 	var resolver := GatheringResolver.new()
 	var inventory := InventoryModel.new()

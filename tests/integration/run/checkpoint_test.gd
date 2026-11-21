@@ -112,6 +112,22 @@ func test_chapter_continue_restores_cover_wire_and_one_spent_hare_site() -> void
 	first_night.owners.survivor.position = CheckpointValues.encode_vector(grove)
 	assert_bool(RunCheckpoint.validate(first_night)).is_false()
 
+func test_continue_resumes_retained_chopping_progress() -> void:
+	var shell := _shell()
+	assert_bool(shell.call("start_run", {&"profile": &"three_night", &"seed": 443})).is_true()
+	var run: RunCoordinator = shell.get("_run")
+	var node := run.world.interactables[0].gather_node
+	assert_bool(run.simulation.start_action(&"chop_log", null, node)).is_true()
+	run.simulation.actions.elapsed_s = run.simulation.actions.duration_s * 0.4
+	run.simulation.cancel_action()
+	assert_float(node.action_progress[&"chop_log"]).is_equal_approx(0.4, 0.00001)
+	assert_bool(_store.save(RunCheckpoint.capture(run))).is_true()
+	var restored_shell := _shell()
+	assert_bool(restored_shell.call("start_run", {&"profile": &"three_night", &"restore": _store.probe()})).is_true()
+	var restored: RunCoordinator = restored_shell.get("_run")
+	assert_bool(restored.simulation.start_action(&"chop_log", null, restored.world.interactables[0].gather_node)).is_true()
+	assert_float(restored.simulation.actions.elapsed_s / restored.simulation.actions.duration_s).is_equal_approx(0.4, 0.00001)
+
 func test_seeded_world_weather_broken_ice_and_wet_materials_survive_json_continue() -> void:
 	var shell := _shell()
 	assert_bool(shell.call("start_run", {&"profile": &"three_night", &"seed": 443})).is_true()
