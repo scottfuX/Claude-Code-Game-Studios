@@ -89,21 +89,21 @@ func _physics_process(delta: float) -> void:
 func export_state() -> Dictionary:
 	return {"position": CheckpointValues.encode_vector(position), "facing": CheckpointValues.encode_vector(facing)}
 
-func restore_state(dto: Dictionary, chapter: bool = false) -> bool:
-	if not validate_state(dto, chapter):
+func restore_state(dto: Dictionary, chapter: bool = false, half_extent: float = -1.0) -> bool:
+	if not validate_state(dto, chapter, half_extent):
 		return false
 	position = CheckpointValues.decode_vector(dto.position)
 	facing = CheckpointValues.decode_vector(dto.facing)
 	velocity = Vector3.ZERO
 	return true
 
-static func validate_state(dto: Dictionary, chapter: bool = false) -> bool:
+static func validate_state(dto: Dictionary, chapter: bool = false, half_extent: float = -1.0) -> bool:
 	if not CheckpointValues.keys(dto, ["position", "facing"]) or not CheckpointValues.vector(dto.position) or not CheckpointValues.vector(dto.facing):
 		return false
 	var p := CheckpointValues.decode_vector(dto.position)
 	var direction := CheckpointValues.decode_vector(dto.facing)
 	var data: PlayfieldTuning = preload("res://assets/data/playfield_defaults.tres")
-	var limit := data.half_extent_for(chapter) - data.capsule_radius
+	var limit := (half_extent if half_extent > 0 else data.half_extent_for(chapter)) - data.capsule_radius
 	return absf(p.x) < limit and absf(p.z) < limit and p.y >= -data.capsule_radius and p.y <= data.capsule_height and absf(direction.y) < 0.0001 and absf(direction.length() - 1.0) < 0.0001
 
 ## Samples incoming ground beyond the survivor's current contact patch.

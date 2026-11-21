@@ -37,6 +37,30 @@ func break_ice(cell: Vector2i) -> bool:
 	ice_broken.emit(cell)
 	return true
 
+## Encodes cells without engine-only Variant types for JSON checkpoints.
+func export_state() -> Array:
+	var cells: Array = []
+	for cell: Vector2i in broken_cells:
+		cells.append([cell.x, cell.y])
+	return cells
+
+## Restores bounded, unique cells and republishes breaks to existing visuals.
+func restore_state(cells: Array) -> bool:
+	if cells.size() > size.x * size.y:
+		return false
+	var restored: Dictionary[Vector2i, bool] = {}
+	for value: Variant in cells:
+		if not value is Array or value.size() != 2 or not CheckpointValues.integer(value[0], 0, size.x - 1) or not CheckpointValues.integer(value[1], 0, size.y - 1):
+			return false
+		var cell := Vector2i(value[0], value[1])
+		if restored.has(cell):
+			return false
+		restored[cell] = true
+	broken_cells.clear()
+	for cell: Vector2i in restored:
+		break_ice(cell)
+	return true
+
 func can_traverse(from: Vector3, to: Vector3) -> bool:
 	if not from.is_finite() or not to.is_finite():
 		return false

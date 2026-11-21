@@ -7,7 +7,19 @@ const GRASS: Array[Vector3] = [Vector3(-2.4, 0, -1), Vector3(4, 0, 5), Vector3(0
 static func id_for(kind: StringName, position: Vector3) -> StringName:
 	return StringName("%s:%s:%s" % [kind, position.x, position.z])
 
-static func create(tuning: SliceTuning) -> Dictionary:
+## Rebuilds the active profile's immutable reserves from its run seed.
+static func create(tuning: SliceTuning, seed_value: int = 20261119) -> Dictionary:
+	if tuning.large_map_enabled:
+		var result := {}
+		for node: Dictionary in LargeMapLayout.new(RunRng.new(seed_value), tuning.world).nodes:
+			var entry := GatherNode.new(node.kind, node.remaining, node.bonus_grass, node.bark_remaining, node.sticks_remaining)
+			entry.node_id = node.id
+			result[node.id] = entry
+		return result
+	return legacy(tuning)
+
+## Catalog for schema-one saves made before the seeded world chapter.
+static func legacy(tuning: SliceTuning) -> Dictionary:
 	var data: PlayfieldTuning = preload("res://assets/data/playfield_defaults.tres")
 	var result := {}
 	for p: Vector3 in BUSHES:

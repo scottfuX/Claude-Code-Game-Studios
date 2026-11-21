@@ -38,5 +38,27 @@ func step_minute(minute: int, rng: RunRng) -> void:
 func snapshot() -> Dictionary[StringName, Variant]:
 	return {&"state": state, &"wind_mps": tuning.wind_mps[state], &"snowfall_m_per_hour": tuning.snowfall_m_per_hour if state == &"Snowing" else 0.0, &"wetness_per_hour": tuning.snowfall_wetness_per_hour if state == &"Snowing" else 0.0, &"air_offset_c": tuning.snap_offset_c if _snap_end >= 0 else 0.0, &"cold_snap": _snap_end >= 0, &"transition_minute": _transition_minute, &"snap_end_minute": _snap_end}
 
+## Stores the schedule, not derived presentation or thermal values.
+func export_state() -> Dictionary:
+	return {"state": String(state), "last_minute": _last_minute, "transition_minute": _transition_minute, "snap_end_minute": _snap_end}
+
+## Validates before replacing a schedule; absence is handled by the run owner.
+func restore_state(dto: Dictionary) -> bool:
+	if not CheckpointValues.keys(dto, ["state", "last_minute", "transition_minute", "snap_end_minute"]) or not CheckpointValues.text(dto.state) or not tuning.wind_mps.has(StringName(dto.state)):
+		return false
+	for key: String in ["last_minute", "transition_minute", "snap_end_minute"]:
+		if not CheckpointValues.integer(dto[key], -1, 2147483647):
+			return false
+	if dto.last_minute == -1:
+		if dto.state != "Clear" or dto.transition_minute != -1 or dto.snap_end_minute != -1:
+			return false
+	elif dto.transition_minute <= dto.last_minute or dto.transition_minute - dto.last_minute > tuning.dwell_max or (dto.snap_end_minute != -1 and (dto.snap_end_minute <= dto.last_minute or dto.snap_end_minute - dto.last_minute > tuning.snap_max)):
+		return false
+	state = StringName(dto.state)
+	_last_minute = int(dto.last_minute)
+	_transition_minute = int(dto.transition_minute)
+	_snap_end = int(dto.snap_end_minute)
+	return true
+
 func _duration(low: int, high: int, rng: RunRng) -> int:
 	return mini(high, low + floori(rng.draw_unit() * (high - low + 1)))

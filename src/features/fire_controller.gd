@@ -196,14 +196,23 @@ func _derive_flame() -> void:
 func export_state() -> Dictionary:
 	return {"id": String(id), "position": CheckpointValues.encode_vector(position), "stage": String(stage), "fuel": fuel,
 		"burning_wetness": burning_wetness, "smolder_minutes": smolder_minutes, "ember_minutes": ember_minutes,
-		"kindling_count": kindling_count, "tinder_ready": tinder_ready, "tinder_fuel": _tinder_fuel}
+		"kindling_count": kindling_count, "tinder_ready": tinder_ready, "tinder_fuel": _tinder_fuel,
+		"tinder_wetness": _tinder_wetness, "kindling_wetness": _kindling_wetness, "tinder_quality": _tinder_quality}
 
 func restore_state(dto: Dictionary) -> bool:
+	var normalized := dto.duplicate()
+	for key: String in ["tinder_wetness", "kindling_wetness", "tinder_quality"]:
+		if not normalized.has(key):
+			normalized[key] = 1.0 if key == "tinder_quality" else 0.0
+		if not CheckpointValues.number(normalized[key], 0, 1):
+			return false
+	dto = normalized
 	if not CheckpointValues.keys(dto, export_state().keys()) or not CheckpointValues.text(dto.id) or dto.id != String(id) or not CheckpointValues.vector(dto.position):
 		return false
 	var p := CheckpointValues.decode_vector(dto.position)
 	var field: PlayfieldTuning = preload("res://assets/data/playfield_defaults.tres")
-	if absf(p.x) >= field.half_extent or absf(p.z) >= field.half_extent or absf(p.y) > 0.01:
+	var extent := tuning.world.half_extent if tuning.large_map_enabled else field.half_extent
+	if absf(p.x) >= extent or absf(p.z) >= extent or absf(p.y) > 0.01:
 		return false
 	if not CheckpointValues.text(dto.stage) or dto.stage not in ["Site", "Cleared", "Laid", "Smoldering", "Kindling", "Burning", "Embers", "Out"] or not dto.tinder_ready is bool:
 		return false
@@ -213,7 +222,8 @@ func restore_state(dto: Dictionary) -> bool:
 		return false
 	if (dto.kindling_count != 0 and dto.kindling_count != tuning.kindling_sticks) or (dto.tinder_ready and dto.kindling_count != tuning.kindling_sticks) or (not dto.tinder_ready and dto.tinder_fuel != 0):
 		return false
-	if dto.tinder_ready and dto.tinder_fuel not in [tuning.tinder_bark * tuning.fuel_values[&"bark"], tuning.tinder_grass * tuning.fuel_values[&"grass"]]:
+	var damp_factor: float = 1.0 - tuning.fuel_damp * dto.tinder_wetness
+	if dto.tinder_ready and not (is_equal_approx(dto.tinder_fuel, tuning.tinder_bark * tuning.fuel_values[&"bark"] * damp_factor) or is_equal_approx(dto.tinder_fuel, tuning.tinder_grass * tuning.fuel_values[&"grass"] * damp_factor)):
 		return false
 	if dto.stage in ["Site", "Cleared", "Laid", "Smoldering", "Out"] and dto.fuel != 0:
 		return false
@@ -236,5 +246,8 @@ func restore_state(dto: Dictionary) -> bool:
 	kindling_count = int(dto.kindling_count)
 	tinder_ready = dto.tinder_ready
 	_tinder_fuel = float(dto.tinder_fuel)
+	_tinder_wetness = float(dto.tinder_wetness)
+	_kindling_wetness = float(dto.kindling_wetness)
+	_tinder_quality = float(dto.tinder_quality)
 	publish_heat()
 	return true

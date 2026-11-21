@@ -10,6 +10,7 @@ const SHELTER_APRON := Vector3(-7, 0, -0.85)
 const HARE_TRAIL := Vector3(31, 0, -31)
 const HARE_APPROACH := Vector3(16, 0, -7)
 const HARE_STANCE := Vector3(30.3, 0, -30.3)
+const ATMOSPHERE: AtmosphereTuning = preload("res://assets/data/atmosphere_defaults.tres")
 var interactables: Array[WorldInteractable] = []
 var extra_deadfalls: Array[Vector3] = []
 var chapter_sites: bool = false
@@ -204,7 +205,8 @@ func _build_large_map() -> void:
 	for node: Dictionary in layout.nodes:
 		var kind: StringName = node[&"kind"]
 		var label: String = {&"bush": "TARGET_DRY_BUSH", &"deadfall": "TARGET_DEADFALL", &"birch": "TARGET_BIRCH", &"grass": "TARGET_DRY_GRASS", &"stone": "TARGET_STONE_PILE"}[kind]
-		var entry := _gather(kind, label, node[&"position"], node[&"remaining"], node[&"bonus_grass"], node[&"bark_remaining"])
+		var entry := _gather(kind, label, node[&"position"], node[&"remaining"], node[&"bonus_grass"], node[&"bark_remaining"], node[&"sticks_remaining"])
+		entry.site_id = node[&"id"]
 		entry.gather_node.node_id = node[&"id"]
 		entry.gather_node.sticks_remaining = node[&"sticks_remaining"]
 		match kind:
@@ -224,13 +226,28 @@ func _build_large_map() -> void:
 				for branch in (5 if kind == &"bush" else 7):
 					var angle := branch * TAU / 5.0
 					_stick(entry, Vector3(sin(angle) * 0.2, 0.3, cos(angle) * 0.2), Vector3(0.2, angle, 0.3), 0.85 if kind == &"bush" else 0.4, 0.035 if kind == &"bush" else 0.015)
-	for x in range(-110, 116, 9):
-		for z in range(-105, 116, 11):
-			var p := Vector3(x + sin(z * 2.0) * 2, 0, z + cos(x) * 2)
-			if zone_at(p) == &"forest" and _clear_of_nodes(p, 3.0):
-				_place(PINE if (x + z) % 3 != 0 else BARE, p, x + z, 1.1 + absf(sin(x * z)) * 0.6)
+	_build_forest()
 	for camp: Vector3 in layout.tuning.camps:
 		_place(ROCK, camp + Vector3(-3, 0, -3), 0, 1.5)
+
+func _build_forest() -> void:
+	for zone: Dictionary in layout.zones:
+		if zone[&"kind"] != &"forest":
+			continue
+		var rect: Rect2 = zone[&"bounds"]
+		for x in ceili(rect.size.x / ATMOSPHERE.forest_spacing):
+			for z in ceili(rect.size.y / ATMOSPHERE.forest_spacing):
+				var key := x * 31 + z * 17
+				var point := rect.position + Vector2(x + 0.5, z + 0.5) * ATMOSPHERE.forest_spacing + Vector2(sin(key), cos(key)) * ATMOSPHERE.forest_jitter
+				var p := Vector3(point.x, 0, point.y)
+				if not rect.has_point(point) or not layout.contains(p) or layout.is_in_lake(p) or p.length() < ATMOSPHERE.forest_clearing_radius or zone_at(p) != &"forest" or not _clear_of_nodes(p, ATMOSPHERE.forest_resource_clearance):
+					continue
+				var boulder := key % ATMOSPHERE.forest_boulder_stride == 0
+				var bare: bool = zone[&"id"] == &"birch_stand" or key % 5 == 0
+				var scene := ROCK if boulder else (BARE if bare else PINE)
+				var scale_value := lerpf(ATMOSPHERE.forest_scale.x, ATMOSPHERE.forest_scale.y, absf(sin(key)))
+				var instance := _place(scene, p, key, scale_value)
+				instance.add_to_group(&"forest_decor")
 
 func _clear_of_nodes(p: Vector3, clearance: float) -> bool:
 	for entry: WorldInteractable in interactables:
@@ -275,12 +292,12 @@ func _plane(p: Vector3, size: Vector2, material: Material) -> void:
 	mesh.position = p
 	add_child(mesh)
 
-func _gather(kind: StringName, label: String, p: Vector3, reserve: int, bonus: int = 0, bark: int = 0) -> WorldInteractable:
+func _gather(kind: StringName, label: String, p: Vector3, reserve: int, bonus: int = 0, bark: int = 0, sticks: int = 0) -> WorldInteractable:
 	var entry := WorldInteractable.new()
 	entry.site_id = GatherCatalog.id_for(kind, p)
 	entry.position = p
 	entry.display_name = label
-	entry.gather_node = GatherNode.new(kind, reserve, bonus, bark)
+	entry.gather_node = GatherNode.new(kind, reserve, bonus, bark, sticks)
 	add_child(entry)
 	interactables.append(entry)
 	return entry
@@ -291,7 +308,7 @@ func _deadfall(p: Vector3) -> void:
 	for branch in 3:
 		_stick(log_node, Vector3(branch * 0.5 - 0.4, 0.24, 0), Vector3(0.9, 0, 0.7), 0.9, 0.04)
 
-func _place(scene: PackedScene, p: Vector3, yaw: float, scale_value: float) -> void:
+func _place(scene: PackedScene, p: Vector3, yaw: float, scale_value: float) -> Node3D:
 	var instance := scene.instantiate() as Node3D
 	instance.position = p
 	instance.rotation.y = yaw
@@ -307,6 +324,7 @@ func _place(scene: PackedScene, p: Vector3, yaw: float, scale_value: float) -> v
 	collision.shape = sphere
 	body.add_child(collision)
 	add_child(body)
+	return instance
 
 func _box_collision(p: Vector3, size: Vector3) -> void:
 	var body := StaticBody3D.new()

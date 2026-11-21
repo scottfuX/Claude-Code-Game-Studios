@@ -44,7 +44,8 @@ func export_state() -> Dictionary:
 		fire_states.append(fire.export_state())
 	return {"clock": clock.export_state(), "body": body.export_state(), "needs": needs.export_state(),
 		"inventory": inventory.export_state(tuning.chapter_needs_enabled), "rng": rng.export_state(), "fires": fire_states,
-		"run": {"minute_sequence": minute_sequence, "last_felt_temp_c": last_felt_temp_c if is_finite(last_felt_temp_c) else null}}
+		"run": {"minute_sequence": minute_sequence, "last_felt_temp_c": last_felt_temp_c if is_finite(last_felt_temp_c) else null,
+			"weather": weather.export_state() if weather != null else null, "broken_ice": lake.export_state() if lake != null else []}}
 
 func restore_state(dto: Dictionary) -> bool:
 	if not CheckpointValues.keys(dto, ["clock", "body", "needs", "inventory", "rng", "fires", "run"]):
@@ -54,16 +55,32 @@ func restore_state(dto: Dictionary) -> bool:
 			return false
 	if not dto.fires is Array or dto.fires.size() > tuning.max_fire_sites:
 		return false
-	if not CheckpointValues.keys(dto.run, ["minute_sequence", "last_felt_temp_c"]) or not CheckpointValues.integer(dto.run.minute_sequence, 0, 86400):
+	var run_shape: Dictionary = dto.run.duplicate()
+	run_shape.erase("weather")
+	run_shape.erase("broken_ice")
+	if not CheckpointValues.keys(run_shape, ["minute_sequence", "last_felt_temp_c"]) or not CheckpointValues.integer(dto.run.minute_sequence, 0, 86400):
 		return false
 	if dto.run.last_felt_temp_c != null and not CheckpointValues.number(dto.run.last_felt_temp_c, -1000, 1000):
 		return false
-	var staged := RunSimulation.new(1, tuning)
+	if not dto.rng.has("seed") or not CheckpointValues.decimal(dto.rng.seed):
+		return false
+	var staged := RunSimulation.new(dto.rng.seed.to_int(), tuning)
 	if not staged.clock.restore_state(dto.clock) or not staged.body.restore_state(dto.body) or not staged.needs.restore_state(dto.needs) or not staged.inventory.restore_state(dto.inventory, tuning.chapter_needs_enabled) or not staged.rng.restore_state(dto.rng):
 		return false
 	if staged.needs.is_asleep != (staged.clock.rate_mode == &"sleep") or staged._survived():
 		return false
 	if not tuning.chapter_needs_enabled and (staged.inventory.count(&"pemmican") > 0 or staged.clock.rate_mode == &"sleep"):
+		return false
+	var saved_weather: Variant = dto.run.get("weather")
+	if saved_weather != null:
+		if staged.weather == null or not saved_weather is Dictionary or not staged.weather.restore_state(saved_weather):
+			return false
+		if staged.weather._last_minute > (staged.clock.day - 1) * 1440 + staged.clock.minute_of_day:
+			return false
+	var cells: Variant = dto.run.get("broken_ice", [])
+	if not cells is Array or (staged.lake == null and not cells.is_empty()):
+		return false
+	if staged.lake != null and not staged.lake.restore_state(cells):
 		return false
 	for index: int in dto.fires.size():
 		if not dto.fires[index] is Dictionary:
@@ -82,6 +99,17 @@ func restore_state(dto: Dictionary) -> bool:
 	inventory = staged.inventory
 	rng = staged.rng
 	thermal = staged.thermal
+	map_layout = staged.map_layout
+	weather = staged.weather
+	if weather != null:
+		var values := weather.snapshot()
+		thermal.update_wind_source(&"weather", values[&"wind_mps"])
+		thermal.update_air_offset(&"weather", values[&"air_offset_c"])
+	if lake != null:
+		lake.thin_cells = staged.lake.thin_cells.duplicate()
+		lake.restore_state(cells)
+	else:
+		lake = staged.lake
 	fires = staged.fires
 	minute_sequence = int(dto.run.minute_sequence)
 	last_felt_temp_c = NAN if dto.run.last_felt_temp_c == null else float(dto.run.last_felt_temp_c)

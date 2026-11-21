@@ -21,6 +21,20 @@ const SOFTWARE_ADAPTERS: PackedStringArray = ["llvmpipe", "softpipe", "lavapipe"
 @export var foley_volume_db: float = -18.0
 @export var sun_shadow_distance: float = 28.0
 @export var sun_shadow_opacity: float = 0.5
+@export var weather_sun_scale: Dictionary[StringName, float] = {&"Windy": 0.72, &"Snowing": 0.5}
+@export var weather_fog_scale: Dictionary[StringName, float] = {&"Windy": 1.3, &"Snowing": 1.8}
+@export var weather_snow_scale: Dictionary[StringName, float] = {&"Windy": 1.25, &"Snowing": 1.8}
+@export var weather_tint: Color = Color("b3c7df")
+@export var weather_tint_strength: float = 0.3
+@export var weather_ambient_scale: float = 0.85
+@export var cold_snap_tint: Color = Color("99bce8")
+@export var cold_snap_tint_strength: float = 0.18
+@export var forest_spacing: float = 8.0
+@export var forest_jitter: float = 1.5
+@export var forest_resource_clearance: float = 1.2
+@export var forest_clearing_radius: float = 20.0
+@export var forest_scale: Vector2 = Vector2(1.1, 1.7)
+@export var forest_boulder_stride: int = 19
 
 ## Selects a run-local preset, e.g. uses_low_quality(RenderingServer.get_video_adapter_name()).
 func uses_low_quality(adapter: String) -> bool:

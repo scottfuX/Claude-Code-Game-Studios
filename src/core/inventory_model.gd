@@ -137,9 +137,13 @@ func export_state(chapter: bool = false) -> Dictionary:
 		counts[String(item)] = _counts[item]
 		revisions[String(item)] = _revisions[item]
 	var kit: Array = []
+	var wet := {}
+	for item: StringName in _wet_counts:
+		if item in SOAKABLE and _wet_counts[item] > 0:
+			wet[String(item)] = _wet_counts[item]
 	for tool: StringName in tools:
 		kit.append(String(tool))
-	var dto := {"tools": kit, "counts": counts, "revisions": revisions}
+	var dto := {"tools": kit, "counts": counts, "revisions": revisions, "wet_counts": wet}
 	if chapter:
 		dto["wire_uses"] = _wire_uses
 	return dto
@@ -148,7 +152,9 @@ func restore_state(dto: Dictionary, chapter: bool = false) -> bool:
 	var keys := ["tools", "counts", "revisions"]
 	if chapter:
 		keys.append("wire_uses")
-	if not CheckpointValues.keys(dto, keys) or not dto.tools is Array or not dto.counts is Dictionary or not dto.revisions is Dictionary:
+	var shape := dto.duplicate()
+	shape.erase("wet_counts")
+	if not CheckpointValues.keys(shape, keys) or not dto.tools is Array or not dto.counts is Dictionary or not dto.revisions is Dictionary:
 		return false
 	var wire_uses := 0
 	if chapter:
@@ -167,7 +173,7 @@ func restore_state(dto: Dictionary, chapter: bool = false) -> bool:
 		return false
 	if dto.counts.size() != dto.revisions.size():
 		return false
-	var item_ids := ["stick", "log", "grass", "bark", "pemmican"]
+	var item_ids := ["stick", "log", "grass", "bark", "stone", "pemmican"]
 	if chapter:
 		item_ids.append_array(["tarp", "hare_raw", "hare_cooked"])
 	for item: Variant in dto.counts:
@@ -175,9 +181,19 @@ func restore_state(dto: Dictionary, chapter: bool = false) -> bool:
 			return false
 		if not CheckpointValues.integer(dto.counts[item], 0, 1000000) or not CheckpointValues.integer(dto.revisions[item], 1, 2147483647):
 			return false
+	var wet: Variant = dto.get("wet_counts", {})
+	if not wet is Dictionary:
+		return false
+	for item: Variant in wet:
+		if not CheckpointValues.text(item) or StringName(item) not in SOAKABLE or not dto.counts.has(item) or not CheckpointValues.number(wet[item], 0, dto.counts[item]):
+			return false
 	tools = kit
 	_wire_uses = wire_uses
 	_wire_revision += 1
+	_wet_counts.clear()
+	_immersions.clear()
+	for item: String in wet:
+		_wet_counts[StringName(item)] = float(wet[item])
 	_counts.clear()
 	_revisions.clear()
 	for item: String in dto.counts:

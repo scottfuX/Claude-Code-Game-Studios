@@ -7,7 +7,7 @@ static func tuning_for(profile: String) -> SliceTuning:
 	return preload("res://assets/data/three_day_survival.tres") if profile == "three_night" else preload("res://assets/data/slice_defaults.tres")
 
 static func capture(run: RunCoordinator) -> Dictionary:
-	if run.simulation.terminal != &"" or run.simulation.actions.action != &"" or run.simulation.clock._dispatching:
+	if run.simulation.terminal != &"" or run.simulation.in_water or run.simulation.actions.action != &"" or run.simulation.clock._dispatching:
 		return {}
 	var owners := run.simulation.export_state()
 	var gathering := {}
@@ -33,10 +33,13 @@ static func validate(dto: Variant) -> bool:
 	if not CheckpointValues.decimal(dto.seed) or not CheckpointValues.integer(dto.saved_at_unix, 0, 9007199254740991) or not CheckpointValues.keys(dto.owners, owner_keys):
 		return false
 	var owners: Dictionary = dto.owners
-	if not owners.survivor is Dictionary or not SurvivorController.validate_state(owners.survivor, chapter) or not owners.gathering is Dictionary:
-		return false
 	var tuning := tuning_for(String(dto.profile))
-	var nodes := GatherCatalog.create(tuning)
+	var extent := tuning.world.half_extent if tuning.large_map_enabled else preload("res://assets/data/playfield_defaults.tres").half_extent_for(chapter)
+	if not owners.survivor is Dictionary or not SurvivorController.validate_state(owners.survivor, chapter, extent) or not owners.gathering is Dictionary or not owners.run is Dictionary:
+		return false
+	var nodes := GatherCatalog.create(tuning, dto.seed.to_int())
+	if tuning.large_map_enabled and not owners.run.has("weather") and not owners.run.has("broken_ice") and not CheckpointValues.keys(owners.gathering, nodes.keys()):
+		nodes = GatherCatalog.legacy(tuning)
 	if not CheckpointValues.keys(owners.gathering, nodes.keys()):
 		return false
 	for id: StringName in nodes:

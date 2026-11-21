@@ -538,17 +538,39 @@ func _restore_owners(dto: Dictionary) -> bool:
 	owners.erase("gathering")
 	owners.erase("survivor")
 	owners.erase("chapter")
-	if not simulation.restore_state(owners) or not survivor.restore_state(survivor_state, world.chapter_sites):
+	if not simulation.restore_state(owners) or not survivor.restore_state(survivor_state, world.chapter_sites, world.half_extent()):
 		return false
 	for entry: WorldInteractable in world.interactables:
-		if entry.gather_node != null and not entry.gather_node.restore_state(gathering[String(entry.site_id)]):
+		if entry.gather_node != null and gathering.has(String(entry.site_id)) and not entry.gather_node.restore_state(gathering[String(entry.site_id)]):
 			return false
+	if simulation.tuning.large_map_enabled and not CheckpointValues.keys(gathering, GatherCatalog.create(simulation.tuning, seed_value).keys()):
+		_restore_legacy_harvest(gathering)
 	simulation.position = survivor.position
 	for fire: FireController in simulation.fires:
 		if world.chapter_sites and not world.can_place_fire(fire.position):
 			return false
 		add_fire_site(fire)
 	return true
+
+func _restore_legacy_harvest(gathering: Dictionary) -> void:
+	var legacy := GatherCatalog.legacy(simulation.tuning)
+	for id: StringName in legacy:
+		var initial: Dictionary = (legacy[id] as GatherNode).export_state()
+		var saved: Dictionary = gathering[String(id)]
+		for field: String in ["remaining", "bonus_grass", "bark_remaining"]:
+			var spent: int = initial[field] - saved[field]
+			var kind := StringName(initial.kind)
+			var target_field := field
+			if field == "bark_remaining":
+				kind = &"birch"
+				target_field = "remaining"
+			for entry: WorldInteractable in world.interactables:
+				var node := entry.gather_node
+				if node == null or node.kind != kind or spent <= 0:
+					continue
+				var used := mini(spent, int(node.get(target_field)))
+				node.set(target_field, int(node.get(target_field)) - used)
+				spent -= used
 
 func advance_loading(delta: float) -> void:
 	if _loading_token == 0 or not is_finite(delta):
@@ -821,3 +843,4 @@ func _update_lighting() -> void:
 	_environment.background_color = Color(0.02, 0.04, 0.10).lerp(Color(0.6939, 0.7835, 0.8963), daylight)
 	_environment.fog_light_energy = lerpf(0.45, 1.0, daylight)
 	_atmosphere.set_daylight(daylight)
+	_atmosphere.apply_weather(simulation.weather.snapshot() if simulation.weather != null else {}, sun)

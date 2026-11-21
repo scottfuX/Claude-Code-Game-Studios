@@ -58,6 +58,27 @@ func set_daylight(daylight: float) -> void:
 	environment.fog_light_color = _sky.sky_horizon_color
 	environment.fog_density = lerpf(tuning.night_fog_density, tuning.dusk_fog_density, light)
 
+## Applies a read-only weather snapshot after the clock's base lighting.
+## Only outdoor lights/fog change; fire emission and warm material hues are not graded.
+func apply_weather(weather: Dictionary, sun: DirectionalLight3D) -> void:
+	var state: StringName = weather.get(&"state", &"Clear")
+	var overcast := tuning.weather_sun_scale.has(state)
+	var light := _last_daylight if is_finite(_last_daylight) else 1.0
+	environment.fog_density = lerpf(tuning.night_fog_density, tuning.dusk_fog_density, light) * tuning.weather_fog_scale.get(state, 1.0)
+	environment.fog_light_color = _sky.sky_horizon_color
+	sun.light_energy *= tuning.weather_sun_scale.get(state, 1.0)
+	if overcast:
+		sun.light_color = sun.light_color.lerp(tuning.weather_tint, tuning.weather_tint_strength)
+		environment.ambient_light_color = environment.ambient_light_color.lerp(tuning.weather_tint, tuning.weather_tint_strength)
+		environment.ambient_light_energy *= tuning.weather_ambient_scale
+		environment.fog_light_color = environment.fog_light_color.lerp(tuning.weather_tint, tuning.weather_tint_strength)
+	if weather.get(&"cold_snap", false):
+		environment.ambient_light_color = environment.ambient_light_color.lerp(tuning.cold_snap_tint, tuning.cold_snap_tint_strength)
+		environment.fog_light_color = environment.fog_light_color.lerp(tuning.cold_snap_tint, tuning.cold_snap_tint_strength)
+	var count := maxi(1, roundi(tuning.snow_count * tuning.weather_snow_scale.get(state, 1.0)))
+	if _snow.amount != count:
+		_snow.amount = count
+
 ## Shares the visual contact's one-shot sound, never creating a second foot clock.
 func footstep(_where: Vector3, foot: int) -> void:
 	_steps.pitch_scale = 0.94 if foot == 0 else 1.06
