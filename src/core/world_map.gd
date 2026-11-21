@@ -183,12 +183,14 @@ func can_place_fire(position: Vector3) -> bool:
 func _build_large_map() -> void:
 	var extent := layout.tuning.half_extent
 	var width := extent * 2
-	_plane(Vector3.ZERO, Vector2(width, width), SceneAssets.SNOW)
+	var snow := SnowSurface.new(width + 4.0)
+	add_child(snow)
+	var lake := layout.tuning.lake_bounds
+	(snow.material_override as ShaderMaterial).set_shader_parameter("lake_bounds", Vector4(lake.position.x, lake.position.y, lake.end.x, lake.end.y))
 	_box_collision(Vector3(0, -0.15, 0), Vector3(width, 0.3, width))
 	for side in [-1.0, 1.0]:
 		_box_collision(Vector3(side * extent, 1, 0), Vector3(0.5, 3, width))
 		_box_collision(Vector3(0, 1, side * extent), Vector3(width, 3, 0.5))
-	var lake := layout.tuning.lake_bounds
 	var ice := SceneAssets.material(Color("72a9d8"))
 	ice.roughness = 0.32
 	ice.metallic_specular = 0.75

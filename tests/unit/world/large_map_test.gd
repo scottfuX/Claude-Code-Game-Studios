@@ -1,5 +1,17 @@
 extends GdUnitTestSuite
 
+func test_authored_hare_corridor_remains_snow_with_four_metre_lake_margin() -> void:
+	var layout := LargeMapLayout.new(RunRng.new(20261119))
+	var lake := LakeSurface.new(RunRng.new(20261119))
+	var margin := layout.tuning.lake_bounds.grow(4.0)
+	var route := PackedVector3Array([Vector3.ZERO, WorldMap.HARE_APPROACH, WorldMap.HARE_STANCE, WorldMap.HARE_TRAIL])
+	for index in range(1, route.size()):
+		for step in 101:
+			var point := route[index - 1].lerp(route[index], step / 100.0)
+			assert_bool(margin.has_point(Vector2(point.x, point.z))).is_false()
+			assert_str(lake.surface_at(point)[&"kind"]).is_equal("snow")
+	assert_vector(layout.tuning.lake_bounds.size).is_equal(Vector2(90, 55))
+
 func test_dimensions_zones_and_safe_camps() -> void:
 	var layout := LargeMapLayout.new(RunRng.new(20261119))
 	assert_float(LargeMapLayout.DEFAULTS.half_extent * 2).is_equal(240.0)

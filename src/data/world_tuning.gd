@@ -1,7 +1,7 @@
 class_name WorldTuning extends Resource
 
 @export var half_extent: float = 120.0
-@export var lake_bounds: Rect2 = Rect2(25, -35, 90, 55)
+@export var lake_bounds: Rect2 = Rect2(25, -10, 90, 55)
 @export var kinds: Array[StringName] = [&"bush", &"deadfall", &"birch", &"grass", &"stone"]
 @export var ring_counts: Array[Vector3i] = [Vector3i(8, 20, 30), Vector3i(3, 10, 20), Vector3i(0, 6, 8), Vector3i(4, 10, 12), Vector3i(1, 3, 4)]
 @export var spacing: Dictionary[StringName, float] = {&"bush": 4.0, &"deadfall": 8.0, &"birch": 3.0, &"grass": 3.0, &"stone": 10.0}
@@ -15,8 +15,8 @@ class_name WorldTuning extends Resource
 @export var facing_deadfall_distance: Vector2 = Vector2(20, 30)
 @export var second_deadfall_distance: Vector2 = Vector2(31, 37)
 @export var birch_regions: Array[Rect2] = [Rect2(35, 55, 75, 63)]
-@export var stone_regions: Array[Rect2] = [Rect2(-115, -119, 230, 8), Rect2(14, -40, 10, 65), Rect2(25, 21, 90, 12)]
-@export var grass_shore: Rect2 = Rect2(15, -35, 9, 55)
+@export var stone_regions: Array[Rect2] = [Rect2(-115, -119, 230, 8), Rect2(10, -40, 14, 90), Rect2(25, 46, 90, 12)]
+@export var grass_shore: Rect2 = Rect2(15, -10, 9, 55)
 @export var primary_yields: Dictionary[StringName, Vector2i] = {&"bush": Vector2i(3, 8), &"deadfall": Vector2i(4, 8), &"grass": Vector2i(2, 4), &"stone": Vector2i(6, 10)}
 @export var bark_yield: Vector2i = Vector2i(4, 8)
 @export var branch_yield: Vector2i = Vector2i(3, 5)

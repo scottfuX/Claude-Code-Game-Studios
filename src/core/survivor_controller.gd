@@ -111,4 +111,6 @@ func snow_speed_factor(direction: Vector3) -> float:
 	if snow == null:
 		return 1.0
 	var ahead := Vector3(direction.x, 0, direction.z).normalized() * tuning.snow_speed_probe_distance
+	if simulation != null and simulation.lake != null and simulation.lake.surface_at(global_position + ahead)[&"kind"] != &"snow":
+		return 1.0
 	return snow.deformation.speed_factor(global_position + ahead, tuning.fresh_snow_speed_factor)

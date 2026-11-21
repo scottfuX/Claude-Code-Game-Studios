@@ -6,9 +6,18 @@ func test_chapter_scene_uses_run_layout_and_legacy_scene_is_unchanged() -> void:
 	chapter.tuning = preload("res://assets/data/three_day_survival.tres")
 	chapter.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(chapter)
+	assert_bool(chapter.initialization_ok).is_true()
+	assert_bool(chapter.world.hare_approach(Vector3.ZERO).is_empty()).is_false()
 	assert_float(chapter.world.half_extent()).is_equal(120.0)
 	var ground := chapter.world.get_child(0) as MeshInstance3D
-	assert_vector((ground.mesh as PlaneMesh).size).is_equal(Vector2(240, 240))
+	assert_vector((ground.mesh as PlaneMesh).size).is_equal(Vector2(244, 244))
+	assert_float((ground as SnowSurface).deformation.extent).is_equal(244.0)
+	chapter.survivor.snow = ground as SnowSurface
+	chapter.survivor.position = Vector3(60, 0, 0)
+	assert_float(chapter.survivor.snow_speed_factor(Vector3.FORWARD)).is_equal(1.0)
+	chapter.survivor.position = Vector3.ZERO
+	var bounds := LargeMapLayout.DEFAULTS.lake_bounds
+	assert_vector((ground.material_override as ShaderMaterial).get_shader_parameter("lake_bounds")).is_equal(Vector4(bounds.position.x, bounds.position.y, bounds.end.x, bounds.end.y))
 	var ground_body := chapter.world.get_child(1) as StaticBody3D
 	var ground_shape := (ground_body.get_child(0) as CollisionShape3D).shape as BoxShape3D
 	assert_vector(ground_shape.size).is_equal(Vector3(240, 0.3, 240))
@@ -20,13 +29,13 @@ func test_chapter_scene_uses_run_layout_and_legacy_scene_is_unchanged() -> void:
 	var shore := chapter.world.get_child(7) as MeshInstance3D
 	assert_vector((shore.mesh as PlaneMesh).size).is_equal(LargeMapLayout.DEFAULTS.lake_bounds.size + Vector2(4, 4))
 	assert_object(chapter.world.layout).is_same(chapter.simulation.map_layout)
-	assert_int(chapter.world.interactables.size()).is_equal(chapter.simulation.map_layout.nodes.size())
+	assert_int(chapter.world.interactables.size()).is_equal(chapter.simulation.map_layout.nodes.size() + 2)
 	assert_bool(chapter.world.is_on_snow(Vector3(60, 0, 0))).is_false()
 	assert_bool(chapter.world.is_on_snow(Vector3(0, 0, 50))).is_true()
 	assert_bool(chapter.world.can_place_fire(Vector3(60, 0, 0))).is_false()
 	for camp: Vector3 in LargeMapLayout.DEFAULTS.camps:
 		assert_bool(chapter.world.can_place_fire(camp)).is_true()
-	for i in chapter.world.interactables.size():
+	for i in chapter.simulation.map_layout.nodes.size():
 		assert_str(chapter.world.interactables[i].gather_node.node_id).is_equal(String(chapter.simulation.map_layout.nodes[i][&"id"]))
 	var legacy: RunCoordinator = auto_free(scene.instantiate())
 	legacy.process_mode = Node.PROCESS_MODE_DISABLED

@@ -288,6 +288,7 @@ func test_world_checkpoint_rejects_tampered_state_without_partial_restore() -> v
 	var state: Dictionary = dto.owners.duplicate(true)
 	state.erase("gathering")
 	state.erase("survivor")
+	state.erase("chapter")
 	var simulation := RunSimulation.new(55, RunCheckpoint.tuning_for("three_night"))
 	assert_bool(simulation.restore_state(state)).is_true()
 	var before := simulation.export_state()
