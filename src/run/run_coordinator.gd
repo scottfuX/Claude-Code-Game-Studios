@@ -520,7 +520,7 @@ func _restore_owners(dto: Dictionary) -> bool:
 	owners.erase("gathering")
 	owners.erase("survivor")
 	owners.erase("chapter")
-	if not simulation.restore_state(owners) or not survivor.restore_state(survivor_state):
+	if not simulation.restore_state(owners) or not survivor.restore_state(survivor_state, world.chapter_sites):
 		return false
 	for entry: WorldInteractable in world.interactables:
 		if entry.gather_node != null and not entry.gather_node.restore_state(gathering[String(entry.site_id)]):

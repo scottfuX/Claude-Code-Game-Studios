@@ -1,6 +1,7 @@
 class_name PlayfieldTuning extends Resource
 
 @export var half_extent: float = 30.0
+@export var chapter_half_extent: float = 34.0
 @export var acceleration: float = 8.0
 @export var walk_speed: float = 1.4
 @export var fresh_snow_speed_factor: float = 0.85
@@ -50,3 +51,7 @@ class_name PlayfieldTuning extends Resource
 @export var deadfall_logs: int = 8
 @export var deadfall_bark: int = 8
 @export var grass_reserve: int = 8
+
+## Returns the world extent for the selected run profile.
+func half_extent_for(chapter: bool) -> float:
+	return maxf(half_extent, chapter_half_extent) if chapter else half_extent

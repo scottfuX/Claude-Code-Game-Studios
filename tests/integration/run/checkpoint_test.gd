@@ -81,13 +81,15 @@ func test_chapter_continue_restores_cover_wire_and_one_spent_hare_site() -> void
 	assert_bool(food.start_trail(simulation, HareFoodFeature.CHECK, focus, feet)).is_true()
 	for minute in 2:
 		simulation.update(simulation.clock.seconds_per_minute())
-	run.survivor.position = Vector3(25, 0, -23)
+	var grove := WorldMap.HARE_STANCE
+	run.survivor.position = grove
 	var dto := RunCheckpoint.capture(run)
 	assert_int(dto.owners.chapter.hare.bundle.count).is_equal(1)
 	assert_bool(_store.save(dto)).is_true()
 	var loaded := _store.probe()
 	assert_bool(shell.call("start_run", {&"profile": &"three_night", &"restore": loaded})).is_true()
 	var continued: RunCoordinator = shell.get("_run")
+	assert_vector(continued.survivor.position).is_equal_approx(grove, Vector3.ONE * 0.0001)
 	var bed := WorldMap.SHELTER_TRANSFORM * Vector3(0, 0, -0.8)
 	assert_float(continued.simulation.thermal.components(bed)[&"shelter_bonus"]).is_equal(2.0)
 	assert_int(continued.simulation.inventory.count(&"tarp")).is_zero()
@@ -103,6 +105,12 @@ func test_chapter_continue_restores_cover_wire_and_one_spent_hare_site() -> void
 	var duplicate_catch := dto.duplicate(true)
 	duplicate_catch.owners.chapter.hare.bundle.count = 2
 	assert_bool(RunCheckpoint.validate(duplicate_catch)).is_false()
+	var past_boundary := dto.duplicate(true)
+	past_boundary.owners.survivor.position[0] = continued.world.half_extent() + 1.0
+	assert_bool(RunCheckpoint.validate(past_boundary)).is_false()
+	var first_night := _fixture(&"first_night")
+	first_night.owners.survivor.position = CheckpointValues.encode_vector(grove)
+	assert_bool(RunCheckpoint.validate(first_night)).is_false()
 
 func test_round_trip_each_owner_both_profiles_and_rng_continuation() -> void:
 	for profile: StringName in [&"first_night", &"three_night"]:
