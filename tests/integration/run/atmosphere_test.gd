@@ -14,9 +14,11 @@ func test_synthesis_is_seeded_bounded_and_rejects_unknown_sounds() -> void:
 
 func test_atmosphere_maps_daylight_and_pauses_without_rule_mutations() -> void:
 	var shell: Node = auto_free(preload("res://src/run/app_shell.tscn").instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/atmosphere_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
-	var run := shell.get_child(0) as RunCoordinator
+	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
+	var run := shell.get("_run") as RunCoordinator
 	var atmosphere: WinterAtmosphere = run.get("_atmosphere")
 	atmosphere.set_daylight(0)
 	var density: float = run.environment_node.environment.fog_density
@@ -31,9 +33,11 @@ func test_atmosphere_maps_daylight_and_pauses_without_rule_mutations() -> void:
 
 func test_fog_palette_persists_between_clock_ticks() -> void:
 	var shell: Node = auto_free(preload("res://src/run/app_shell.tscn").instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/atmosphere_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
-	var run := shell.get_child(0) as RunCoordinator
+	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
+	var run := shell.get("_run") as RunCoordinator
 	var environment := run.environment_node.environment
 	for minute: int in [990, 1031, 1034, 1035, 1036, 0, 465, 466, 510]:
 		run.simulation.clock.minute_of_day = minute
@@ -47,9 +51,11 @@ func test_fog_palette_persists_between_clock_ticks() -> void:
 
 func test_sun_moon_handoff_is_continuous_at_both_twilight_boundaries() -> void:
 	var shell: Node = auto_free(preload("res://src/run/app_shell.tscn").instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/atmosphere_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
-	var run := shell.get_child(0) as RunCoordinator
+	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
+	var run := shell.get("_run") as RunCoordinator
 	for boundary: int in [465, 1035]:
 		run.simulation.clock.minute_of_day = boundary - 3
 		run.call("_update_lighting")

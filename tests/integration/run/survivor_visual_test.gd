@@ -20,9 +20,11 @@ func test_footprints_are_bounded_fade_and_ignore_invalid_contacts() -> void:
 
 func test_visual_contacts_alternate_and_pause_blocks_them() -> void:
 	var shell: Node = auto_free(preload("res://src/run/app_shell.tscn").instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/visual_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
-	var run := shell.get_child(0) as RunCoordinator
+	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
+	var run := shell.get("_run") as RunCoordinator
 	var visual: SurvivorVisual = run.get("_survivor_visual")
 	var contacts: Array[int] = []
 	visual.foot_contact.connect(func(_p: Vector3, foot: int) -> void: contacts.append(foot))
@@ -42,9 +44,11 @@ func test_visual_contacts_alternate_and_pause_blocks_them() -> void:
 
 func test_dedicated_crouch_clip_lowers_hips_without_moving_physics_root() -> void:
 	var shell: Node = auto_free(preload("res://src/run/app_shell.tscn").instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/visual_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
-	var run := shell.get_child(0) as RunCoordinator
+	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
+	var run := shell.get("_run") as RunCoordinator
 	var visual: SurvivorVisual = run.get("_survivor_visual")
 	var skeleton: Skeleton3D = visual.get("_skeleton")
 	var model: Node3D = visual.get("_model")
@@ -79,9 +83,11 @@ func test_context_selection_has_no_work_fallback() -> void:
 
 func test_work_faces_admitted_target_and_warming_faces_burning_fire() -> void:
 	var shell: Node = auto_free(preload("res://src/run/app_shell.tscn").instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/visual_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
-	var run := shell.get_child(0) as RunCoordinator
+	shell.call("start_run", {})
+	var run := shell.get("_run") as RunCoordinator
 	var visual: SurvivorVisual = run.get("_survivor_visual")
 	var bush := run.world.interactables[1]
 	run.survivor.facing = Vector3.RIGHT
@@ -100,9 +106,12 @@ func test_work_faces_admitted_target_and_warming_faces_burning_fire() -> void:
 
 func test_all_contexts_have_complete_clips_and_fatigue_variants() -> void:
 	var shell: Node = auto_free(preload("res://src/run/app_shell.tscn").instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/visual_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
-	var visual: SurvivorVisual = shell.get_child(0).get("_survivor_visual")
+	shell.call("start_run", {})
+	var run := shell.get("_run") as RunCoordinator
+	var visual: SurvivorVisual = run.get("_survivor_visual")
 	var model: Node3D = visual.get("_model")
 	var player := model.find_child("AnimationPlayer", true, false) as AnimationPlayer
 	var contexts: Array[StringName] = SurvivorClips.STATES.duplicate()

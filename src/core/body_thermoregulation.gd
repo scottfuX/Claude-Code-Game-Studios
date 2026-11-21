@@ -77,3 +77,26 @@ func cold_hands_penalty() -> float:
 ## Returns detached physiology values for presentation.
 func snapshot() -> Dictionary[StringName, Variant]:
 	return {&"core_temp_c": core_temp_c, &"wetness": wetness, &"stage": stage, &"is_shivering": is_shivering(), &"rate_c_per_hour": rate_c_per_hour}
+
+func export_state() -> Dictionary:
+	return {"core_temp_c": core_temp_c, "wetness": wetness, "stage": String(stage), "rate_c_per_hour": rate_c_per_hour, "last_felt": _last_felt if is_finite(_last_felt) else null}
+
+func restore_state(dto: Dictionary) -> bool:
+	if not CheckpointValues.keys(dto, ["core_temp_c", "wetness", "stage", "rate_c_per_hour", "last_felt"]):
+		return false
+	if not CheckpointValues.number(dto.core_temp_c, tuning.death_temp, tuning.max_core) or dto.core_temp_c <= tuning.death_temp or not CheckpointValues.number(dto.wetness, 0, 1) or not CheckpointValues.number(dto.rate_c_per_hour, tuning.rate_min, tuning.rate_max):
+		return false
+	if not CheckpointValues.text(dto.stage) or StringName(dto.stage) not in STAGES or (dto.last_felt != null and not CheckpointValues.number(dto.last_felt, -1000, 1000)):
+		return false
+	var staged := BodyThermoregulation.new(tuning)
+	staged.core_temp_c = float(dto.core_temp_c)
+	staged.stage = StringName(dto.stage)
+	staged.refresh_stage()
+	if staged.stage != StringName(dto.stage):
+		return false
+	core_temp_c = staged.core_temp_c
+	stage = staged.stage
+	wetness = float(dto.wetness)
+	rate_c_per_hour = float(dto.rate_c_per_hour)
+	_last_felt = NAN if dto.last_felt == null else float(dto.last_felt)
+	return true

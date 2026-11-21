@@ -23,16 +23,16 @@ func _ready() -> void:
 		_place(ROCK, p, p.x, 1.2)
 	for p: Vector3 in [Vector3(-10, 0, 9), Vector3(12, 0, 8), Vector3(-11, 0, -11)]:
 		_place(PINE, p, p.x, 1.3)
-	var bushes: Array[Vector3] = [Vector3(0, 0, -1.6), Vector3(-4, 0, -3), Vector3(5, 0, -4), Vector3(-6, 0, 5), Vector3(7, 0, 5)]
+	var bushes: Array[Vector3] = GatherCatalog.BUSHES
 	for p: Vector3 in bushes:
 		var bush := _gather(&"bush", "TARGET_DRY_BUSH", p, TUNING.bush_sticks, TUNING.bush_bonus_grass)
 		for branch in 5:
 			var angle := branch * TAU / 5.0
 			_stick(bush, Vector3(sin(angle) * 0.2, 0.4, cos(angle) * 0.2), Vector3(0.2, angle, 0.3), 0.85, 0.035)
-	var logs: Array[Vector3] = [Vector3(2.8, 0, -2), Vector3(-4, 0, 3), Vector3(6, 0, 1), Vector3(-2, 0, -7)]
+	var logs: Array[Vector3] = GatherCatalog.LOGS
 	for p: Vector3 in logs:
 		_deadfall(p)
-	for p: Vector3 in [Vector3(-2.4, 0, -1), Vector3(4, 0, 5), Vector3(0, 0, 6), Vector3(4, 0, -7)]:
+	for p: Vector3 in GatherCatalog.GRASS:
 		var grass := _gather(&"grass", "TARGET_DRY_GRASS", p, TUNING.grass_reserve)
 		for blade in 7:
 			_stick(grass, Vector3((blade % 3) * 0.1, 0.18, (blade / 3) * 0.1), Vector3(0.2, blade, 0.2), 0.4, 0.015, Color("8c805c"))
@@ -83,6 +83,7 @@ func can_place_fire(position: Vector3) -> bool:
 
 func _gather(kind: StringName, label: String, p: Vector3, reserve: int, bonus: int = 0, bark: int = 0) -> WorldInteractable:
 	var entry := WorldInteractable.new()
+	entry.site_id = GatherCatalog.id_for(kind, p)
 	entry.position = p
 	entry.display_name = label
 	entry.gather_node = GatherNode.new(kind, reserve, bonus, bark)

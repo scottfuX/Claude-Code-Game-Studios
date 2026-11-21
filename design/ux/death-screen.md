@@ -1,183 +1,142 @@
-# UX Spec: Death / Terminal Shell
+# UX Spec: Death / Dawn Results
 
-> **Status**: In Review — document draft, not implementation approval
-> **Author**: Devin (ux-designer), non-interactive authoring requested by owner
-> **Last Updated**: 2026-11-19
-> **Journey Phase(s)**: Inferred from game brief; no player journey map exists
-> **Platform Target**: PC macOS / Windows; keyboard/mouse primary, partial gamepad; no touch
-> **Accessibility Tier**: Standard — confirmed and committed by Scott (owner), 2026-11-19 (A1 resolved)
+> **Status**: Ready for implementation — ADR-0018 Accepted
+> **Author**: Scott (direction) + Devin (autonomous drafting)
+> **Last Updated**: 2026-11-20
+> **Journey Phase(s)**: Inferred from game concept; no journey study
+> **Screen / Flow Name**: TerminalResults
+> **Platform Target**: PC macOS / Windows; keyboard/mouse and gamepad; no touch
+> **Accessibility Tier**: Standard (owner committed); no implementation compliance claimed
 > **Template**: UX Spec
-> **Related GDDs**: [Emotional Feedback death edge / AC7](../gdd/emotional-feedback.md), [Input Locked rule](../gdd/input-and-action-map.md), [Time UI Requirements](../gdd/time-and-day-cycle.md), [Systems index](../gdd/systems-index.md)
-> **Related ADRs**: Accepted ADR-0002, ADR-0016; [control manifest](../../docs/architecture/control-manifest.md)
-> **Related UX Specs**: [HUD](hud.md), [Backpack](inventory.md), [Title](main-menu.md)
+> **Related GDDs**: [Screens & Menus](../gdd/screens-and-menus.md), [Save/Load](../gdd/save-load.md)
+> **Related ADRs**: Accepted ADR-0001/0002; [ADR-0018 Accepted](../../docs/architecture/adr-0018-shell-navigation-end-shot-and-run-checkpoint.md)
+> **Related UX Specs**: [Title](main-menu.md), [Terminal](death-screen.md), [Pause](pause-menu.md), [HUD](hud.md)
+> **Decision label**: Default (reversible; accepted under Scott delegation via ADR-0018). Applies individually to every rule, size, copy fixture, table row and acceptance target below. ADR-0018 records acceptance; runtime and platform verification remain separate.
 
-All controls use [interaction patterns](interaction-patterns.md): Button, Focus Management, Escape / Cancel, Screen Push / Pop / Replace, Loading State / Empty State / Error State and Reconnect Recovery. Paper-and-ink UI follows [art bible §4/§7](../art/art-bible.md). [Accessibility requirements](../accessibility-requirements.md) govern the committed Standard tier and separately identified proposals; no runtime, contrast, assistive-tech or visual verification is claimed.
+Use [interaction patterns](interaction-patterns.md) for Buttons, Focus Management, Escape/Cancel, Push/Pop/Replace, Loading/Empty/Error and Reconnect Recovery. Follow paper/ink [art bible](../art/art-bible.md) and [accessibility requirements](../accessibility-requirements.md).
 
 ## 1. Purpose & Player Need
-
-“I need to understand that this run ended and leave the moment without accidentally starting over.” Preserve the authored death end shot, then provide a future minimal terminal navigation shell. No rewards, penalty arithmetic, ranking, day count or invented diagnosis. Screens & Menus / Tap-out & Run Results GDDs are not authored; shell navigation is a planning default, not new MVP implementation scope. ADR-0007/C4 terminal arbitration owns the outcome; presentation never decides death.
+I need a calm, legible ending and deliberate next choice, not an accidental replay.
+Player goal: make one intentional navigation choice. Game goal: acknowledge the owner result before removing focus or world.
 
 ## 2. Player Context on Arrival
-
-The survivor may die during sleep, work or a live backpack visit. The player is disappointed and may still be holding an input. Their need is certainty without blame or an accidental replay. Target quiet closure; no new mishap toast or numeric postmortem. Mishaps' UI requirement remains “None in play”.
+A terminal snapshot has committed; player is disappointed or relieved. No active survival task remains.
+Retain understandable identity and focus; no fabricated save, cause, rewards or measured-user-research claim.
 
 ## 3. Navigation Position
-
-Owner commits one terminal snapshot → close/disable backpack and hide gameplay HUD → end shot → terminal shell. Future Return to Title replaces run stack after host teardown. No Back to living gameplay. This is death, not radio extraction or a generic “survived” victory.
+RUN → END_SHOT (terminal pause overlay allowed) → RESULTS → TITLE or fresh same-profile RUN.
+END_SHOT is noninteractive except eligible skip/pause; RESULTS replaces shot, never returns to living gameplay.
+No world input may leak through a visible menu.
 
 ## 4. Entry & Exit Points
-
-| Trigger | Route | Timing / focus |
+| Trigger | Entry / exit | Focus / owner result |
 |---|---|---|
-| C4 terminal commit | Invalidate command facade, request owner terminal context | Immediate; no UI-generated outcome |
-| Death end shot begins | `end_rise`, silence, snow-white grade | Emotional Feedback owns 8 real-second fade |
-| First 1.0 s | Locked | Only pause_menu routed, all other presses dropped |
-| After end presentation | Show terminal title / future Return to Title | Initial focus Return to Title, release/re-press required |
-| Return to Title | Future host teardown → [title](main-menu.md) | Only after owner accepts |
-| Esc/B at terminal root | No-op | No gameplay restoration |
+| Terminal commit | Shot then Results | No focus during shot; Try Again on results |
+| Activate action | Request owner, pending state | Remove focus only on accepted transition |
+| Cancel confirmation | Return to invoker | No mutation; restore invoking button |
+| Owner failure | Remain safe title/paused/terminal error | Restore invoker, readable reason and Retry |
+| Teardown | Invalidate run callbacks | Release only own token/source once |
 
-Pause during the terminal shot is routed to Coordinator; it cannot resume a dead run or bypass terminal precedence. Exact end-shot pause-clock policy is a deferred architecture question, not decided by this UI.
+Terminal owner supplies one outcome and clock/profile snapshot, never UI inference. Hide all gameplay HUD and hold camera for END_SHOT. Preserve death snow-white fade/silence. First unpaused second permits only pause; after that fresh confirm/interact optionally skips remainder, otherwise complete after eight unpaused real seconds. Esc opens terminal pause with Resume Shot / Quit (confirmed); freeze timer with run-owned token, never revive simulation. RESULTS: localized cold/dehydration or victory line, qualitative ordinal words (“You lasted until the second night”), then Try Again / Return to Title. No numerical counter, rewards, score, cause icon or ranking. Before first night use neutral before-night copy; unknown clock falls back to neutral “Your run ended.”
 
 ## 5. Layout Specification
 
+### 5.1 ASCII Wireframe
 ```text
-         snow-white end frame
-           Run ended
-        [ Return to Title ]
-             [status]
+       [ outcome line ]
+       [ qualitative survival line ]
+       [ Try Again ]
+       [ Return to Title ]
+       [ localized status ]
 ```
 
-| Component | Zone | Pattern |
-|---|---|---|
-| End frame | Full view, no HUD | Existing Emotional Feedback / Camera output |
-| Terminal heading | Centre after presentation | Static localized words |
-| Return to Title | Below heading, ≥44 px hit height, 320 px reference width | Secondary Button, future shell only |
-| Status | Below action | Loading/error, no cause guessed from numeric body values |
+### 5.2 Layout Zones
+Centred 16:9 safe rectangle, inset 5%; title/outcome above 320px reference-width vertical action stack at 1080p. Grow width/height for localized labels. Status below stack; scroll overflow without hiding focus.
 
-Inset 5% of centred 16:9 rectangle. Title is neutral until Results GDD defines copy/causes. No cause-specific icon/color added without owner data contract.
+### 5.3 Component Inventory
+Live localized heading, Buttons, readable status/error label, modal confirmation with Cancel/Confirm and retained invoking identity. Shot has no gameplay HUD; terminal pause reuses PauseOverlay. Buttons ≥44×44 reference pixels. Reuse HUD fallback font/paper-ink style rather than inventing a theme.
+
+### 5.4 Information Hierarchy
+Outcome/title first, available next actions second, pending/error reason third. No numeric survival HUD, rewards list or unrelated Settings.
 
 ## 6. States & Variants
-
-| State | Trigger | Behavior |
+| State | Display | Behavior |
 |---|---|---|
-| End shot / loading | Terminal owner accepted | Hide all gameplay HUD; 8 s authored grade; no interactive shell yet |
-| Ready | Presentation completes and terminal snapshot valid | “Run ended”; future Return to Title |
-| Empty | Terminal snapshot lacks optional cause/results | Same neutral heading; never synthesize cause/day/rewards |
-| Invalid/error | No valid end snapshot | “Run status unavailable”; no fabricated death or restart; host recovery required |
-| Returning / pending | Host accepts title intent | “Returning”; suppress duplicates |
-| Navigation error | Teardown/title load fails | “Could not return to title”; allow retry on same run-bound terminal intent |
-| Disconnect | Active pad lost | Router recovery gate; never returns to living gameplay |
+| Loading | Loading / Starting / Saving | Owner pending; block duplicates, do not claim success |
+| Ready | Try Again; Return to Title. | Routed activation once |
+| Empty | Neutral unavailable outcome | No fabricated run/cause; host recovery required |
+| Confirmation | Quit game? / Discard saved run? | Cancel initial focus; opening accept never confirms |
+| Error | Could not start / save / continue | Retain safe owner state, reason and Retry/Cancel |
+| Disconnect | Recovery overlay | Keep own pause, deliberate recovery; no auto-resume |
+| Shot | Retained camera / death fade | Pause-gated; optional skip only after first second |
+| Victory | Dawn victory copy | Same results layout/actions, no rewards |
 
-Input lock minimum is 1 s; the 8 s shot is not replaced by a one-second instant menu. No auto-restart or auto-navigation timeout. Proposed reduced-motion menu transitions do not waive the authored end shot, which Emotional Feedback explicitly retains.
+Manual save failure stays paused; autosave failures warn without trapping play. Terminal checkpoint deletion failure blocks results navigation/close behind Retry; OS force-close cannot be guaranteed safe. Missing save is not an error; corrupt save hides Continue and reports quarantine warning.
 
 ## 7. Interaction Map
-
-| Input | Action | Response |
-|---|---|---|
-| Tab/arrows/D-pad after shot | Return to Title only | Persistent outline |
-| Enter/Space/A / click | Future title intent | Pending then host navigation |
-| B/Esc root | No-op navigation; pause_menu remains owner-routed | No resurrection, teardown or automatic replay |
-| Held input from before terminal | Ignore until released/re-pressed | No accidental confirmation |
-| Wheel / right-click | No-op | No world interaction |
+| Input | Action |
+|---|---|
+| Tab/Shift-Tab; arrows/D-pad/left stick | Cycle visible enabled actions in displayed order, both directions |
+| Enter/Space / A-Cross / left click release | ui_accept activates once; release outside cancels |
+| Esc / B-Circle | Cancel modal; results root no-op; shot Esc requests terminal pause |
+| Start/Options | pause_menu routed to coordinator; never duplicate accept/back |
+| Confirm/interact during shot | Fresh press after ≥1 unpaused second skips; prior holds discarded |
+| Right click / wheel | No world cancel/zoom; wheel scrolls overflowing panel only |
+Hover never steals pad/keyboard focus; modal cannot leak focus.
 
 ## 8. Data Requirements
-
-| Data | Owner / format | Update trigger | Null handling |
-|---|---|---|---|
-| Single terminal identity/outcome | C4 / detached run-bound snapshot | Once after terminal arbitration | Neutral unavailable state; never infer from temperature |
-| Shot completion | Emotional Feedback / Camera presentation signal | End presentation completion | Await valid completion; adapter failure routes host error, not death re-evaluation |
-| Title navigation availability/result | Host lifecycle / capability and response | Host acknowledgement | Disable unsupported navigation with reason |
-| Glyphs | InputRouter / current binding | Device event | Text fallback |
+| Data | Owner / format | Refresh / null behavior |
+|---|---|---|
+| Start/close/save capability and result | Shell/SaveStore; accepted/reason | Startup/response; disable unavailable action with reason |
+| Run/profile/terminal identity and clock | Coordinator detached values | Run-bound response; reject stale, neutral fallback |
+| Checkpoint validity | SaveStore validated envelope | BOOT/save/delete/load; hide Continue on invalid/absent |
+| Shot elapsed/completion | Coordinator real-time gate | Presentation notice only; UI never decides death |
+| Glyphs/context/recovery | InputRouter semantic actions | Device change; action-name fallback |
+| Labels/status | CSV localization keys | Locale change; dev missing key, release empty + log |
 
 ## 9. Events Fired
-
-| Player action | Intent / payload | Receiver | Contract |
-|---|---|---|---|
-| Return to Title | Proposed terminal-navigation intent / run ID, terminal ID, request ID | Host lifecycle | Idempotent teardown; port not yet allocated |
-| Pause key | Existing pause intent / terminal source | Coordinator | No change to terminal outcome |
-| Focus / no-op Back | None | Presentation | No mutation |
-| End shot completion | Presentation-complete notice / terminal ID | Coordinator | Cosmetic completion, not a gameplay death event |
-
-- [ ] Death behind a live backpack invalidates commands immediately; late Inventory callbacks cannot reopen it.
-- [ ] First second drops all non-pause input, death shot fades to snow white over 8 s and every gameplay HUD element is hidden.
-- [ ] Missing optional cause produces only neutral words; no numeric day, reward, hidden Resolve or inferred diagnosis appears.
+| Intent | Receiver / payload | Ownership |
+|---|---|---|
+| Start / retry | Shell start_run(profile, fresh seed, null) | New subtree; no UI-created world |
+| Continue | Shell start_run(validated profile/seed/DTO) | Fresh staged restore, Locked one-second loading fade |
+| Save/title | Shell return_to_title(), live run identity | Coordinator quiesces; SaveStore success precedes stop_run |
+| Confirm Quit | Shell close intent | Save if live; no save if terminal/title |
+| Pause / resume | Coordinator UI source + request_pause/release_pause token | Run-tagged token, once, retain others |
+| Eligible skip | Coordinator run/terminal identity | No direct terminal mutation |
+Callbacks from stopped runs are ignored. Restoration uses a loading pause gate with pause menu closed, then releases it after one-second fade; other gates still win.
 
 ## 10. Transitions & Animations
-
-| Transition | Trigger | Type | Duration | Easing | Interruptible | Reduced-motion proposal |
-|---|---|---|---|---|---|---|
-| Enter | Owner accepts navigation | Opacity only | 150 ms | Linear | Yes, terminal wins | Instant |
-| Exit | Accepted close/navigation | Opacity only | 100 ms | Linear | Yes | Instant |
-| Pending / error / refresh | Owner response | Static label replacement | Immediate | None | Yes | Identical |
-
-These are author defaults, not new player settings. Input context changes immediately, not after a fade. Transition cosmetic failure must not strand focus or keep a token alive. Terminal presentation's authored end shot takes precedence over these menu timings.
+Menu opacity enter 150ms / exit 100ms defaults, instant if reduced-motion support is approved. Context changes immediately, not after cosmetic fade. Terminal shot lasts eight unpaused seconds unless optional eligible skip; run-owned pause freezes it. Terminal wins over menu transitions; no fade may retain a stale token. Save/restore loading remains until owner completion, never a fabricated fixed-duration load.
 
 ## 11. Input Method Completeness Checklist
-
-Checked boxes describe specification coverage, NOT executed tests.
-**Keyboard**
-- [x] Tab / Shift-Tab cycle Return to Title only; arrow keys traverse lists or button stacks.
-- [x] Enter / Space through `ui_accept` activates focused control once; Esc through `pause_menu` follows §7.
-- [x] Every mouse action has a keyboard path; focus outline remains visible; modal focus cannot escape.
-**Gamepad**
-- [x] D-pad or left stick follows the same order; A/Cross = `ui_accept`, B/Circle = `ui_cancel`; Start/Options = `pause_menu`.
-- [x] No analog precision, trigger/bumper shortcut, drag, hold or chord required.
-- [x] Active-pad disconnect uses InputRouter safety overlay. Reconnection alone does not resume; deliberate resume and release/re-press are required. Keyboard recovery remains reachable.
-**Mouse**
-- [x] All buttons/rows have readable default, hover, focus, pressed, disabled and pending states per Button/List patterns; hover never steals keyboard/gamepad focus.
-- [x] Targets at least 44×44 reference pixels; left-click selects/activates once on release; release outside cancels.
-- [x] Right-click is no-op; wheel scrolls only the list under pointer, otherwise no-op.
-Touch: not supported. Menu `ui_*` mappings are semantic InputRouter bindings, not permission for per-control raw event listeners.
+Specification targets, not executed evidence:
+- [ ] Keyboard-only navigation/accept/cancel reaches every action and restores focus after modal/error.
+- [ ] Pad-only D-pad/stick/A/B/Start reaches same actions; disconnect requires deliberate recovery.
+- [ ] Mouse buttons and scroll have keyboard/pad equivalents; no raw per-control listeners.
+- [ ] Held input requires release/repress across every context transition; one event has one meaning.
 
 ## 12. Accessibility
-
-Standard is confirmed and committed by Scott (owner), 2026-11-19; A1 is resolved. Detailed A2–A6 proposals and QQ-09 delivery scope remain open. Proposed menu floor 24 px at 1080p; at 720p use at least 18 px. Require adjustable text with reflow for Standard release delivery; the proposed range is 100–200%, not a new MVP settings addition. Remapping, text adjustment, colorblind support and applicable speaker-identified subtitles remain Standard release requirements even while their shared settings implementation is deferred. This is a screen design requirement, not a claim that an implemented build meets Standard. The template's generic Standard narration assumption differs from the project tier table: accessible names and announcement strings below are implementation hooks; comprehensive menu narration remains unapproved scope.
-
-| Text / control | Background | Required contrast | Measured |
-|---|---|---|---|
-| All labels, disabled reasons, status | Paper backing over snow/night/fire | 4.5:1 ordinary text | Not measured |
-| Large title / meaningful outlines | Paper/ink panel | 3:1 | Not measured |
-
-No color-only states: focus uses outline, pending/error uses words, wetness uses shape plus label. Do not depend on an audio cue to understand an action. Focus order: Return to Title only; cycle in both directions, omit disabled command stops only if their reasons are still readable in the selected-row description. Modal Cancel is the initial focus; closing restores invoker or safe first control. Focus never enters the passive world/HUD.
-
-Accessible name includes visible label; selected rows include qualitative condition and action availability. Proposed announcement on arrival: “Run ended.”; pending changes announce “Working”, rejection announces localized owner reason once, and focus restoration announces destination name. No periodic numeric reading or interruption by repeated live snapshots. Menu narration and reduced motion remain proposals, not delivered features. Keep at most four conceptual streams (title, content, selection/actions, status), below the 7±2 heuristic; this is not user-research evidence.
+Standard tier remains committed. All text ≥20px at target resolutions; wrap/reflow, no shrinking below floor, 40% expansion and planned adjustable text up to 200%. Visible outline and label identify focus, pending/error uses words rather than color/audio alone. Text contrast ≥4.5:1; large text/control boundaries ≥3:1, measured over snow/night/fire before sign-off. No required time-limited input; skip is optional, all next actions wait indefinitely. Accessible names match visible labels; announce arrival/result/rejection once, not repeated snapshots. Remapping, text adjustment and applicable subtitles remain project Standard requirements; full narration/reduced-motion implementation remains unapproved scope.
 
 ## 13. Localization Considerations
-
-All strings use localization keys, never text baked into sketches. Minimum 40% expansion; character budgets are test fixtures, not permission to truncate meaning. No ellipsis for actions or failure reasons: wrap and grow/scroll panel. CJK uses font fallback and stable spacing; never shrink below font floor. RTL mirrors panel alignment, reading/focus order and text, not device glyph artwork or world projection.
-
-| Text role | English fixture limit | Expansion fixture | Overflow |
-|---|---|---|---|
-| Title | 24 characters | 34 | Wrap |
-| Action label | 24 | 34 | Grow button, then wrap |
-| Row identity / condition | 48 | 68 | Wrap row |
-| Status / confirmation / error | 96 | 135 | Grow status region, scroll if needed |
-
-Layout-critical: actions and status must survive the expansion fixture, 200% planned text and RTL. No numeric gameplay values are introduced by localization.
+All headings, ordinal-word survival copy, action labels, status, confirmations and error reasons use CSV keys (existing assets/localization/hud.csv pipeline or dedicated registered CSV). Never bake text into art, concatenate English ordinals or show raw filesystem errors. English fixture labels ≤32 characters, status ≤135; budgets test expansion, not permission to truncate meaning. CJK font fallback; RTL mirrors layout/focus reading order, not glyph artwork. Grow/wrap then scroll; never ellipsize actions/reasons.
 
 ## 14. Acceptance Criteria
+- [ ] All entry/exit paths above tested with normal/empty/invalid/error owner results and duplicate/stale intents.
+- [ ] Death/dehydration/victory lines correct; hide HUD, hold shot, freeze on pause, admit skip only after one unpaused second.
+- [ ] Confirmations never accept invoking press; keyboard/pad/mouse parity, focus visible and trapped.
+- [ ] 720p through 4K, 4:3/16:9/16:10/21:9 safe area, 40% expansion, 200% planned text and contrast checked with retained screenshots.
+- [ ] No gameplay mutation/direct SceneTree pause; no stale callback or token leakage; terminal precedence preserved.
+- [ ] No runtime/visual compliance claimed until implementation and evidence exist.
 
-Implementation targets below remain unexecuted.
-- [ ] After the authored 8 s death presentation completes, first terminal panel frame appears within 200 ms and usable local data within 500 ms on nominated minimum hardware; maintain 60 fps ±5 during navigation (hardware nomination QQ-01 pending).
-- [ ] At 1280×720 and 3840×2160, 4:3/16:9/16:10/21:9, safe content does not overlap, clip or escape the inset; expanded strings and planned 200% text reflow without hiding actions.
-- [ ] Every §7 action works with keyboard alone, D-pad/face buttons alone and mouse alone; no double command from one input and no held action on return.
-- [ ] Every §6 loading/empty/error case has its stated safe escape; stale response from an old run cannot navigate or change a row.
-- [ ] Every §9 request goes to its owner once with listed identity; no UI mutation of gameplay state or direct SceneTree pause.
-- [ ] All ordinary text measures at least 4.5:1, large text/control boundaries 3:1 over snow, fire and night; grayscale preserves all meaning and focus.
-- [ ] Enter and exit obey §10; proposed reduced-motion mode uses instant menu transitions if that setting is approved.
-- [ ] All localized action/status fixture lengths in §13 wrap without clipping; focus remains visible when scrolled.
+## 15. Open Questions / Own Calls
+| ID | Decision / gap | Disposition |
+|---|---|---|
+| D2 | Resolved results/navigation design | Screens GDD + ADR-0018 define Try Again / Return to Title; Ready for implementation — ADR-0018 Accepted |
+| D3 | Resolved shot-clock design | Run-owned eight-second timer, router pause gate, optional skip after one second; ADR-0018 Accepted exception |
+| A1 | Standard tier | Committed; implementation compliance unverified |
+| J1 | No player journey map | Arrival inferred; does not claim user research |
+| U1 | Layout/copy/timings | Default (reversible; accepted under Scott delegation via ADR-0018) |
+| C1 | Architecture/GDD exceptions | ADR-0018 Accepted: early skip/Locked exception, narrowed Terrain save and pulled-forward checkpoint scope explicitly amend earlier constraints for this slice |
 
-## 15. Open questions / own calls
-
-| ID | Decision / gap | Owner / deadline | Disposition |
-|---|---|---|---|
-| A1 | Standard tier confirmed and committed | Scott (owner); resolved 2026-11-19 | Tier criterion available for UX review; implementation compliance and A2–A6 not approved by this decision |
-| J1 | Player journey map not yet created | Design; before implementation planning | Author from `.claude/docs/templates/player-journey.md`; arrival context here is inferred |
-| U1 | Menu fade timings, layout sizes, target sizes and text budgets above | Scott + UI/art; before implementation | Reasonable author defaults, not measured outcomes |
-| D1 | Neutral Run ended copy; no numerical results | Scott + Results design; before VS | Avoid inventing cause, penalty or survival scoring |
-| D2 | Return to Title shell proposed, not approved host API | Design/architecture; before implementation | GDD alignment for result navigation NOT ASSESSED |
-| D3 | Pause timing during end shot needs owner-clock policy | Technical design; before terminal UI handoff | No assumption that pause key resurrects run or skips shot |
-| D4 | No dawn/survived screen | Existing sunrise ritual and Time/Emotional Feedback contracts | Dawn is in-world, not terminal; add only with Results/Screens GDD |
-
-
-Cross-reference audit: named patterns reused, no new reusable pattern required; linked navigation matches sibling specs. Session-state and session-log writes are intentionally excluded by this task. No TR registry changes: these specs refine existing requirements rather than allocate new architecture TRs.
+Contract blockers are resolved at design level by linked docs; wider Tap-out/Results, Settings, kit and diary remain out of scope. No code, translations, TR test evidence or runtime behavior changed by this spec.

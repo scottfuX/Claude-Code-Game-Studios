@@ -41,3 +41,37 @@ func has_tool(tool: StringName) -> bool:
 ## Returns a detached counts snapshot.
 func snapshot() -> Dictionary[StringName, int]:
 	return _counts.duplicate()
+
+func export_state() -> Dictionary:
+	var counts := {}
+	var revisions := {}
+	for item: StringName in _counts:
+		counts[String(item)] = _counts[item]
+		revisions[String(item)] = _revisions[item]
+	var kit: Array = []
+	for tool: StringName in tools:
+		kit.append(String(tool))
+	return {"tools": kit, "counts": counts, "revisions": revisions}
+
+func restore_state(dto: Dictionary) -> bool:
+	if not CheckpointValues.keys(dto, ["tools", "counts", "revisions"]) or not dto.tools is Array or not dto.counts is Dictionary or not dto.revisions is Dictionary:
+		return false
+	var kit: Array[StringName] = []
+	for tool: Variant in dto.tools:
+		if not CheckpointValues.text(tool) or tool not in ["hatchet", "knife", "ferro_rod"] or StringName(tool) in kit:
+			return false
+		kit.append(StringName(tool))
+	if dto.counts.size() != dto.revisions.size():
+		return false
+	for item: Variant in dto.counts:
+		if not CheckpointValues.text(item) or item not in ["stick", "log", "grass", "bark", "pemmican"] or not dto.revisions.has(item):
+			return false
+		if not CheckpointValues.integer(dto.counts[item], 0, 1000000) or not CheckpointValues.integer(dto.revisions[item], 1, 2147483647):
+			return false
+	tools = kit
+	_counts.clear()
+	_revisions.clear()
+	for item: String in dto.counts:
+		_counts[StringName(item)] = int(dto.counts[item])
+		_revisions[StringName(item)] = int(dto.revisions[item])
+	return true

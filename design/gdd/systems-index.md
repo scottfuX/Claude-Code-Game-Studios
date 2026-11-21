@@ -95,11 +95,11 @@ feature → mechanic map every later GDD answers to.
 | 25 | Self-Filmed Diary | Narrative | Vertical Slice | Not Started | — | Time & Day Cycle, Morale & Mental State, Mishaps & Failure, Needs & Weight |
 | 26 | Tap-out & Run Results | Progression | Vertical Slice | Not Started | — | Time & Day Cycle, Rival Simulation & Ranking, Medical Check-ins, Body Temperature, Needs & Weight, Morale & Mental State |
 | 27 | Meta Rewards (inferred) | Progression | Alpha | Not Started | — | Tap-out & Run Results, Save/Load & Settings |
-| 28 | Save/Load & Settings | Persistence | Alpha | Not Started | — | Time & Day Cycle, Item Database & Inventory (+ every stateful system) |
+| 28 | Save/Load & Settings | Persistence | Alpha (MVP checkpoint slice) | Designed | [save-load.md](save-load.md) | Time & Day Cycle, Item Database & Inventory (+ every stateful system) |
 | 29 | Emotional Feedback (inferred) | UI | MVP | Approved | design/gdd/emotional-feedback.md | Morale & Mental State, Body Temperature, Character Controller & Animation, Camera |
 | 30 | Ambient & Foley Audio | Audio | MVP | Approved | design/gdd/ambient-and-foley-audio.md | Terrain & Snow Surface, Character Controller & Animation, Fire |
 | 31 | HUD | UI | MVP | Approved | design/gdd/hud.md | Body Temperature, Needs & Weight, Time & Day Cycle, Item Database & Inventory |
-| 32 | Screens & Menus | UI | Vertical Slice | Not Started | — | Item Database & Inventory, Kit Selection, Self-Filmed Diary, Tap-out & Run Results |
+| 32 | Screens & Menus | UI | Vertical Slice (menu slice) | Designed | [screens-and-menus.md](screens-and-menus.md) | Item Database & Inventory, Kit Selection, Self-Filmed Diary, Tap-out & Run Results |
 | 33 | Localization, Accessibility & Onboarding | Meta | Full Vision | Not Started | — | HUD, Screens & Menus |
 
 ---
@@ -254,12 +254,14 @@ Order 1 breaks dependency order on purpose: Morale's GDD defines the inputs it n
 
 ---
 
+Default (reversible; accepted under Scott delegation via ADR-0018): #28 is Designed for run checkpoints only (settings deferred); #32 for title/pause/results only (kit/diary/wider Results deferred). ADR-0018 is Accepted; design/ADR status is not runtime verification.
+
 ## Progress Tracker
 
 | Metric | Count |
 |--------|-------|
 | Total systems identified | 33 |
-| Design docs started | 20 |
+| Design docs started | 22 |
 | Design docs reviewed | 19 |
 | Design docs approved | 19 |
 | MVP systems designed | 18/18 |

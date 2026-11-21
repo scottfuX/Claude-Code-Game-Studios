@@ -5,7 +5,10 @@ signal action_pressed(action: StringName)
 enum Context { GAMEPLAY, UI, LOCKED }
 const ROUTED: Array[StringName] = [&"interact", &"secondary", &"cancel_action", &"backpack", &"pause_menu", &"camera_turn_left", &"camera_turn_right", &"camera_zoom_in", &"camera_zoom_out", &"wait", &"debug_overlay", &"help", &"sleep", &"drink_snow"]
 const MOVEMENT: Array[StringName] = [&"move_left", &"move_right", &"move_forward", &"move_back", &"move_hurry"]
+const UI_ACTIONS: Array[StringName] = [&"ui_accept", &"ui_cancel", &"ui_up", &"ui_down", &"ui_left", &"ui_right", &"ui_focus_next", &"ui_focus_prev"]
 var context: Context = Context.GAMEPLAY
+var terminal_input: bool = false
+var _terminal_skip_enabled: bool = false
 var chapter_actions_enabled: bool = false
 var _blocked: Dictionary[StringName, bool] = {}
 var _ui_sources: Dictionary[StringName, bool] = {}
@@ -22,8 +25,16 @@ func drive_debug(movement: Vector2, action: StringName = &"", hurry: bool = fals
 	_debug_driving = true
 	_debug_move = movement.limit_length(1.0) if movement.is_finite() else Vector2.ZERO
 	_debug_hurry = hurry
-	if action in ROUTED:
+	if action in ROUTED or action in UI_ACTIONS:
 		_dispatch(action)
+
+func enable_terminal_skip(enabled: bool) -> void:
+	if enabled == _terminal_skip_enabled:
+		return
+	_terminal_skip_enabled = enabled
+	for action: StringName in [&"interact", &"ui_accept"]:
+		if Input.is_action_pressed(action):
+			_blocked[action] = true
 
 ## Requests a UI context without stopping simulation or active work.
 func request_ui_context(source: StringName, open: bool) -> void:
@@ -66,9 +77,11 @@ func set_context(value: Context) -> void:
 	if context == value:
 		return
 	context = value
-	for action: StringName in ROUTED + MOVEMENT:
+	for action: StringName in ROUTED + MOVEMENT + UI_ACTIONS:
 		if Input.is_action_pressed(action):
 			_blocked[action] = true
+		else:
+			_blocked.erase(action)
 
 ## Returns the only sampled gameplay movement and hurry state.
 func sample_actions() -> Dictionary[StringName, Variant]:
@@ -85,27 +98,41 @@ func sample_actions() -> Dictionary[StringName, Variant]:
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.echo:
+		if context != Context.GAMEPLAY:
+			get_viewport().set_input_as_handled()
 		return
 	for action: StringName in MOVEMENT:
 		if event.is_action_released(action):
 			_blocked.erase(action)
-	for action: StringName in ROUTED:
+	var actions: Array[StringName] = ROUTED + UI_ACTIONS
+	if context == Context.UI and (is_paused() or (not _ui_sources.has(&"backpack") and not _ui_sources.has(&"sleep"))):
+		actions = UI_ACTIONS + ROUTED
+	for action: StringName in actions:
 		if event.is_action_released(action):
 			_blocked.erase(action)
-		if not event.is_action_pressed(action) or _blocked.has(action):
+		if not event.is_action_pressed(action, false, action in UI_ACTIONS):
 			continue
+		if _blocked.has(action):
+			if context != Context.GAMEPLAY:
+				get_viewport().set_input_as_handled()
+			return
 		if _dispatch(action):
 			get_viewport().set_input_as_handled()
 			return
 
 func _dispatch(action: StringName) -> bool:
+	if _blocked.has(action):
+		return false
 	if not chapter_actions_enabled and action in [&"sleep", &"drink_snow"]:
 		return false
 	var debug := (action == &"debug_overlay" and OS.is_debug_build()) or action == &"help"
-	if context == Context.LOCKED and action != &"pause_menu" and not debug:
+	var skip := terminal_input and _terminal_skip_enabled and not is_paused() and action in [&"interact", &"ui_accept"]
+	if context == Context.LOCKED and action != &"pause_menu" and not skip and (terminal_input or not debug):
+		return false
+	if action in UI_ACTIONS and context != Context.UI and not skip:
 		return false
 	var wake := action == &"cancel_action" and _ui_sources.has(&"sleep") and not is_paused()
-	if context == Context.UI and action not in [&"pause_menu", &"backpack"] and not debug and not wake:
+	if context == Context.UI and action not in UI_ACTIONS and action not in [&"pause_menu", &"backpack"] and not debug and not wake:
 		return false
 	action_pressed.emit(action)
 	return true

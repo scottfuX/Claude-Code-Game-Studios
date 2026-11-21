@@ -24,6 +24,24 @@ production/qa/
 
 ## Running Tests
 
+### Checkpoint movie (debug builds only)
+
+`tools/checkpoint_demo.gd` is an opt-in scripted navigation capture, not a gameplay
+entry point. It requires `--checkpoint-demo` and refuses release builds. It uses
+the isolated `user://checkpoint-demo/` slot, drives authored keyboard inputs,
+then forces the body's death threshold and dispatches one simulation minute.
+It records New Run → pause/save/title → Continue → terminal shot/results → title.
+Normal launch has no force-death binding.
+
+```bash
+mkdir -p ~/shots
+DISPLAY=:0 godot --path . --rendering-driver opengl3 --resolution 960x600 --fixed-fps 30 --write-movie ~/shots/checkpoint-demo.avi --script res://tools/checkpoint_demo.gd -- --checkpoint-demo
+ffmpeg -y -i ~/shots/checkpoint-demo.avi -c:v libx264 -pix_fmt yuv420p -crf 23 -c:a aac ~/shots/demo.mp4
+```
+
+The script also captures `~/shots/title-continue.png`. It removes only its own
+demo checkpoint before starting; it never reads or replaces the player's slot.
+
 From the repository root, with Godot 4.7.2 on your PATH (or substitute the
 path to its executable):
 

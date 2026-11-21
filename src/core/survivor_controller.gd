@@ -43,6 +43,25 @@ func _physics_process(delta: float) -> void:
 	if direction.length_squared() > tuning.facing_input_squared:
 		facing = direction.normalized()
 
+func export_state() -> Dictionary:
+	return {"position": CheckpointValues.encode_vector(position), "facing": CheckpointValues.encode_vector(facing)}
+
+func restore_state(dto: Dictionary) -> bool:
+	if not validate_state(dto):
+		return false
+	position = CheckpointValues.decode_vector(dto.position)
+	facing = CheckpointValues.decode_vector(dto.facing)
+	velocity = Vector3.ZERO
+	return true
+
+static func validate_state(dto: Dictionary) -> bool:
+	if not CheckpointValues.keys(dto, ["position", "facing"]) or not CheckpointValues.vector(dto.position) or not CheckpointValues.vector(dto.facing):
+		return false
+	var p := CheckpointValues.decode_vector(dto.position)
+	var direction := CheckpointValues.decode_vector(dto.facing)
+	var data: PlayfieldTuning = preload("res://assets/data/playfield_defaults.tres")
+	return absf(p.x) < data.half_extent - data.capsule_radius and absf(p.z) < data.half_extent - data.capsule_radius and p.y >= -data.capsule_radius and p.y <= data.capsule_height and absf(direction.y) < 0.0001 and absf(direction.length() - 1.0) < 0.0001
+
 ## Samples incoming ground beyond the survivor's current contact patch.
 func snow_speed_factor(direction: Vector3) -> float:
 	if snow == null:

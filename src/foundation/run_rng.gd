@@ -14,3 +14,19 @@ func draw_unit() -> float:
 ## Returns detached state for deterministic same-engine replay.
 func snapshot() -> Dictionary[StringName, int]:
 	return {&"seed": _generator.seed, &"state": _generator.state, &"draw_count": draw_count}
+
+func export_state() -> Dictionary:
+	return {"seed": str(_generator.seed), "state": str(_generator.state), "draw_count": str(draw_count)}
+
+func restore_state(dto: Dictionary) -> bool:
+	if not CheckpointValues.keys(dto, ["seed", "state", "draw_count"]):
+		return false
+	for key: String in dto:
+		if not CheckpointValues.decimal(dto[key]):
+			return false
+	if dto.draw_count.to_int() < 0:
+		return false
+	_generator.seed = dto.seed.to_int()
+	_generator.state = dto.state.to_int()
+	draw_count = dto.draw_count.to_int()
+	return true

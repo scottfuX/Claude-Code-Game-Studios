@@ -131,3 +131,25 @@ func advance_minute(integrate: Callable = Callable()) -> bool:
 ## Returns detached clock values for presentation.
 func snapshot() -> Dictionary[StringName, Variant]:
 	return {&"day": day, &"minute_of_day": minute_of_day, &"elapsed_minutes": maxi(0, (day - tuning.start_day) * 1440 + minute_of_day - tuning.start_minute_of_day), &"phase": phase(), &"sunrise_hour": sunrise_hour(), &"sunset_hour": sunset_hour(), &"rate_mode": rate_mode}
+
+func export_state() -> Dictionary:
+	return {"day": day, "minute": minute_of_day, "accumulator": debt, "rate_mode": String(rate_mode)}
+
+func restore_state(dto: Dictionary) -> bool:
+	if not CheckpointValues.keys(dto, ["day", "minute", "accumulator", "rate_mode"]):
+		return false
+	if not CheckpointValues.integer(dto.day, tuning.start_day, tuning.survival_day) or not CheckpointValues.integer(dto.minute, 0, 1439) or not CheckpointValues.number(dto.accumulator, 0, 1000000000):
+		return false
+	if not CheckpointValues.text(dto.rate_mode) or dto.rate_mode not in ["normal", "wait", "sleep"]:
+		return false
+	if dto.day == tuning.start_day and dto.minute < tuning.start_minute_of_day:
+		return false
+	day = int(dto.day)
+	minute_of_day = int(dto.minute)
+	debt = float(dto.accumulator)
+	rate_mode = StringName(dto.rate_mode)
+	sunrise_this_minute = false
+	_capped = false
+	_dispatching = false
+	_requested_mode = &""
+	return true
