@@ -1,5 +1,80 @@
 extends GdUnitTestSuite
 
+func test_wet_log_smothering_uses_pre_feed_stage_and_preserves_fi5_fuel() -> void:
+	for stage: StringName in [&"Kindling", &"Burning", &"Embers"]:
+		var inventory := InventoryModel.new()
+		inventory.add(&"log", 1)
+		inventory.soak_carried(1)
+		var thermal := ThermalField.new()
+		var fire := FireController.new(&"fire", Vector3.ZERO, thermal)
+		fire.stage = stage
+		fire.fuel = 26 if stage == &"Kindling" else 60
+		var before := fire.fuel
+		assert_bool(fire.commit_action(&"add_fuel", inventory)).is_true()
+		assert_float(fire.fuel).is_equal(before + 42.0)
+		assert_str(fire.stage).is_equal("Burning" if stage == &"Burning" else "Embers")
+		assert_float(thermal.heat_at(Vector3.ZERO)).is_equal(fire.heat_c())
+	var dry_inventory := InventoryModel.new()
+	dry_inventory.add(&"log", 1)
+	var dry := FireController.new(&"dry", Vector3.ZERO, ThermalField.new())
+	dry.stage = &"Kindling"
+	dry.fuel = 26
+	dry.commit_action(&"add_fuel", dry_inventory)
+	assert_str(dry.stage).is_equal("Burning")
+
+func test_fi5_damp_fuel_amount_mixing_and_capacity_use_same_effective_units() -> void:
+	var inventory := InventoryModel.new()
+	inventory.add(&"log", 1)
+	inventory.soak_carried(1)
+	inventory.add(&"log", 1)
+	var fire := FireController.new(&"fire", Vector3.ZERO, ThermalField.new())
+	fire.stage = &"Burning"
+	fire.fuel = 240
+	assert_bool(fire.commit_action(&"add_fuel", inventory)).is_true()
+	assert_float(fire.fuel).is_equal(291.0)
+	assert_float(fire.burning_wetness).is_equal_approx(0.5 * 51.0 / 291.0, 0.000001)
+	fire.fuel = 249
+	assert_bool(fire.can_act(&"add_fuel", inventory)).is_true()
+	fire.fuel = 250
+	assert_bool(fire.can_act(&"add_fuel", inventory)).is_false()
+	assert_int(inventory.count(&"log")).is_equal(1)
+
+func test_mixed_stack_consumption_preserves_sampled_moisture() -> void:
+	var inventory := InventoryModel.new()
+	inventory.add(&"log", 1)
+	inventory.soak_carried(1)
+	inventory.add(&"log", 1)
+	var fire := FireController.new(&"fire", Vector3.ZERO, ThermalField.new())
+	fire.stage = &"Burning"
+	fire.fuel = 60
+	assert_bool(fire.commit_action(&"add_fuel", inventory)).is_true()
+	assert_float(inventory.wetness(&"log")).is_equal(0.5)
+	assert_int(inventory.count(&"log")).is_equal(1)
+	assert_bool(inventory.consume(&"log", 2)).is_false()
+	assert_float(inventory.wetness(&"log")).is_equal(0.5)
+	inventory.consume(&"log", 1)
+	assert_float(inventory.wetness(&"log")).is_equal(0.0)
+	inventory.add(&"log", 1)
+	assert_float(inventory.wetness(&"log")).is_equal(0.0)
+
+func test_wet_fire_penalty_survives_publication_and_reaches_body() -> void:
+	var wet := RunSimulation.new()
+	var dry := RunSimulation.new()
+	for run: RunSimulation in [wet, dry]:
+		run.body.core_temp_c = 35
+		var fire := run.create_fire(Vector3.ZERO)
+		fire.stage = &"Burning"
+		fire.fuel = 120
+	wet.fires[0].burning_wetness = 1.0
+	wet.step_minute()
+	dry.step_minute()
+	assert_float(wet.fires[0].burning_wetness).is_equal_approx(0.95, 0.00001)
+	assert_float(wet.last_felt_temp_c).is_less(dry.last_felt_temp_c)
+	assert_float(wet.body.core_temp_c).is_less(dry.body.core_temp_c)
+	for minute in 25:
+		wet.fires[0].step_minute()
+	assert_float(wet.fires[0].burning_wetness).is_equal(0.0)
+
 
 func test_add_fuel_chooses_largest_available_item_that_fits() -> void:
 	var fire := FireController.new(&"fire", Vector3.ZERO, ThermalField.new())

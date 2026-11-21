@@ -229,6 +229,16 @@ place each node at a random point (seeded) inside the ring ∩ allowed zones, re
 
 ## Open Questions
 
+**Shelter/food integration (owner-approved):** the eastern 90 × 55 m lake occupies x=25–115 m, z=−10–45 m. It is shifted 25 m south of the Phase B draft so the authored hare trail, stance and approach remain on snow with at least a 4 m shoreline margin. Hare locations are unchanged. Shore resource bands, Thermal zones and the 0.5 m ice grid follow the relocated lake; thin ice remains on its northern inlet and western shore.
+
+The large ground reuses the existing SnowSurface and its shelter clear-snow port at the full world extent. A lake-bounds cutout and 2 m shore blend keep snow off the ice; lake movement does not inherit fresh-snow resistance. The west-bank stone band extends north and widens inland to retain near-ring placement after the shore moves. First-night lake cutouts remain disabled.
+
+**Visual framing revision:** decorative pines and boulders frame spawn within 8–20 m, outside the shelter reservation, hare approach corridor and resource access clearances. The lake presentation uses an inset, rounded, irregular snow bank shared by snow and ice shaders, with filtered 3 m thin-ice coverage instead of individual rendered cell tiles. Blue-grey ice remains shaded. The rectangular thermal zone, 0.5 m gameplay grid, broken-cell overlays and seeded resource/weather draws are unchanged; snow-covered shoreline cells still use the lake's gameplay surface query.
+
+**Phase B own call (owner-approved reversible default):** only the three-night profile uses the 240 × 240 m map and seeded rings. Collision remains flat at y=0; the hill, heightfield and slope costs are deferred to the ADR-0004 terrain/Jolt spike. The central clearing is ~40 m across (rather than the original west-centre drop); zones are authored rectangles, with flat frozen lake visuals. The first-night map/demo retains its original layout. Lake break-through and thin-ice cells follow in Phase C; drifts/ridge are thermal zone data, not changes to snow rendering or animation. Far-ring placement is clipped to the square playfield. Counts can fall short only after the GDD's logged 30-retry limit.
+
+**Phase C own calls (owner-approved reversible defaults):** `LakeSurface.surface_at` / `break_ice` own a temporary 0.5 m lake grid for the three-night profile. Normal ice is 25 cm; seeded 5–10 cm bands on the northern inlet and western shore cover approximately 15% of cells, shown in muted grey-blue. Broken cells are open water and block subsequent walking, without another roll. Footfalls are sampled every 0.7 m of horizontal travel independently of presentation trails. Inventory has no carried-load model yet, so M4 receives load fraction zero. Escape locks gameplay input, struggles for 4 real seconds, then moves at 1.2 m/s to the nearest shore or intact thick-ice cell. Immersion preserves target-owned chop progress; other current actions discard it. No Morale owner exists yet, so the major helplessness notification is deferred. These ports do not implement the terrain heightfield or change footprint/trail ownership.
+
 | Question | Owner | Resolve by | How |
 |---|---|---|---|
 | Is 240 × 240 m right? 100 m costs ~1.2 game hours; the far ring is a half-day expedition. | owner + level-designer | MVP playtest | resize rings (data) before resizing the map |

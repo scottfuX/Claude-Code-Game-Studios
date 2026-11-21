@@ -1,5 +1,78 @@
 extends GdUnitTestSuite
 
+func _weather_run() -> RunCoordinator:
+	var run := auto_free(preload("res://src/run/run.tscn").instantiate()) as RunCoordinator
+	run.tuning = preload("res://assets/data/three_day_survival.tres")
+	run.process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(run)
+	return run
+
+func test_weather_lighting_is_read_only_and_resets_at_the_same_clock_minute() -> void:
+	var run := _weather_run()
+	run.call("_update_lighting")
+	var energy := run.sun.light_energy
+	var color := run.sun.light_color
+	var density := run.environment_node.environment.fog_density
+	var ambient := run.environment_node.environment.ambient_light_color
+	var atmosphere: WinterAtmosphere = run.get("_atmosphere")
+	var snow: CPUParticles3D = atmosphere.get("_snow")
+	var count := snow.amount
+	var rng := run.simulation.rng.export_state()
+	var body := run.simulation.body.export_state()
+	var heat := run.simulation.thermal.air_temp_c()
+	for state: StringName in [&"Windy", &"Snowing"]:
+		run.simulation.weather.state = state
+		run.call("_update_lighting")
+		assert_float(run.sun.light_energy).is_less(energy)
+		assert_float(run.environment_node.environment.fog_density).is_greater(density)
+		assert_int(snow.amount).is_greater(count)
+		var fog := run.environment_node.environment.fog_density
+		var weather_energy := run.sun.light_energy
+		for frame in 5:
+			run.call("_update_lighting")
+			assert_float(run.environment_node.environment.fog_density).is_equal(fog)
+			assert_float(run.sun.light_energy).is_equal(weather_energy)
+	run.simulation.weather.state = &"Clear"
+	run.simulation.weather._snap_end = 1000
+	run.call("_update_lighting")
+	assert_float(run.environment_node.environment.ambient_light_color.b / run.environment_node.environment.ambient_light_color.r).is_greater(ambient.b / ambient.r)
+	run.simulation.weather._snap_end = -1
+	run.call("_update_lighting")
+	assert_float(run.sun.light_energy).is_equal(energy)
+	assert_bool(run.sun.light_color.is_equal_approx(color)).is_true()
+	assert_float(run.environment_node.environment.fog_density).is_equal(density)
+	assert_int(snow.amount).is_equal(count)
+	assert_dict(run.simulation.rng.export_state()).is_equal(rng)
+	assert_dict(run.simulation.body.export_state()).is_equal(body)
+	assert_float(run.simulation.thermal.air_temp_c()).is_equal(heat)
+
+func test_clear_large_world_uses_main_lighting_and_forest_assets_respect_clearings() -> void:
+	var run := _weather_run()
+	run.call("_update_lighting")
+	var legacy := auto_free(preload("res://src/run/run.tscn").instantiate()) as RunCoordinator
+	legacy.process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(legacy)
+	legacy.simulation.clock.minute_of_day = run.simulation.clock.minute_of_day
+	legacy.call("_update_lighting")
+	assert_float(run.sun.light_energy).is_equal(legacy.sun.light_energy)
+	assert_bool(run.sun.light_color.is_equal_approx(legacy.sun.light_color)).is_true()
+	assert_float(run.environment_node.environment.fog_density).is_equal(legacy.environment_node.environment.fog_density)
+	var count := 0
+	var birch_count := 0
+	for tree: Node3D in get_tree().get_nodes_in_group(&"forest_decor"):
+		if not run.world.is_ancestor_of(tree):
+			continue
+		count += 1
+		assert_bool(run.simulation.map_layout.is_in_lake(tree.position)).is_false()
+		assert_float(tree.position.length()).is_greater_equal(20.0)
+		assert_str(run.world.zone_at(tree.position)).is_equal("forest")
+		if tree.scene_file_path.ends_with("bare_tree_flat.glb") and tree.position.x > 25 and tree.position.z > 50:
+			birch_count += 1
+	assert_int(count).is_greater(200)
+	assert_int(birch_count).is_greater(20)
+	var expected := RunSimulation.new(run.seed_value, run.simulation.tuning)
+	assert_dict(run.simulation.rng.export_state()).is_equal(expected.rng.export_state())
+
 func test_synthesis_is_seeded_bounded_and_rejects_unknown_sounds() -> void:
 	assert_object(SynthAudio.create(&"missing")).is_null()
 	assert_object(SynthAudio.create(&"wind", 0)).is_null()

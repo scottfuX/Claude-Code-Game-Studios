@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://b8yifg0v5j5i4"
+
+[deps]
+
+files=["res://assets/localization/ice.en.translation", "res://assets/localization/ice.zh.translation"]
+
+source_file="res://assets/localization/ice.csv"
+dest_files=["res://assets/localization/ice.en.translation", "res://assets/localization/ice.zh.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

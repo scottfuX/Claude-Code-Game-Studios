@@ -18,7 +18,16 @@ var ember_minutes: int = 0
 var kindling_count: int = 0
 var tinder_ready: bool = false
 var _tinder_fuel: float = 0.0
+var _tinder_wetness: float = 0.0
+var _kindling_wetness: float = 0.0
+var _tinder_quality: float = 1.0
 var _thermal: ThermalField
+
+func material_wetness(action: StringName) -> float:
+	return _tinder_wetness if action == &"strike" else (_kindling_wetness if stage == &"Smoldering" else burning_wetness)
+
+func material_quality(action: StringName) -> float:
+	return _tinder_quality if action == &"strike" else 1.0
 
 func _init(source_id: StringName, site_position: Vector3, thermal: ThermalField, data: SliceTuning = null) -> void:
 	id = source_id
@@ -40,7 +49,7 @@ func can_act(action: StringName, inventory: InventoryModel) -> bool:
 			return stage == &"Smoldering" or (stage == &"Embers" and fuel >= tuning.kindling_threshold)
 		&"add_fuel":
 			var item := _preferred_fuel(inventory)
-			return stage in [&"Kindling", &"Burning", &"Embers"] and item != &"" and fuel + tuning.fuel_values[item] <= tuning.fuel_cap
+			return stage in [&"Kindling", &"Burning", &"Embers"] and item != &"" and fuel + _effective_fuel(item, inventory) <= tuning.fuel_cap
 	return false
 
 ## Returns the remaining kindling count without exposing fuel units.
@@ -65,10 +74,13 @@ func commit_action(action: StringName, inventory: InventoryModel, success: bool 
 		&"arrange_tinder":
 			var tinder: StringName = &"bark" if inventory.count(&"bark") >= tuning.tinder_bark else &"grass"
 			var amount := tuning.tinder_bark if tinder == &"bark" else tuning.tinder_grass
+			_tinder_wetness = inventory.wetness(tinder)
+			_tinder_quality = inventory.tinder_quality(tinder)
 			inventory.consume(tinder, amount)
-			_tinder_fuel = amount * tuning.fuel_values[tinder]
+			_tinder_fuel = amount * tuning.fuel_values[tinder] * (1.0 - tuning.fuel_damp * _tinder_wetness)
 			tinder_ready = true
 			if kindling_count == 0:
+				_kindling_wetness = inventory.wetness(&"stick")
 				inventory.consume(&"stick", tuning.kindling_sticks)
 				kindling_count = tuning.kindling_sticks
 			stage = &"Laid"
@@ -80,7 +92,9 @@ func commit_action(action: StringName, inventory: InventoryModel, success: bool 
 		&"blow_embers":
 			if success:
 				if stage == &"Smoldering":
-					fuel = kindling_count * tuning.fuel_values[&"stick"] + _tinder_fuel
+					var kindling_fuel := kindling_count * tuning.fuel_values[&"stick"] * (1.0 - tuning.fuel_damp * _kindling_wetness)
+					fuel = kindling_fuel + _tinder_fuel
+					burning_wetness = (_kindling_wetness * kindling_fuel + _tinder_wetness * _tinder_fuel) / maxf(0.001, fuel)
 					kindling_count = 0
 					tinder_ready = false
 					_tinder_fuel = 0.0
@@ -90,9 +104,15 @@ func commit_action(action: StringName, inventory: InventoryModel, success: bool 
 				_expire_smolder()
 		&"add_fuel":
 			var item := _preferred_fuel(inventory)
+			var smother := stage == &"Kindling" and item == &"log" and inventory.wetness(item) > tuning.wet_log_smother_threshold
+			var added := _effective_fuel(item, inventory)
+			burning_wetness = (burning_wetness * fuel + inventory.wetness(item) * added) / (fuel + added)
 			inventory.consume(item, 1)
-			fuel += tuning.fuel_values[item]
-			if stage != &"Embers":
+			fuel += added
+			if smother:
+				stage = &"Embers"
+				ember_minutes = 0
+			elif stage != &"Embers":
 				_derive_flame()
 	publish_heat()
 	return true
@@ -105,7 +125,7 @@ func step_minute(survivor_position: Vector3 = Vector3.ZERO) -> void:
 			_expire_smolder()
 	elif stage in [&"Kindling", &"Burning"]:
 		fuel = maxf(0.0, fuel - burn_rate())
-		burning_wetness = 0.0
+		burning_wetness = maxf(0.0, burning_wetness - tuning.fire_drying_per_minute)
 		_derive_flame()
 	elif stage == &"Embers":
 		ember_minutes += 1
@@ -150,11 +170,14 @@ func _preferred_fuel(inventory: InventoryModel) -> StringName:
 	var preferred: StringName = &""
 	var largest := 0.0
 	for item: StringName in [&"log", &"stick"]:
-		var value: float = tuning.fuel_values[item]
+		var value := _effective_fuel(item, inventory)
 		if inventory.count(item) > 0 and value > largest and fuel + value <= tuning.fuel_cap:
 			preferred = item
 			largest = value
 	return preferred
+
+func _effective_fuel(item: StringName, inventory: InventoryModel) -> float:
+	return tuning.fuel_values[item] * (1.0 - tuning.fuel_damp * inventory.wetness(item))
 
 func _expire_smolder() -> void:
 	tinder_ready = false
@@ -173,14 +196,23 @@ func _derive_flame() -> void:
 func export_state() -> Dictionary:
 	return {"id": String(id), "position": CheckpointValues.encode_vector(position), "stage": String(stage), "fuel": fuel,
 		"burning_wetness": burning_wetness, "smolder_minutes": smolder_minutes, "ember_minutes": ember_minutes,
-		"kindling_count": kindling_count, "tinder_ready": tinder_ready, "tinder_fuel": _tinder_fuel}
+		"kindling_count": kindling_count, "tinder_ready": tinder_ready, "tinder_fuel": _tinder_fuel,
+		"tinder_wetness": _tinder_wetness, "kindling_wetness": _kindling_wetness, "tinder_quality": _tinder_quality}
 
 func restore_state(dto: Dictionary) -> bool:
+	var normalized := dto.duplicate()
+	for key: String in ["tinder_wetness", "kindling_wetness", "tinder_quality"]:
+		if not normalized.has(key):
+			normalized[key] = 1.0 if key == "tinder_quality" else 0.0
+		if not CheckpointValues.number(normalized[key], 0, 1):
+			return false
+	dto = normalized
 	if not CheckpointValues.keys(dto, export_state().keys()) or not CheckpointValues.text(dto.id) or dto.id != String(id) or not CheckpointValues.vector(dto.position):
 		return false
 	var p := CheckpointValues.decode_vector(dto.position)
 	var field: PlayfieldTuning = preload("res://assets/data/playfield_defaults.tres")
-	if absf(p.x) >= field.half_extent or absf(p.z) >= field.half_extent or absf(p.y) > 0.01:
+	var extent := tuning.world.half_extent if tuning.large_map_enabled else field.half_extent
+	if absf(p.x) >= extent or absf(p.z) >= extent or absf(p.y) > 0.01:
 		return false
 	if not CheckpointValues.text(dto.stage) or dto.stage not in ["Site", "Cleared", "Laid", "Smoldering", "Kindling", "Burning", "Embers", "Out"] or not dto.tinder_ready is bool:
 		return false
@@ -190,7 +222,8 @@ func restore_state(dto: Dictionary) -> bool:
 		return false
 	if (dto.kindling_count != 0 and dto.kindling_count != tuning.kindling_sticks) or (dto.tinder_ready and dto.kindling_count != tuning.kindling_sticks) or (not dto.tinder_ready and dto.tinder_fuel != 0):
 		return false
-	if dto.tinder_ready and dto.tinder_fuel not in [tuning.tinder_bark * tuning.fuel_values[&"bark"], tuning.tinder_grass * tuning.fuel_values[&"grass"]]:
+	var damp_factor: float = 1.0 - tuning.fuel_damp * dto.tinder_wetness
+	if dto.tinder_ready and not (is_equal_approx(dto.tinder_fuel, tuning.tinder_bark * tuning.fuel_values[&"bark"] * damp_factor) or is_equal_approx(dto.tinder_fuel, tuning.tinder_grass * tuning.fuel_values[&"grass"] * damp_factor)):
 		return false
 	if dto.stage in ["Site", "Cleared", "Laid", "Smoldering", "Out"] and dto.fuel != 0:
 		return false
@@ -213,5 +246,8 @@ func restore_state(dto: Dictionary) -> bool:
 	kindling_count = int(dto.kindling_count)
 	tinder_ready = dto.tinder_ready
 	_tinder_fuel = float(dto.tinder_fuel)
+	_tinder_wetness = float(dto.tinder_wetness)
+	_kindling_wetness = float(dto.kindling_wetness)
+	_tinder_quality = float(dto.tinder_quality)
 	publish_heat()
 	return true

@@ -112,6 +112,205 @@ func test_chapter_continue_restores_cover_wire_and_one_spent_hare_site() -> void
 	first_night.owners.survivor.position = CheckpointValues.encode_vector(grove)
 	assert_bool(RunCheckpoint.validate(first_night)).is_false()
 
+func test_continue_resumes_retained_chopping_progress() -> void:
+	var shell := _shell()
+	assert_bool(shell.call("start_run", {&"profile": &"three_night", &"seed": 443})).is_true()
+	var run: RunCoordinator = shell.get("_run")
+	var node := run.world.interactables[0].gather_node
+	assert_bool(run.simulation.start_action(&"chop_log", null, node)).is_true()
+	run.simulation.actions.elapsed_s = run.simulation.actions.duration_s * 0.4
+	run.simulation.cancel_action()
+	assert_float(node.action_progress[&"chop_log"]).is_equal_approx(0.4, 0.00001)
+	assert_bool(_store.save(RunCheckpoint.capture(run))).is_true()
+	var restored_shell := _shell()
+	assert_bool(restored_shell.call("start_run", {&"profile": &"three_night", &"restore": _store.probe()})).is_true()
+	var restored: RunCoordinator = restored_shell.get("_run")
+	assert_bool(restored.simulation.start_action(&"chop_log", null, restored.world.interactables[0].gather_node)).is_true()
+	assert_float(restored.simulation.actions.elapsed_s / restored.simulation.actions.duration_s).is_equal_approx(0.4, 0.00001)
+
+func test_legacy_harvested_bark_is_deducted_from_birch_bark_reserves() -> void:
+	var dto := _fixture()
+	dto.owners.run.erase("weather")
+	dto.owners.run.erase("broken_ice")
+	var legacy := GatherCatalog.legacy(RunCheckpoint.tuning_for("three_night"))
+	dto.owners.gathering = {}
+	var harvested := false
+	for id: StringName in legacy:
+		var node: GatherNode = legacy[id]
+		var state := node.export_state()
+		if node.kind == &"deadfall" and not harvested:
+			state.bark_remaining -= 2
+			harvested = true
+		dto.owners.gathering[String(id)] = state
+	assert_bool(_store.save(dto)).is_true()
+	var shell := _shell()
+	assert_bool(shell.call("start_run", {&"profile": &"three_night", &"restore": _store.probe()})).is_true()
+	var run: RunCoordinator = shell.get("_run")
+	var initial := 0
+	var remaining := 0
+	for node: GatherNode in GatherCatalog.create(run.simulation.tuning, dto.seed.to_int()).values():
+		if node.kind == &"birch":
+			initial += node.bark_remaining
+	for entry: WorldInteractable in run.world.interactables:
+		if entry.gather_node != null and entry.gather_node.kind == &"birch":
+			remaining += entry.gather_node.bark_remaining
+	assert_bool(harvested).is_true()
+	assert_int(remaining).is_equal(initial - 2)
+
+func test_sunrise_autosave_is_deferred_through_ice_escape_and_written_once() -> void:
+	var shell := _shell()
+	assert_bool(shell.call("start_run", {&"profile": &"three_night", &"seed": 443})).is_true()
+	var run: RunCoordinator = shell.get("_run")
+	var attempts: Array[bool] = []
+	run.checkpoint_writer = func(owner: RunCoordinator) -> bool:
+		attempts.append(true)
+		return _store.save(RunCheckpoint.capture(owner))
+	run.simulation.in_water = true
+	run.simulation.clock.day = 2
+	run.simulation.clock.minute_of_day = ceili(run.simulation.clock.sunrise_hour() * 60.0) - 1
+	run.simulation.step_minute()
+	run.flush_autosave()
+	assert_int(attempts.size()).is_zero()
+	assert_bool(run.get("_sunrise_pending")).is_true()
+	run.simulation.leave_water()
+	run.flush_autosave()
+	assert_int(attempts.size()).is_equal(1)
+	assert_dict(_store.probe()).is_not_empty()
+	assert_bool(run.get("_sunrise_pending")).is_false()
+	run.flush_autosave()
+	assert_int(attempts.size()).is_equal(1)
+
+func test_seeded_world_weather_broken_ice_and_wet_materials_survive_json_continue() -> void:
+	var shell := _shell()
+	assert_bool(shell.call("start_run", {&"profile": &"three_night", &"seed": 443})).is_true()
+	var run: RunCoordinator = shell.get("_run")
+	run.simulation.inventory.add(&"log", 3)
+	run.simulation.inventory.add(&"bark", 2)
+	run.simulation.inventory.add(&"stick", 6)
+	run.simulation.inventory.add(&"stone", 7)
+	run.simulation.inventory.soak_carried(1)
+	run.simulation.inventory.add(&"log", 2)
+	run.simulation.inventory.consume(&"log", 1)
+	var fire := run.simulation.create_fire(Vector3(-60, 0, -20))
+	fire.stage = &"Cleared"
+	fire.commit_action(&"arrange_tinder", run.simulation.inventory, true)
+	run.add_fire_site(fire)
+	run.survivor.position = Vector3(-65, 0, -20)
+	run.simulation.position = run.survivor.position
+	var weather := run.simulation.weather
+	weather.step_minute(run.simulation.clock.minute_of_day, run.simulation.rng)
+	weather.state = &"Snowing"
+	weather._snap_end = weather._last_minute + 100
+	var cell := Vector2i(1, 1)
+	run.simulation.lake.break_ice(cell)
+	for entry: WorldInteractable in run.world.interactables:
+		if entry.gather_node.kind == &"deadfall":
+			entry.gather_node.sticks_remaining -= 1
+			break
+	var dto := RunCheckpoint.capture(run)
+	assert_bool(_store.save(dto)).is_true()
+	var loaded := _store.probe()
+	var restored_shell := _shell()
+	assert_bool(restored_shell.call("start_run", {&"profile": &"three_night", &"restore": loaded})).is_true()
+	var restored: RunCoordinator = restored_shell.get("_run")
+	assert_dict(RunCheckpoint.capture(restored).owners).is_equal(dto.owners)
+	assert_float(restored.simulation.inventory.wetness(&"log")).is_equal_approx(0.6, 0.00001)
+	assert_int(restored.simulation.inventory.count(&"stone")).is_equal(7)
+	assert_dict(restored.simulation.lake.thin_cells).is_equal(run.simulation.lake.thin_cells)
+	assert_str(restored.simulation.lake.surface_at(restored.simulation.lake.cell_center(cell))[&"kind"]).is_equal("water")
+	assert_bool(restored.simulation.lake.can_traverse(restored.simulation.lake.cell_center(cell + Vector2i.LEFT), restored.simulation.lake.cell_center(cell))).is_false()
+	var baseline := ThermalField.new(run.simulation.tuning)
+	baseline.begin_minute(run.simulation.clock.day, run.simulation.clock.minute_of_day / 60.0)
+	assert_float(restored.simulation.thermal.air_temp_c()).is_equal_approx(baseline.air_temp_c() - 8.0, 0.001)
+	weather.step_minute(weather._last_minute + 500, run.simulation.rng)
+	restored.simulation.weather.step_minute(restored.simulation.weather._last_minute + 500, restored.simulation.rng)
+	assert_dict(restored.simulation.weather.export_state()).is_equal(weather.export_state())
+	assert_dict(restored.simulation.rng.export_state()).is_equal(run.simulation.rng.export_state())
+
+func test_legacy_world_metadata_defaults_and_legacy_catalog_migration() -> void:
+	var dto := _fixture()
+	dto.owners.run.erase("weather")
+	dto.owners.run.erase("broken_ice")
+	dto.owners.inventory.erase("wet_counts")
+	for fire: Dictionary in dto.owners.fires:
+		for key: String in ["tinder_wetness", "kindling_wetness", "tinder_quality"]:
+			fire.erase(key)
+	var legacy := GatherCatalog.legacy(RunCheckpoint.tuning_for("three_night"))
+	dto.owners.gathering = {}
+	var spent := 0
+	for id: StringName in legacy:
+		var node: GatherNode = legacy[id]
+		var state := node.export_state()
+		state.erase("sticks_remaining")
+		if node.kind == &"bush":
+			spent += node.remaining
+			state.remaining = 0
+		dto.owners.gathering[String(id)] = state
+	assert_bool(_store.save(dto)).is_true()
+	var shell := _shell()
+	assert_bool(shell.call("start_run", {&"profile": &"three_night", &"restore": _store.probe()})).is_true()
+	var run: RunCoordinator = shell.get("_run")
+	assert_str(run.simulation.weather.state).is_equal("Clear")
+	assert_dict(run.simulation.lake.broken_cells).is_empty()
+	assert_float(run.simulation.inventory.wetness(&"stick")).is_equal(0.0)
+	var reserves := GatherCatalog.create(run.simulation.tuning, dto.seed.to_int())
+	var initial := 0
+	var remaining := 0
+	for id: StringName in reserves:
+		if (reserves[id] as GatherNode).kind == &"bush":
+			initial += (reserves[id] as GatherNode).remaining
+	for entry: WorldInteractable in run.world.interactables:
+		if entry.gather_node != null and entry.gather_node.kind == &"bush":
+			remaining += entry.gather_node.remaining
+	assert_int(remaining).is_equal(initial - spent)
+	assert_bool(RunCheckpoint.validate(RunCheckpoint.capture(run))).is_true()
+
+func test_world_checkpoint_rejects_tampered_state_without_partial_restore() -> void:
+	var dto := _fixture()
+	for change: Dictionary in [{"state": "Unknown"}, {"transition_minute": -5}, {"snap_end_minute": 1.5}]:
+		var bad := dto.duplicate(true)
+		bad.owners.run.weather.merge(change, true)
+		assert_bool(RunCheckpoint.validate(bad)).is_false()
+	for cells: Variant in [[[0, 0], [0, 0]], [[-1, 0]], [[9999, 0]], [[0.5, 1]], ["cell"], {}]:
+		var bad := dto.duplicate(true)
+		bad.owners.run.broken_ice = cells
+		assert_bool(RunCheckpoint.validate(bad)).is_false()
+	for wet: Variant in [{"stick": 1000}, {"stick": -1}, {"stone": 1}, {"unknown": 1}, {"stick": NAN}, []]:
+		var bad := dto.duplicate(true)
+		bad.owners.inventory.wet_counts = wet
+		assert_bool(RunCheckpoint.validate(bad)).is_false()
+	var bad := dto.duplicate(true)
+	bad.seed = "444"
+	assert_bool(RunCheckpoint.validate(bad)).is_false()
+	bad = dto.duplicate(true)
+	bad.owners.gathering["unknown"] = bad.owners.gathering.values()[0]
+	assert_bool(RunCheckpoint.validate(bad)).is_false()
+	var state: Dictionary = dto.owners.duplicate(true)
+	state.erase("gathering")
+	state.erase("survivor")
+	state.erase("chapter")
+	var simulation := RunSimulation.new(55, RunCheckpoint.tuning_for("three_night"))
+	assert_bool(simulation.restore_state(state)).is_true()
+	var before := simulation.export_state()
+	state.run.broken_ice = [[-1, 0]]
+	assert_bool(simulation.restore_state(state)).is_false()
+	assert_dict(simulation.export_state()).is_equal(before)
+
+func test_empty_world_metadata_defaults_without_changing_seeded_reserves() -> void:
+	var dto := _fixture()
+	dto.owners.run.erase("weather")
+	dto.owners.run.erase("broken_ice")
+	dto.owners.inventory.erase("wet_counts")
+	assert_bool(RunCheckpoint.validate(dto)).is_true()
+	var shell := _shell()
+	assert_bool(shell.call("start_run", {&"profile": &"three_night", &"restore": dto})).is_true()
+	var run: RunCoordinator = shell.get("_run")
+	assert_dict(RunCheckpoint.capture(run).owners.gathering).is_equal(dto.owners.gathering)
+	assert_str(run.simulation.weather.state).is_equal("Clear")
+	assert_dict(run.simulation.lake.broken_cells).is_empty()
+	run.simulation.in_water = true
+	assert_dict(RunCheckpoint.capture(run)).is_empty()
+
 func test_round_trip_each_owner_both_profiles_and_rng_continuation() -> void:
 	for profile: StringName in [&"first_night", &"three_night"]:
 		var dto := _fixture(profile)
@@ -120,7 +319,7 @@ func test_round_trip_each_owner_both_profiles_and_rng_continuation() -> void:
 		var survivor := auto_free(SurvivorController.new()) as SurvivorController
 		assert_bool(survivor.restore_state(owners.survivor)).is_true()
 		assert_dict(survivor.export_state()).is_equal(owners.survivor)
-		var nodes := GatherCatalog.create(RunCheckpoint.tuning_for(String(profile)))
+		var nodes := GatherCatalog.create(RunCheckpoint.tuning_for(String(profile)), dto.seed.to_int())
 		for id: StringName in nodes:
 			assert_bool((nodes[id] as GatherNode).restore_state(owners.gathering[String(id)])).is_true()
 			assert_dict((nodes[id] as GatherNode).export_state()).is_equal(owners.gathering[String(id)])
@@ -191,7 +390,10 @@ func test_validation_rejects_each_owner_missing_unknown_bad_types_and_bounds() -
 		for key: String in dto.owners[owner]:
 			var bad := dto.duplicate(true)
 			bad.owners[owner].erase(key)
-			assert_bool(RunCheckpoint.validate(bad)).is_false()
+			if (owner == "inventory" and key == "wet_counts") or (owner == "run" and key in ["weather", "broken_ice"]):
+				assert_bool(RunCheckpoint.validate(bad)).is_true()
+			else:
+				assert_bool(RunCheckpoint.validate(bad)).is_false()
 			bad = dto.duplicate(true)
 			bad.owners[owner][key] = {"wrong": true}
 			assert_bool(RunCheckpoint.validate(bad)).is_false()
@@ -271,7 +473,7 @@ func test_continue_visibility_discard_cancel_restore_gate_and_same_time_profile(
 	assert_int(run.seed_value).is_equal(dto.seed.to_int())
 	assert_float(run.simulation.fires[0].fuel).is_equal(77.5)
 	assert_int(run.simulation.inventory.count(&"stick")).is_equal(8)
-	assert_int(run.world.interactables[0].gather_node.remaining).is_equal(11)
+	assert_int(run.world.interactables[0].gather_node.remaining).is_equal(int(dto.owners.gathering[String(run.world.interactables[0].site_id)].remaining))
 	run.call("_process", 0.5)
 	assert_int(run.simulation.clock.minute_of_day).is_equal(900)
 	var other := run.input_router.request_pause(&"disconnect")

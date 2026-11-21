@@ -87,7 +87,7 @@ feature → mechanic map every later GDD answers to.
 | 17 | Water | Gameplay | Vertical Slice | Not Started | — | Interaction & Timed Actions, Item Database & Inventory, Fire, Map & Resource Distribution, Needs & Weight |
 | 18 | Wildlife Behavior | Gameplay | Vertical Slice | Not Started | — | Map & Resource Distribution, Terrain & Snow Surface |
 | 19 | Food | Gameplay | Vertical Slice | In Review | design/gdd/food.md | Map & Resource Distribution, Terrain & Snow Surface (via Map), Time & Day Cycle, Interaction & Timed Actions, Item Database & Inventory, Fire, Needs & Weight, Body Temperature (via Interaction); Wildlife Behavior and Mishaps & Failure (broader slice) |
-| 20 | Weather & Cold Snaps | Gameplay | Vertical Slice | Not Started | — | Time & Day Cycle, Thermal Environment |
+| 20 | Weather & Cold Snaps | Gameplay | Three-night run | Provisional defaults | design/gdd/weather-and-cold-snaps.md | Time & Day Cycle, Thermal Environment |
 | 21 | Medical Check-ins | Gameplay | Vertical Slice | Not Started | — | Needs & Weight, Body Temperature, Injury & Pain, Time & Day Cycle |
 | 22 | Rival Simulation & Ranking | Gameplay | Vertical Slice | Not Started | — | Time & Day Cycle |
 | 23 | Item Database & Inventory | Economy | MVP | Approved | design/gdd/item-database-and-inventory.md | — |

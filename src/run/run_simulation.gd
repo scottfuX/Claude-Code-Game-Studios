@@ -3,11 +3,20 @@ class_name RunSimulation extends RefCounted
 signal snapshot_published(snapshot: Dictionary[StringName, Variant])
 signal run_ended(cause: StringName)
 signal action_resolved(action: StringName, success: bool, cause: StringName)
+signal fell_in_water(event: ImmersionEvent)
 
 var tuning: SliceTuning
 var clock: Clock
 var rng: RunRng
 var thermal: ThermalField
+var weather: WeatherController
+var map_layout: LargeMapLayout
+var lake: LakeSurface
+var in_water: bool = false
+var _contacts: Array[Dictionary] = []
+var _travel_remainder: float = 0.0
+var _immersion_sequence: int = 0
+var _debug_break_next: bool = false
 var body: BodyThermoregulation
 var needs: NeedsModel
 var inventory: InventoryModel
@@ -35,7 +44,8 @@ func export_state() -> Dictionary:
 		fire_states.append(fire.export_state())
 	return {"clock": clock.export_state(), "body": body.export_state(), "needs": needs.export_state(),
 		"inventory": inventory.export_state(tuning.chapter_needs_enabled), "rng": rng.export_state(), "fires": fire_states,
-		"run": {"minute_sequence": minute_sequence, "last_felt_temp_c": last_felt_temp_c if is_finite(last_felt_temp_c) else null}}
+		"run": {"minute_sequence": minute_sequence, "last_felt_temp_c": last_felt_temp_c if is_finite(last_felt_temp_c) else null,
+			"weather": weather.export_state() if weather != null else null, "broken_ice": lake.export_state() if lake != null else []}}
 
 func restore_state(dto: Dictionary) -> bool:
 	if not CheckpointValues.keys(dto, ["clock", "body", "needs", "inventory", "rng", "fires", "run"]):
@@ -45,16 +55,32 @@ func restore_state(dto: Dictionary) -> bool:
 			return false
 	if not dto.fires is Array or dto.fires.size() > tuning.max_fire_sites:
 		return false
-	if not CheckpointValues.keys(dto.run, ["minute_sequence", "last_felt_temp_c"]) or not CheckpointValues.integer(dto.run.minute_sequence, 0, 86400):
+	var run_shape: Dictionary = dto.run.duplicate()
+	run_shape.erase("weather")
+	run_shape.erase("broken_ice")
+	if not CheckpointValues.keys(run_shape, ["minute_sequence", "last_felt_temp_c"]) or not CheckpointValues.integer(dto.run.minute_sequence, 0, 86400):
 		return false
 	if dto.run.last_felt_temp_c != null and not CheckpointValues.number(dto.run.last_felt_temp_c, -1000, 1000):
 		return false
-	var staged := RunSimulation.new(1, tuning)
+	if not dto.rng.has("seed") or not CheckpointValues.decimal(dto.rng.seed):
+		return false
+	var staged := RunSimulation.new(dto.rng.seed.to_int(), tuning)
 	if not staged.clock.restore_state(dto.clock) or not staged.body.restore_state(dto.body) or not staged.needs.restore_state(dto.needs) or not staged.inventory.restore_state(dto.inventory, tuning.chapter_needs_enabled) or not staged.rng.restore_state(dto.rng):
 		return false
 	if staged.needs.is_asleep != (staged.clock.rate_mode == &"sleep") or staged._survived():
 		return false
 	if not tuning.chapter_needs_enabled and (staged.inventory.count(&"pemmican") > 0 or staged.clock.rate_mode == &"sleep"):
+		return false
+	var saved_weather: Variant = dto.run.get("weather")
+	if saved_weather != null:
+		if staged.weather == null or not saved_weather is Dictionary or not staged.weather.restore_state(saved_weather):
+			return false
+		if staged.weather._last_minute > (staged.clock.day - 1) * 1440 + staged.clock.minute_of_day:
+			return false
+	var cells: Variant = dto.run.get("broken_ice", [])
+	if not cells is Array or (staged.lake == null and not cells.is_empty()):
+		return false
+	if staged.lake != null and not staged.lake.restore_state(cells):
 		return false
 	for index: int in dto.fires.size():
 		if not dto.fires[index] is Dictionary:
@@ -73,6 +99,17 @@ func restore_state(dto: Dictionary) -> bool:
 	inventory = staged.inventory
 	rng = staged.rng
 	thermal = staged.thermal
+	map_layout = staged.map_layout
+	weather = staged.weather
+	if weather != null:
+		var values := weather.snapshot()
+		thermal.update_wind_source(&"weather", values[&"wind_mps"])
+		thermal.update_air_offset(&"weather", values[&"air_offset_c"])
+	if lake != null:
+		lake.thin_cells = staged.lake.thin_cells.duplicate()
+		lake.restore_state(cells)
+	else:
+		lake = staged.lake
 	fires = staged.fires
 	minute_sequence = int(dto.run.minute_sequence)
 	last_felt_temp_c = NAN if dto.run.last_felt_temp_c == null else float(dto.run.last_felt_temp_c)
@@ -86,10 +123,19 @@ func _init(seed_value: int = 1, data: SliceTuning = null) -> void:
 	tuning = data if data != null else preload("res://assets/data/slice_defaults.tres")
 	clock = Clock.new(tuning)
 	rng = RunRng.new(seed_value)
+	if tuning.large_map_enabled:
+		map_layout = LargeMapLayout.new(rng, tuning.world)
+		lake = LakeSurface.new(rng, tuning.world)
 	thermal = ThermalField.new(tuning)
+	if map_layout != null:
+		map_layout.publish_zones(thermal)
+	if tuning.weather_enabled:
+		weather = WeatherController.new()
+		thermal.register_wind_source(&"weather", 3.0)
+		thermal.register_air_offset(&"weather", 0.0)
 	body = BodyThermoregulation.new(tuning)
 	needs = NeedsModel.new(tuning)
-	inventory = InventoryModel.new()
+	inventory = InventoryModel.new(tuning)
 	if tuning.chapter_needs_enabled:
 		for item: StringName in tuning.starting_rations:
 			inventory.add(item, tuning.starting_rations[item])
@@ -100,7 +146,7 @@ func _init(seed_value: int = 1, data: SliceTuning = null) -> void:
 
 ## Admits already-selected sleep; control and action bindings are separate.
 func request_sleep() -> bool:
-	if terminal != &"" or not needs.request_sleep(clock.phase() == &"Night"):
+	if in_water or terminal != &"" or not needs.request_sleep(clock.phase() == &"Night"):
 		return false
 	cancel_action()
 	clock.request_rate_mode(&"sleep", &"chosen")
@@ -157,7 +203,7 @@ func start_feature_action(action: StringName, minutes: float, still_eligible: Ca
 
 ## Starts an eligible transaction with target and duration fixed at admission.
 func start_action(action: StringName, fire: FireController = null, node: GatherNode = null) -> bool:
-	if terminal != &"" or needs.is_asleep or not tuning.action_minutes.has(action) or not _allowed(action):
+	if in_water or terminal != &"" or needs.is_asleep or not tuning.action_minutes.has(action) or not _allowed(action):
 		return false
 	if fire != null:
 		if not fires.has(fire) or not fire.can_act(action, inventory):
@@ -173,6 +219,10 @@ func start_action(action: StringName, fire: FireController = null, node: GatherN
 		return false
 	_fire_target = fire
 	_gather_target = node
+	actions.cancellable = true
+	actions.progress_kept = lake != null and action == &"chop_log"
+	if node != null and actions.progress_kept:
+		actions.elapsed_s = node.action_progress.get(action, 0.0) * actions.duration_s
 	return true
 
 ## Returns the current fire or gathering target, or null when idle.
@@ -182,8 +232,12 @@ func active_action_target() -> RefCounted:
 	return _fire_target if _fire_target != null else _gather_target
 
 ## Cancels active work and clears the stored target without a result or draw.
-func cancel_action() -> void:
-	actions.cancel()
+func cancel_action(forced: bool = true) -> void:
+	if not forced and not actions.cancellable:
+		return
+	if _gather_target != null and actions.progress_kept and actions.action != &"":
+		_gather_target.action_progress[actions.action] = clampf((actions.elapsed_s + _action_delta_s) / actions.duration_s, 0, 1)
+	actions.cancel(forced)
 	_fire_target = null
 	_gather_target = null
 	_action_delta_s = 0.0
@@ -196,19 +250,23 @@ func cancel_action() -> void:
 func update(delta_s: float, paused: bool = false) -> void:
 	if terminal != &"" or paused or not is_finite(delta_s) or delta_s <= 0:
 		return
-	if movement != &"idle" or (_feature_valid.is_valid() and not _feature_valid.call()):
+	if _feature_valid.is_valid() and not _feature_valid.call():
 		cancel_action()
+	if movement != &"idle":
+		cancel_action(false)
 	if actions.action != &"" and actions.action != &"eat_snow":
 		_action_delta_s += delta_s
 	clock.accumulate(delta_s)
 	var ticks := 0
 	while ticks < tuning.max_ticks and terminal == &"" and clock.consume_minute(_integrate_minute):
 		ticks += 1
-	if terminal == &"" and not clock.minute_owed() and actions.action != &"eat_snow":
-		var completed := actions.advance(_action_delta_s)
-		_action_delta_s = 0.0
-		if completed != &"":
-			_commit_completion(completed)
+	if terminal == &"" and not clock.minute_owed():
+		_resolve_contacts()
+		if actions.action != &"eat_snow":
+			var completed := actions.advance(_action_delta_s)
+			_action_delta_s = 0.0
+			if completed != &"":
+				_commit_completion(completed)
 	snapshot_published.emit(snapshot())
 
 ## Advances a single deterministic minute for tests and explicit simulation drivers.
@@ -216,7 +274,66 @@ func step_minute() -> void:
 	if terminal != &"":
 		return
 	clock.advance_minute(_integrate_minute)
+	_resolve_contacts()
 	snapshot_published.emit(snapshot())
+
+func record_travel(from: Vector3, to: Vector3, hurrying: bool) -> void:
+	if lake == null or in_water or terminal != &"" or not from.is_finite() or not to.is_finite():
+		return
+	var distance := Vector2(to.x - from.x, to.z - from.z).length()
+	if distance <= 0.0:
+		return
+	var spacing := tuning.world.footfall_spacing
+	var next := spacing - _travel_remainder
+	while next <= distance:
+		_contacts.append({&"position": from.lerp(to, next / distance), &"hurrying": hurrying})
+		next += spacing
+	_travel_remainder = fposmod(_travel_remainder + distance, spacing)
+
+func debug_thin_ice_spawn() -> Vector3:
+	if not OS.is_debug_build() or lake == null:
+		return Vector3.ZERO
+	_debug_break_next = true
+	return lake.cell_center(Vector2i(2, 45))
+
+func leave_water() -> void:
+	in_water = false
+	movement = &"idle"
+	_travel_remainder = 0.0
+
+func _resolve_contacts() -> void:
+	if terminal != &"" or lake == null:
+		_contacts.clear()
+		return
+	if body.is_dead():
+		_end(&"hypothermia")
+		_contacts.clear()
+		return
+	for contact: Dictionary in _contacts:
+		if in_water:
+			break
+		var p: Vector3 = contact[&"position"]
+		var surface := lake.surface_at(p)
+		var debug_break: bool = OS.is_debug_build() and _debug_break_next and surface[&"kind"] == &"ice" and surface[&"ice_thickness_cm"] < tuning.world.ice_safe_cm
+		if not debug_break and not mishaps.check_ice(surface, 0.0, contact[&"hurrying"], rng):
+			continue
+		_debug_break_next = false
+		if not lake.break_ice(surface[&"cell"]):
+			continue
+		_immersion_sequence += 1
+		var event := ImmersionEvent.new(_immersion_sequence, surface[&"cell"], p)
+		cancel_action(true)
+		body.apply_immersion(event.sequence)
+		inventory.soak_carried(event.sequence)
+		var tool := mishaps.lost_tool(inventory.tools, rng)
+		if tool != &"":
+			inventory.lose_tool(tool)
+		in_water = true
+		needs.wake(&"fell_in_water")
+		clock.request_rate_mode(&"normal", &"fell_in_water")
+		movement = &"wade"
+		fell_in_water.emit(event)
+	_contacts.clear()
 
 ## Returns detached values for presentation; contains no live owner objects.
 func snapshot() -> Dictionary[StringName, Variant]:
@@ -228,6 +345,8 @@ func snapshot() -> Dictionary[StringName, Variant]:
 		values[&"needs"] = needs.snapshot()
 		values[&"night_goal"] = tuning.survival_day - tuning.start_day
 		values[&"nights_survived"] = maxi(0, clock.day - tuning.start_day - int(clock.minute_of_day < ceili(clock.sunrise_hour() * 60.0)))
+	if weather != null:
+		values[&"weather"] = weather.snapshot()
 	return values
 
 func _integrate_minute() -> void:
@@ -237,12 +356,20 @@ func _integrate_minute() -> void:
 	var was_skipping := was_asleep or clock.rate_mode == &"wait"
 	var activity := &"idle" if was_asleep else movement
 	var work := &"idle" if was_asleep else _work_activity(actions.action)
+	var snowfall_gain := 0.0
+	if weather != null:
+		weather.step_minute((clock.day - 1) * 1440 + clock.minute_of_day, rng)
+		var conditions := weather.snapshot()
+		thermal.update_wind_source(&"weather", conditions[&"wind_mps"])
+		thermal.update_air_offset(&"weather", conditions[&"air_offset_c"])
+		if thermal.components(position)[&"shelter_bonus"] <= 0.0:
+			snowfall_gain = conditions[&"wetness_per_hour"]
 	thermal.begin_minute(clock.day, clock.minute_of_day / 60.0)
 	for fire: FireController in fires:
 		fire.step_minute(position)
 	thermal.seal_sources(minute_sequence)
 	last_felt_temp_c = thermal.effective_temp_c(position)
-	body.step_minute(last_felt_temp_c, activity, work)
+	body.step_minute(last_felt_temp_c, activity, work, snowfall_gain)
 	var resting := false
 	if activity == &"idle" and actions.action == &"" and (not tuning.chapter_needs_enabled or clock.rate_mode == &"wait"):
 		for fire: FireController in fires:
@@ -258,7 +385,7 @@ func _integrate_minute() -> void:
 	else:
 		if actions.action != &"" and (needs.collapse_due or not _allowed(actions.action) or (_feature_valid.is_valid() and not _feature_valid.call())):
 			cancel_action()
-		if actions.action == &"eat_snow" and actions.advance(1.0) == &"eat_snow":
+		if _contacts.is_empty() and actions.action == &"eat_snow" and actions.advance(1.0) == &"eat_snow":
 			var accepted := needs.accept_snow()
 			action_resolved.emit(&"eat_snow", accepted, &"" if accepted else &"unavailable")
 		if tuning.chapter_needs_enabled:
@@ -270,6 +397,8 @@ func _survived() -> bool:
 	return clock.day >= tuning.survival_day and clock.minute_of_day / 60.0 >= clock.sunrise_hour()
 
 func _reconcile_sleep(cold: bool) -> void:
+	if in_water:
+		return
 	cold = cold or (needs.collapse_due and body.cold_or_worse())
 	var wake_cause := &""
 	if cold:
@@ -307,7 +436,7 @@ func _allowed(action: StringName) -> bool:
 func _work_activity(action: StringName) -> StringName:
 	if action in [&"", &"eat", &"eat_snow"]:
 		return &"idle"
-	return &"heavy" if action in [&"clear_snow", &"chop_log", &"build_shelter_frame"] else &"light"
+	return &"heavy" if action in [&"clear_snow", &"chop_log", &"gather_stones", &"build_shelter_frame"] else &"light"
 
 func _commit_completion(action: StringName) -> void:
 	if not _allowed(action):
@@ -342,14 +471,18 @@ func _commit_completion(action: StringName) -> void:
 	if not eligible:
 		cancel_action()
 		return
-	var result := mishaps.resolve(action, thermal.wind_eff(position), body.cold_hands_penalty(), needs.fatigue_penalty(), rng)
+	var wetness := _fire_target.material_wetness(action) if _fire_target != null else 0.0
+	var quality := _fire_target.material_quality(action) if _fire_target != null else 1.0
+	var attempt_position := _fire_target.position if _fire_target != null else position
+	var result := mishaps.resolve(action, thermal.wind_eff(attempt_position), body.cold_hands_penalty(), needs.fatigue_penalty(), rng, wetness, quality)
 	if _fire_target != null:
 		_fire_target.commit_action(action, inventory, result[&"success"])
 	else:
 		gathering.resolve(_gather_target, action, result[&"success"], inventory)
+		_gather_target.action_progress.erase(action)
 	action_resolved.emit(action, result[&"success"], result[&"cause"])
 	_fire_target = null
 	_gather_target = null
 
 func _can_use_consumables() -> bool:
-	return tuning.chapter_needs_enabled and terminal == &"" and not needs.is_asleep and body.stage != &"Critical" and movement == &"idle"
+	return not in_water and tuning.chapter_needs_enabled and terminal == &"" and not needs.is_asleep and body.stage != &"Critical" and movement == &"idle"

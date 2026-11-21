@@ -45,6 +45,8 @@ func test_fire_out_does_not_wake_but_later_body_cold_interrupts_debt() -> void:
 
 func test_collapse_while_already_cold_wakes_once_and_cancels_work() -> void:
 	var tuning := CHAPTER.duplicate() as SliceTuning
+	tuning.weather_enabled = false
+	tuning.large_map_enabled = false
 	tuning.rate_min = -0.6
 	tuning.rate_max = -0.6
 	var sim := RunSimulation.new(1, tuning)

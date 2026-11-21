@@ -28,6 +28,7 @@ const CHAPTER_CONTENT: ChapterContentTuning = preload("res://assets/data/chapter
 const VERB_NAMES: Dictionary[StringName, String] = {
 	&"gather_sticks": "VERB_GATHER_STICKS", &"chop_log": "VERB_CHOP_LOG", &"strip_bark": "VERB_STRIP_BARK",
 	&"gather_grass": "VERB_GATHER_GRASS", &"clear_snow": "VERB_CLEAR_SNOW", &"arrange_tinder": "VERB_ARRANGE_TINDER",
+	&"gather_stones": "VERB_GATHER_STONES",
 	&"strike": "VERB_STRIKE", &"blow_embers": "VERB_BLOW_EMBERS", &"add_fuel": "VERB_ADD_FUEL",
 	&"eat_snow": "VERB_DRINK_SNOW", &"eat": "VERB_EAT_RATION",
 	&"eat_hare": "VERB_EAT_HARE",
@@ -77,19 +78,27 @@ func _enter_tree() -> void:
 	router.set_context(InputRouter.Context.LOCKED)
 	router.set_process_input(false)
 	(get_node("Survivor") as SurvivorController).set_physics_process(false)
+	simulation = RunSimulation.new(seed_value, tuning)
+	var run_world := get_node("WorldMap") as WorldMap
+	run_world.layout = simulation.map_layout
+	run_world.lake_surface = simulation.lake
 	if tuning != null:
-		var run_world := get_node("WorldMap") as WorldMap
 		run_world.extra_deadfalls.assign(tuning.extra_deadfalls)
 		run_world.chapter_sites = tuning.chapter_needs_enabled
 
 func _ready() -> void:
-	simulation = RunSimulation.new(seed_value, tuning)
 	var drop := survivor.global_position
 	if not restore_checkpoint.is_empty():
 		initialization_ok = _restore_owners(restore_checkpoint)
 		if not initialization_ok:
 			return
 	var chapter := simulation.tuning.chapter_needs_enabled
+	for locale: String in ["en", "zh"]:
+		TranslationServer.add_translation(load("res://assets/localization/mishaps.%s.translation" % locale))
+	if chapter:
+		for locale: String in ["en", "zh"]:
+			TranslationServer.add_translation(load("res://assets/localization/ice.%s.translation" % locale))
+	simulation.fell_in_water.connect(_on_fell_in_water)
 	input_router.chapter_actions_enabled = chapter
 	_gather_query = simulation.gathering.can_gather
 	for argument: String in OS.get_cmdline_user_args():
@@ -105,6 +114,9 @@ func _ready() -> void:
 			_demo_end = true
 		if not chapter and argument == "--demo-gather":
 			_demo_gather = true
+		if chapter and argument == "--debug-thin-ice-at-spawn":
+			survivor.position = simulation.debug_thin_ice_spawn()
+			simulation.position = survivor.position
 	camera.target = survivor
 	camera.position = survivor.position + Vector3.UP * camera.tuning.camera_target_height
 	survivor.configure(simulation, input_router, camera)
@@ -226,6 +238,9 @@ func _exit_tree() -> void:
 	if _food != null:
 		_food.dispose()
 
+func _on_fell_in_water(_event: ImmersionEvent) -> void:
+	hud.show_cue(tr(&"HUD_ICE_BROKE"))
+
 func _process(delta: float) -> void:
 	if simulation == null or not initialization_ok:
 		return
@@ -243,6 +258,7 @@ func _process(delta: float) -> void:
 	flush_autosave()
 	_update_pause_menu()
 	_check_smolder()
+	hud.hold_cue(tr(&"HUD_ICE_BROKE"), simulation.in_water)
 	_update_target()
 	_update_lighting()
 	if _trail_visual != null:
@@ -290,6 +306,8 @@ func _on_action(action: StringName) -> void:
 		else:
 			hud.handle_ui_action(action)
 		return
+	if simulation.in_water and action != &"pause_menu" and not String(action).begins_with("camera_"):
+		return
 	if simulation.needs.is_asleep and action not in [&"pause_menu", &"cancel_action", &"debug_overlay"]:
 		return
 	match action:
@@ -314,7 +332,7 @@ func _on_action(action: StringName) -> void:
 				if not paused:
 					simulation.clock.request_rate_mode(&"normal", &"interrupted")
 			else:
-				simulation.cancel_action()
+				simulation.cancel_action(false)
 		&"sleep":
 			_try_sleep()
 		&"drink_snow":
@@ -520,17 +538,38 @@ func _restore_owners(dto: Dictionary) -> bool:
 	owners.erase("gathering")
 	owners.erase("survivor")
 	owners.erase("chapter")
-	if not simulation.restore_state(owners) or not survivor.restore_state(survivor_state, world.chapter_sites):
+	if not simulation.restore_state(owners) or not survivor.restore_state(survivor_state, world.chapter_sites, world.half_extent()):
 		return false
 	for entry: WorldInteractable in world.interactables:
-		if entry.gather_node != null and not entry.gather_node.restore_state(gathering[String(entry.site_id)]):
+		if entry.gather_node != null and gathering.has(String(entry.site_id)) and not entry.gather_node.restore_state(gathering[String(entry.site_id)]):
 			return false
+	if simulation.tuning.large_map_enabled and not CheckpointValues.keys(gathering, GatherCatalog.create(simulation.tuning, seed_value).keys()):
+		_restore_legacy_harvest(gathering)
 	simulation.position = survivor.position
 	for fire: FireController in simulation.fires:
 		if world.chapter_sites and not world.can_place_fire(fire.position):
 			return false
 		add_fire_site(fire)
 	return true
+
+func _restore_legacy_harvest(gathering: Dictionary) -> void:
+	var legacy := GatherCatalog.legacy(simulation.tuning)
+	for id: StringName in legacy:
+		var initial: Dictionary = (legacy[id] as GatherNode).export_state()
+		var saved: Dictionary = gathering[String(id)]
+		for field: String in ["remaining", "bonus_grass", "bark_remaining"]:
+			var spent: int = initial[field] - saved[field]
+			var kind := StringName(initial.kind)
+			var target_field := field
+			if field == "bark_remaining":
+				kind = &"birch"
+			for entry: WorldInteractable in world.interactables:
+				var node := entry.gather_node
+				if node == null or node.kind != kind or spent <= 0:
+					continue
+				var used := mini(spent, int(node.get(target_field)))
+				node.set(target_field, int(node.get(target_field)) - used)
+				spent -= used
 
 func advance_loading(delta: float) -> void:
 	if _loading_token == 0 or not is_finite(delta):
@@ -547,7 +586,7 @@ func advance_loading(delta: float) -> void:
 		survivor.frozen = input_router.is_paused() or simulation.needs.is_asleep
 
 func flush_autosave() -> void:
-	if not _sunrise_pending or simulation.actions.action != &"" or simulation.clock._dispatching:
+	if not _sunrise_pending or simulation.in_water or simulation.actions.action != &"" or simulation.clock._dispatching:
 		return
 	_sunrise_pending = false
 	if simulation.terminal == &"" and checkpoint_writer.is_valid() and not checkpoint_writer.call(self):
@@ -670,6 +709,8 @@ func _survivor_position() -> Vector3:
 	return survivor.global_position
 
 func _make_fire() -> void:
+	if simulation.in_water:
+		return
 	if simulation.body.stage == &"Critical" or simulation.needs.stage == &"Exhausted":
 		_refuse(tr(&"HUD_CLEAR_REFUSED"))
 		return
@@ -694,6 +735,8 @@ func _make_fire() -> void:
 		_refuse(tr(&"HUD_CLEAR_REFUSED"))
 
 func _prompt() -> String:
+	if simulation.in_water:
+		return ""
 	if simulation.terminal != &"" or paused or backpack_open:
 		return ""
 	if simulation.actions.action != &"":
@@ -768,7 +811,10 @@ func _on_action_resolved(action: StringName, success: bool, cause: StringName) -
 		for fire: FireController in simulation.fires:
 			_smolder_stage[fire.id] = fire.stage
 	var verb := tr(VERB_NAMES.get(action, "VERB_WORKING"))
-	_refuse(tr(&"HUD_DONE") % verb if success else tr(&"HUD_FAILED") % [verb, tr(StringName("CAUSE_" + String(cause).to_upper()))])
+	if not success and cause in [&"damp", &"wind", &"tinder", &"cold_hands", &"fatigue", &"fumble"]:
+		_refuse(tr(StringName("MISHAP_" + String(cause).to_upper())))
+	else:
+		_refuse(tr(&"HUD_DONE") % verb if success else tr(&"HUD_FAILED") % [verb, tr(StringName("CAUSE_" + String(cause).to_upper()))])
 
 func _refuse(message: String) -> void:
 	hud.show_cue(message)
@@ -796,3 +842,4 @@ func _update_lighting() -> void:
 	_environment.background_color = Color(0.02, 0.04, 0.10).lerp(Color(0.6939, 0.7835, 0.8963), daylight)
 	_environment.fog_light_energy = lerpf(0.45, 1.0, daylight)
 	_atmosphere.set_daylight(daylight)
+	_atmosphere.apply_weather(simulation.weather.snapshot() if simulation.weather != null else {}, sun)

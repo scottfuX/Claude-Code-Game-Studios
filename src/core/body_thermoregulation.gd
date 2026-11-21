@@ -10,12 +10,13 @@ var wetness: float = 0.0
 var stage: StringName = &"Warm"
 var rate_c_per_hour: float = 0.0
 var _last_felt: float = NAN
+var _immersions: Dictionary[int, bool] = {}
 
 func _init(data: SliceTuning = null) -> void:
 	tuning = data if data != null else preload("res://assets/data/slice_defaults.tres")
 
 ## Integrates B1 once, using pre-step shiver and max activity heat.
-func step_minute(felt: float, movement: StringName = &"idle", work: StringName = &"idle") -> void:
+func step_minute(felt: float, movement: StringName = &"idle", work: StringName = &"idle", snowfall_gain: float = 0.0) -> void:
 	if not is_finite(felt):
 		felt = _last_felt
 	if not is_finite(felt) or is_dead():
@@ -28,7 +29,19 @@ func step_minute(felt: float, movement: StringName = &"idle", work: StringName =
 	if core_temp_c >= tuning.max_core and rate_c_per_hour > 0:
 		rate_c_per_hour = 0.0
 	core_temp_c = clampf(core_temp_c + rate_c_per_hour / 60.0, tuning.death_temp, tuning.max_core)
+	var gain := tuning.body_wade_wetness_per_hour if movement == &"wade" else 0.0
+	if is_finite(snowfall_gain):
+		gain += clampf(snowfall_gain, 0.0, tuning.snowfall_wetness_cap)
+	var drying := tuning.body_hot_drying_per_hour if felt >= tuning.body_hot_drying_threshold else (tuning.body_warm_drying_per_hour if felt >= tuning.body_warm_drying_threshold else 0.0)
+	wetness = clampf(wetness + (gain - drying) / 60.0, 0.0, 1.0)
 	refresh_stage()
+
+## Applies an accepted run-local immersion event once, even after drying.
+func apply_immersion(event_id: int = 0) -> void:
+	if event_id < 0 or _immersions.has(event_id) or is_dead():
+		return
+	_immersions[event_id] = true
+	wetness = 1.0
 
 ## Reconciles falling thresholds and rising hysteresis.
 func refresh_stage() -> void:
