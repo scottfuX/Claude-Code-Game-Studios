@@ -29,6 +29,59 @@ var _food_revision: int = -1
 var _feature_valid: Callable
 var _feature_commit: Callable
 
+func export_state() -> Dictionary:
+	var fire_states: Array = []
+	for fire: FireController in fires:
+		fire_states.append(fire.export_state())
+	return {"clock": clock.export_state(), "body": body.export_state(), "needs": needs.export_state(),
+		"inventory": inventory.export_state(tuning.chapter_needs_enabled), "rng": rng.export_state(), "fires": fire_states,
+		"run": {"minute_sequence": minute_sequence, "last_felt_temp_c": last_felt_temp_c if is_finite(last_felt_temp_c) else null}}
+
+func restore_state(dto: Dictionary) -> bool:
+	if not CheckpointValues.keys(dto, ["clock", "body", "needs", "inventory", "rng", "fires", "run"]):
+		return false
+	for key: String in ["clock", "body", "needs", "inventory", "rng", "run"]:
+		if not dto[key] is Dictionary:
+			return false
+	if not dto.fires is Array or dto.fires.size() > tuning.max_fire_sites:
+		return false
+	if not CheckpointValues.keys(dto.run, ["minute_sequence", "last_felt_temp_c"]) or not CheckpointValues.integer(dto.run.minute_sequence, 0, 86400):
+		return false
+	if dto.run.last_felt_temp_c != null and not CheckpointValues.number(dto.run.last_felt_temp_c, -1000, 1000):
+		return false
+	var staged := RunSimulation.new(1, tuning)
+	if not staged.clock.restore_state(dto.clock) or not staged.body.restore_state(dto.body) or not staged.needs.restore_state(dto.needs) or not staged.inventory.restore_state(dto.inventory, tuning.chapter_needs_enabled) or not staged.rng.restore_state(dto.rng):
+		return false
+	if staged.needs.is_asleep != (staged.clock.rate_mode == &"sleep") or staged._survived():
+		return false
+	if not tuning.chapter_needs_enabled and (staged.inventory.count(&"pemmican") > 0 or staged.clock.rate_mode == &"sleep"):
+		return false
+	for index: int in dto.fires.size():
+		if not dto.fires[index] is Dictionary:
+			return false
+		var fire := staged.create_fire(Vector3.ZERO)
+		if not fire.restore_state(dto.fires[index]):
+			return false
+		for earlier: int in index:
+			if staged.fires[earlier].position.distance_to(fire.position) < preload("res://assets/data/playfield_defaults.tres").fire_spacing:
+				return false
+	clock = staged.clock
+	clock.rate_mode_changed.disconnect(staged._on_rate_mode_changed)
+	clock.rate_mode_changed.connect(_on_rate_mode_changed)
+	body = staged.body
+	needs = staged.needs
+	inventory = staged.inventory
+	rng = staged.rng
+	thermal = staged.thermal
+	fires = staged.fires
+	minute_sequence = int(dto.run.minute_sequence)
+	last_felt_temp_c = NAN if dto.run.last_felt_temp_c == null else float(dto.run.last_felt_temp_c)
+	thermal.begin_minute(clock.day, clock.minute_of_day / 60.0)
+	cancel_action()
+	movement = &"idle"
+	terminal = &""
+	return true
+
 func _init(seed_value: int = 1, data: SliceTuning = null) -> void:
 	tuning = data if data != null else preload("res://assets/data/slice_defaults.tres")
 	clock = Clock.new(tuning)

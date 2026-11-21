@@ -43,6 +43,18 @@ func start(run: RunSimulation, action: StringName, focused: Callable) -> bool:
 func can_sleep(position: Vector3) -> bool:
 	return _live and stage == 2 and ThermalField.contains_point(_site, _bounds, position, true) and ThermalField.contains_point(_site, _bounds, _site * Vector3(0, 0, -0.8), true)
 
+## Rebuilds insulation from a validated stage without spending materials again.
+func restore_stage(saved_stage: int) -> bool:
+	if not _live or stage != 0 or saved_stage < 0 or saved_stage > 2:
+		return false
+	if saved_stage == 2:
+		var plan := _thermal.prepare_insulation(ID, 2, _site, _bounds, _tuning.shelter_exposure, _tuning.shelter_bonus_c)
+		if plan.is_empty():
+			return false
+		_thermal.apply_insulation(plan)
+	stage = saved_stage
+	return true
+
 ## Invalidates old attempts and withdraws this run's registered volume.
 func dispose() -> void:
 	_live = false

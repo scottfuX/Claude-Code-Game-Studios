@@ -1,6 +1,7 @@
-# ADR coverage status: ADR-0001–ADR-0016 accepted by Scott (owner), 2026-11-19.
+# ADR coverage status: ADR-0001–ADR-0016 accepted by Scott (owner), 2026-11-19;
+# ADR-0018 accepted under Scott delegation for PR #28, 2026-11-20.
 # Requirement status remains active (not an ADR status); see requirements-traceability.md
-# for 519 Accepted-covered rows and 2 Partial rows awaiting O4 profiling.
+# for 533 Accepted-covered rows and 2 Partial rows awaiting O4 profiling.
 # Technical Requirement ID Registry
 #
 # PURPOSE: Persistent, stable IDs for every GDD technical requirement.
@@ -4209,6 +4210,119 @@ requirements:
   gdd: design/gdd/hud.md
   requirement: "Preserve the full interaction/dependency contracts and every numbered acceptance/performance criterion in this GDD; normal operation, empty/refused input, invalid-data defaults, timing and presentation evidence are verification obligations, not optional tuning."
   created: 2026-11-18
+  revised: ""
+  status: active
+
+
+- id: TR-screens-and-menus-001
+  system: screens-and-menus
+  gdd: design/gdd/screens-and-menus.md
+  requirement: "Shell states are BOOT → TITLE → RUN(playing/paused) → END_SHOT → RESULTS → TITLE or a new RUN. BOOT validates the checkpoint before advertising Continue. The run subtree survives END_SHOT/RESULTS until navigation."
+  created: 2026-11-20
+  revised: ""
+  status: active
+
+- id: TR-screens-and-menus-002
+  system: screens-and-menus
+  gdd: design/gdd/screens-and-menus.md
+  requirement: "Title order: Continue (only a valid checkpoint), New Run (first-night profile), Three-Night Chapter, Quit. Initial focus is Continue if present, otherwise New Run. No Settings/Load slot browser."
+  created: 2026-11-20
+  revised: ""
+  status: active
+
+- id: TR-screens-and-menus-003
+  system: screens-and-menus
+  gdd: design/gdd/screens-and-menus.md
+  requirement: "Shell start_run(config) accepts {profile, seed, restore DTO or null}. Profiles are first_night / three_night. Fresh starts choose a new seed. Validate and initialize per ADR-0001 before enabling time/input; failure returns to TITLE with localized retryable error and no partly mounted run."
+  created: 2026-11-20
+  revised: ""
+  status: active
+
+- id: TR-screens-and-menus-004
+  system: screens-and-menus
+  gdd: design/gdd/screens-and-menus.md
+  requirement: "Esc pauses through the router/coordinator. Playing pause actions: Resume, Save & Return to Title, Start Three-Night Chapter (or Switch to First Night), Quit. Switching/restarting with a checkpoint requires a discard confirmation, initial focus Cancel; cancellation changes nothing. Accepted fresh start replaces the single checkpoint only after new-run initialization succeeds."
+  created: 2026-11-20
+  revised: ""
+  status: active
+
+- id: TR-screens-and-menus-005
+  system: screens-and-menus
+  gdd: design/gdd/screens-and-menus.md
+  requirement: "Terminal arbitration wins over pending save/navigation. Hide all gameplay HUD, lock gameplay input, hold the final camera and run an eight-real-second END_SHOT. Run coordinator owns the timer. Esc opens terminal pause (Resume Shot, Quit); its run-owned pause token freezes shot time, never revives simulation. No save/profile switch during terminal pause."
+  created: 2026-11-20
+  revised: ""
+  status: active
+
+- id: TR-screens-and-menus-006
+  system: screens-and-menus
+  gdd: design/gdd/screens-and-menus.md
+  requirement: "RESULTS shows neutral outcome and qualitative survival wording; cold/dehydration causes use existing localized cause meaning. Example: “The cold took you”; “You lasted until the second night.” Use localized words, not numeric counters, rewards, ranks or scores. Before a first night use “Your run ended before the first night.” Dawn victory uses “You saw the dawn” / chapter victory line in the same layout."
+  created: 2026-11-20
+  revised: ""
+  status: active
+
+- id: TR-screens-and-menus-007
+  system: screens-and-menus
+  gdd: design/gdd/screens-and-menus.md
+  requirement: "Standard accessibility, full keyboard/mouse/gamepad equivalence, visible focus, minimum 20px text and CSV localization apply to all screens. Context changes suppress held actions; UI never writes simulation state or directly pauses SceneTree."
+  created: 2026-11-20
+  revised: ""
+  status: active
+
+- id: TR-save-load-001
+  system: save-load
+  gdd: design/gdd/save-load.md
+  requirement: "One slot: user://saves/run_checkpoint.json. Envelope fields: schema_version (integer 1), profile (first_night/three_night), seed (integer), saved_at_unix (nonnegative Unix seconds), owners (DTO map). Encode full-width seed/RNG integers as decimal strings where JSON precision would otherwise lose bits; validated DTO restores typed integers."
+  created: 2026-11-20
+  revised: ""
+  status: active
+
+- id: TR-save-load-002
+  system: save-load
+  gdd: design/gdd/save-load.md
+  requirement: "Save at each sunrise after the ordered survival/terminal check, only if nonterminal; also on Save & Return to Title and confirmed Quit from live pause. No per-frame or timed-action snapshot, no action progress restoration."
+  created: 2026-11-20
+  revised: ""
+  status: active
+
+- id: TR-save-load-003
+  system: save-load
+  gdd: design/gdd/save-load.md
+  requirement: "Write validated UTF-8 JSON to a temporary sibling file, flush/close and replace by same-directory atomic rename. Never remove the old slot before replacement; write/rename failure keeps prior valid slot and reports error. Ignore orphan temp files at boot. Platform replacement semantics must be verified; unsupported atomic overwrite fails safely rather than delete-then-rename."
+  created: 2026-11-20
+  revised: ""
+  status: active
+
+- id: TR-save-load-004
+  system: save-load
+  gdd: design/gdd/save-load.md
+  requirement: "Before mounting, validate every required envelope/DTO field, exact types, finite numbers, enum IDs, profile compatibility, bounds, unique stable IDs and cross-owner relationships using owner rules. Unknown schema or unknown owner/key is rejected in v1, not guessed/migrated. Validate in isolated staged owners, then publish complete initial snapshot; no partially restored active run."
+  created: 2026-11-20
+  revised: ""
+  status: active
+
+- id: TR-save-load-005
+  system: save-load
+  gdd: design/gdd/save-load.md
+  requirement: "Death or victory invalidates slot and deletes checkpoint before results navigation. A deletion failure blocks retry/title/quit behind Retry and explains failure; never advertise Continue or silently close with a resumable dead run. OS kill/crash during failed deletion cannot be made one-life-safe without durable invalidation; strict anti-rollback/anti-cheat is out of scope."
+  created: 2026-11-20
+  revised: ""
+  status: active
+
+- id: TR-save-load-006
+  system: save-load
+  gdd: design/gdd/save-load.md
+  requirement: "Continue restores with gameplay/action time paused, pause menu closed and input Locked during a one-second fade-in. “Paused” here is a loading-gate token, not an open explicit pause menu. On completion release only that token and resume play unless disconnect/another pause remains."
+  created: 2026-11-20
+  revised: ""
+  status: active
+
+- id: TR-save-load-007
+  system: save-load
+  gdd: design/gdd/save-load.md
+  requirement: "Enabled owners register stable DTO key/version, exporter, pure validator and restore dependency order. Existing profile owners needed for continuity must register before Continue is enabled. Later optional owners either register or explicitly declare reset-to-authored-default behavior; no silent omission. Profile/schema changes must reject incompatible checkpoints until migration is designed."
+  created: 2026-11-20
   revised: ""
   status: active
 

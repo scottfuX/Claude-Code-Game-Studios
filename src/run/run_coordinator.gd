@@ -2,6 +2,26 @@ class_name RunCoordinator extends Node3D
 
 signal restart_requested
 signal switch_chapter_requested
+signal title_requested
+signal quit_requested
+signal phase_changed(phase: StringName)
+
+const MENU: PackedScene = preload("res://src/presentation/navigation_screen.tscn")
+var seed_value: int = 20261119
+var end_shot_elapsed: float = 0.0
+var end_phase: StringName = &""
+var navigation: NavigationScreen
+var _end_grade: ColorRect
+var restore_checkpoint: Dictionary = {}
+var initialization_ok: bool = true
+var checkpoint_writer: Callable
+var checkpoint_deleter: Callable
+var checkpoint_available: Callable
+var _sunrise_pending: bool = false
+var _terminal_deleted: bool = false
+var _cleanup_blocked: bool = false
+var _loading_token: int = 0
+var _loading_elapsed: float = 0.0
 
 const PLAYFIELD: PlayfieldTuning = preload("res://assets/data/playfield_defaults.tres")
 const CHAPTER_CONTENT: ChapterContentTuning = preload("res://assets/data/chapter_content_defaults.tres")
@@ -39,7 +59,6 @@ var _demo_driver: FirstNightDemo
 var _shelter: ShelterFeature
 var _shelter_target: WorldInteractable
 var _shelter_visual: ShelterVisual
-var _setup_failed: bool = false
 var _food: HareFoodFeature
 var _trail_target: WorldInteractable
 var _pile_target: WorldInteractable
@@ -54,13 +73,22 @@ var _trail_visual: HareTrailVisual
 @onready var environment_node: WorldEnvironment = $WorldEnvironment
 
 func _enter_tree() -> void:
+	var router := get_node("InputRouter") as InputRouter
+	router.set_context(InputRouter.Context.LOCKED)
+	router.set_process_input(false)
+	(get_node("Survivor") as SurvivorController).set_physics_process(false)
 	if tuning != null:
 		var run_world := get_node("WorldMap") as WorldMap
 		run_world.extra_deadfalls.assign(tuning.extra_deadfalls)
 		run_world.chapter_sites = tuning.chapter_needs_enabled
 
 func _ready() -> void:
-	simulation = RunSimulation.new(20261119, tuning)
+	simulation = RunSimulation.new(seed_value, tuning)
+	var drop := survivor.global_position
+	if not restore_checkpoint.is_empty():
+		initialization_ok = _restore_owners(restore_checkpoint)
+		if not initialization_ok:
+			return
 	var chapter := simulation.tuning.chapter_needs_enabled
 	input_router.chapter_actions_enabled = chapter
 	_gather_query = simulation.gathering.can_gather
@@ -80,8 +108,9 @@ func _ready() -> void:
 	camera.target = survivor
 	camera.position = survivor.position + Vector3.UP * camera.tuning.camera_target_height
 	survivor.configure(simulation, input_router, camera)
-	if chapter:
-		_setup_chapter_sites()
+	if chapter and not _setup_chapter_sites(drop):
+		initialization_ok = false
+		return
 	_footprints = FootprintPool.new()
 	add_child(_footprints)
 	_survivor_visual = SurvivorVisual.new()
@@ -89,6 +118,7 @@ func _ready() -> void:
 	_survivor_visual.footprints = _footprints
 	survivor.add_child(_survivor_visual)
 	input_router.action_pressed.connect(_on_action)
+	simulation.clock.sunrise.connect(func() -> void: _sunrise_pending = true)
 	simulation.action_resolved.connect(_on_action_resolved)
 	simulation.needs.sleep_changed.connect(_on_sleep_changed)
 	hud.restart_requested.connect(func() -> void: restart_requested.emit())
@@ -96,7 +126,20 @@ func _ready() -> void:
 	hud.eat_requested.connect(_try_eat)
 	hud.eat_hare_requested.connect(_try_eat.bind(HareFoodFeature.COOKED))
 	hud.resume_requested.connect(_resume)
-	hud.quit_requested.connect(func() -> void: get_tree().quit())
+	hud.external_navigation = true
+	navigation = MENU.instantiate() as NavigationScreen
+	add_child(navigation)
+	navigation.selected.connect(_on_navigation)
+	navigation.back_requested.connect(_resume)
+	hud.quit_requested.connect(func() -> void: navigation.ask_confirmation(&"quit_confirmed", &"MENU_QUIT_CONFIRM"))
+	var shot_layer := CanvasLayer.new()
+	shot_layer.layer = 5
+	add_child(shot_layer)
+	_end_grade = ColorRect.new()
+	_end_grade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_end_grade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_end_grade.color = Color(0.94, 0.96, 0.98, 0.0)
+	shot_layer.add_child(_end_grade)
 	_environment = Environment.new()
 	_environment.background_mode = Environment.BG_COLOR
 	_environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
@@ -122,32 +165,57 @@ func _ready() -> void:
 	if _demo_gather:
 		simulation.start_action(&"gather_sticks", null, world.interactables[0].gather_node)
 	_update_lighting()
+	if not restore_checkpoint.is_empty():
+		_loading_token = input_router.request_pause(&"loading")
+		input_router.set_context(InputRouter.Context.LOCKED)
+		input_router.set_process_input(false)
+		_end_grade.color = Color(0.015, 0.025, 0.05, 1.0)
+		hud.hide()
+	else:
+		input_router.set_context(InputRouter.Context.GAMEPLAY)
+		input_router.set_process_input(true)
+	survivor.set_physics_process(true)
+	survivor.frozen = _loading_token != 0 or simulation.needs.is_asleep
 
-func _setup_chapter_sites() -> void:
-	var plot := world.shelter_plot(survivor.global_position)
-	var route := world.hare_approach(survivor.global_position)
+func _setup_chapter_sites(drop: Vector3) -> bool:
+	var plot := world.shelter_plot(drop)
+	var route := world.hare_approach(drop)
 	var cooked_minutes: float = simulation.tuning.eat_minutes.get(HareFoodFeature.COOKED, 0.0)
 	var cooked_kcal: float = simulation.tuning.food_kcal.get(HareFoodFeature.COOKED, 0.0)
 	if plot.is_empty() or route.is_empty() or not CHAPTER_CONTENT.is_valid() or not (cooked_minutes >= 0.25 and cooked_minutes <= 30.0 and cooked_kcal >= 250.0 and cooked_kcal <= 450.0):
 		push_error("Chapter 2: invalid shelter plot, hare route, or cooked hare data")
-		_setup_failed = true
-		return
-	simulation.inventory.add(&"tarp", 1)
+		return false
 	simulation.fire_site_eligible = world.can_place_fire
 	_shelter = ShelterFeature.new(plot, simulation.inventory, simulation.thermal, CHAPTER_CONTENT)
+	_food = HareFoodFeature.new(simulation.inventory, simulation.clock, world.can_place_bundle, CHAPTER_CONTENT)
+	if restore_checkpoint.is_empty():
+		simulation.inventory.add(&"tarp", 1)
+		simulation.inventory.equip_snare_wire()
+	else:
+		var chapter: Dictionary = restore_checkpoint.owners.chapter
+		if not _shelter.restore_stage(int(chapter.shelter_stage)) or not _food.restore_state(chapter.hare):
+			return false
 	var site: Transform3D = plot[&"site"]
 	_shelter_target = world.add_site(ShelterFeature.ID, site.origin, "TARGET_SHELTER")
 	_shelter_target.chapter_target = true
 	_shelter_visual = ShelterVisual.new()
 	_shelter_visual.transform = site
 	world.add_child(_shelter_visual)
-	simulation.inventory.equip_snare_wire()
-	_food = HareFoodFeature.new(simulation.inventory, simulation.clock, world.can_place_bundle, CHAPTER_CONTENT)
+	_render_shelter()
 	_trail_target = world.add_site(HareFoodFeature.TRAIL, route[-1], "TARGET_HARE_TRAIL")
 	_trail_target.chapter_target = true
 	_trail_visual = HareTrailVisual.new()
 	_trail_visual.route = route
 	world.add_child(_trail_visual)
+	if _food.bundle_count > 0:
+		_add_hare_bundle()
+	return true
+
+## Exports only settled chapter progression; first-night checkpoints omit this owner.
+func export_chapter_state() -> Dictionary:
+	if _shelter == null or _food == null:
+		return {}
+	return {"shelter_stage": _shelter.stage, "hare": _food.export_state()}
 
 func _exit_tree() -> void:
 	if simulation != null:
@@ -159,14 +227,21 @@ func _exit_tree() -> void:
 		_food.dispose()
 
 func _process(delta: float) -> void:
-	if simulation == null:
+	if simulation == null or not initialization_ok:
+		return
+	if _loading_token != 0:
+		advance_loading(delta)
 		return
 	paused = input_router.is_paused()
-	survivor.frozen = paused or _setup_failed or simulation.needs.is_asleep
+	survivor.frozen = paused or simulation.needs.is_asleep or simulation.terminal != &""
 	var speed := _demo_driver.advance(delta) if _demo_driver != null and not paused else _time_scale
-	simulation.update(delta * speed, paused or _setup_failed)
+	simulation.update(delta * speed, paused)
 	if simulation.terminal != &"":
-		input_router.set_context(InputRouter.Context.LOCKED)
+		_sunrise_pending = false
+		advance_end_shot(delta)
+		return
+	flush_autosave()
+	_update_pause_menu()
 	_check_smolder()
 	_update_target()
 	_update_lighting()
@@ -193,19 +268,33 @@ func _process(delta: float) -> void:
 	hud.render_snapshot(snapshot)
 
 func _on_action(action: StringName) -> void:
-	if _setup_failed and action != &"pause_menu":
+	if _loading_token != 0 or not initialization_ok:
+		return
+	if simulation.terminal != &"":
+		if end_phase == &"":
+			advance_end_shot(0.0)
+		if navigation.visible:
+			navigation.handle_action(action)
+		elif action == &"pause_menu" and end_phase == &"end_shot":
+			_open_pause()
+		elif action in [&"interact", &"ui_accept"]:
+			skip_end_shot()
+		return
+	if navigation.visible:
+		navigation.handle_action(action)
+		return
+	if action in InputRouter.UI_ACTIONS:
+		if action == &"ui_cancel" and backpack_open:
+			backpack_open = false
+			_sync_context()
+		else:
+			hud.handle_ui_action(action)
 		return
 	if simulation.needs.is_asleep and action not in [&"pause_menu", &"cancel_action", &"debug_overlay"]:
 		return
 	match action:
 		&"pause_menu":
-			if simulation.terminal == &"":
-				if _pause_token == 0:
-					_pause_token = input_router.request_pause(&"pause_menu")
-				else:
-					input_router.release_pause(_pause_token)
-					_pause_token = 0
-				_sync_context()
+			_open_pause()
 		&"backpack":
 			if not paused and simulation.terminal == &"":
 				backpack_open = not backpack_open
@@ -300,12 +389,187 @@ func _on_sleep_changed(asleep: bool, cause: StringName) -> void:
 		_refuse(tr(&"HUD_WOKE_COLD" if cause == &"cold" else &"HUD_WOKE"))
 
 func _resume() -> void:
-	if paused:
+	if _pause_token != 0:
 		input_router.release_pause(_pause_token)
 		_pause_token = 0
+		navigation.hide()
 	else:
 		backpack_open = false
 	_sync_context()
+	if simulation.terminal != &"":
+		input_router.set_context(InputRouter.Context.LOCKED if end_phase == &"end_shot" else InputRouter.Context.UI)
+	else:
+		phase_changed.emit(&"run")
+
+func _open_pause() -> void:
+	if _pause_token == 0:
+		_pause_token = input_router.request_pause(&"pause_menu")
+	input_router.set_context(InputRouter.Context.UI)
+	_sync_context()
+	var terminal := simulation.terminal != &""
+	var entries: Array = [[&"resume", &"MENU_RESUME_SHOT" if terminal else &"HUD_RESUME"]]
+	if not terminal:
+		entries.append([&"title", &"MENU_SAVE_RETURN_TITLE"])
+		entries.append([&"switch", &"HUD_START_FIRST_NIGHT" if simulation.tuning.chapter_needs_enabled else &"HUD_START_CHAPTER"])
+	entries.append([&"quit", &"HUD_QUIT"])
+	navigation.show_menu(tr(&"HUD_PAUSED"), "", entries)
+	phase_changed.emit(&"end_shot" if terminal else &"paused")
+
+func _update_pause_menu() -> void:
+	if input_router.is_paused() and _pause_token != 0 and not navigation.visible:
+		_open_pause()
+
+func _on_navigation(action: StringName) -> void:
+	if _cleanup_blocked:
+		if action == &"cleanup_retry" and ensure_checkpoint_deleted():
+			navigation.hide()
+			input_router.set_context(InputRouter.Context.LOCKED)
+		return
+	match action:
+		&"resume":
+			_resume()
+		&"title":
+			title_requested.emit()
+		&"switch":
+			if checkpoint_available.is_valid() and checkpoint_available.call():
+				navigation.ask_confirmation(&"switch_confirmed", &"MENU_DISCARD_CONFIRM")
+			else:
+				switch_chapter_requested.emit()
+		&"switch_confirmed":
+			switch_chapter_requested.emit()
+		&"retry":
+			restart_requested.emit()
+		&"quit":
+			navigation.ask_confirmation(&"quit_confirmed", &"MENU_QUIT_CONFIRM")
+		&"quit_confirmed":
+			quit_requested.emit()
+
+func advance_end_shot(delta: float) -> void:
+	if simulation.terminal == &"":
+		return
+	if _cleanup_blocked:
+		return
+	hud.hide()
+	camera.set_process(false)
+	survivor.frozen = true
+	if not ensure_checkpoint_deleted():
+		return
+	if end_phase == &"":
+		end_phase = &"end_shot"
+		backpack_open = false
+		input_router.terminal_input = true
+		input_router.set_context(InputRouter.Context.LOCKED)
+		phase_changed.emit(&"end_shot")
+	if end_phase != &"end_shot":
+		return
+	if not input_router.is_paused() and is_finite(delta):
+		end_shot_elapsed += maxf(0.0, delta)
+	if simulation.terminal != &"dawn_survived":
+		_end_grade.color.a = clampf(end_shot_elapsed / 8.0, 0.0, 1.0)
+	input_router.enable_terminal_skip(end_shot_elapsed >= 1.0)
+	if end_shot_elapsed >= 8.0:
+		_show_results()
+
+func skip_end_shot() -> bool:
+	if end_phase != &"end_shot" or end_shot_elapsed < 1.0 or input_router.is_paused():
+		return false
+	_show_results()
+	return true
+
+func _show_results() -> void:
+	end_phase = &"results"
+	input_router.enable_terminal_skip(false)
+	input_router.set_context(InputRouter.Context.UI)
+	var key: StringName = &"HUD_DEATH"
+	if simulation.terminal == &"dehydration":
+		key = &"HUD_DEHYDRATION"
+	elif simulation.terminal == &"dawn_survived":
+		key = &"HUD_CHAPTER_DAWN" if simulation.tuning.chapter_needs_enabled else &"HUD_DAWN"
+	navigation.show_menu(tr(key), _nights_lasted(), [[&"retry", &"MENU_TRY_AGAIN"], [&"title", &"MENU_RETURN_TITLE"]])
+	phase_changed.emit(&"results")
+
+func _nights_lasted() -> String:
+	var hour := simulation.clock.minute_of_day / 60.0
+	var night := simulation.clock.day - simulation.tuning.start_day
+	if hour >= simulation.clock.sunset_hour():
+		night += 1
+	var keys: Array[StringName] = [&"MENU_BEFORE_NIGHT", &"MENU_NIGHT_FIRST", &"MENU_NIGHT_SECOND", &"MENU_NIGHT_THIRD"]
+	return tr(keys[clampi(night, 0, 3)])
+
+func shutdown() -> void:
+	set_process(false)
+	input_router.set_context(InputRouter.Context.LOCKED)
+	input_router.set_process_input(false)
+	simulation.cancel_action()
+	if _pause_token != 0:
+		input_router.release_pause(_pause_token)
+		_pause_token = 0
+	if _loading_token != 0:
+		input_router.release_pause(_loading_token)
+		_loading_token = 0
+	if is_instance_valid(navigation):
+		navigation.hide()
+	survivor.frozen = true
+
+func _restore_owners(dto: Dictionary) -> bool:
+	if not RunCheckpoint.validate(dto):
+		return false
+	var owners: Dictionary = dto.owners.duplicate(true)
+	var gathering: Dictionary = owners.gathering
+	var survivor_state: Dictionary = owners.survivor
+	owners.erase("gathering")
+	owners.erase("survivor")
+	owners.erase("chapter")
+	if not simulation.restore_state(owners) or not survivor.restore_state(survivor_state):
+		return false
+	for entry: WorldInteractable in world.interactables:
+		if entry.gather_node != null and not entry.gather_node.restore_state(gathering[String(entry.site_id)]):
+			return false
+	simulation.position = survivor.position
+	for fire: FireController in simulation.fires:
+		if world.chapter_sites and not world.can_place_fire(fire.position):
+			return false
+		add_fire_site(fire)
+	return true
+
+func advance_loading(delta: float) -> void:
+	if _loading_token == 0 or not is_finite(delta):
+		return
+	_loading_elapsed += maxf(0.0, delta)
+	_end_grade.color.a = clampf(1.0 - _loading_elapsed, 0.0, 1.0)
+	if _loading_elapsed >= 1.0:
+		input_router.release_pause(_loading_token)
+		_loading_token = 0
+		_end_grade.color = Color(0.94, 0.96, 0.98, 0.0)
+		input_router.set_context(InputRouter.Context.GAMEPLAY)
+		_sync_context()
+		input_router.set_process_input(true)
+		survivor.frozen = input_router.is_paused() or simulation.needs.is_asleep
+
+func flush_autosave() -> void:
+	if not _sunrise_pending or simulation.actions.action != &"" or simulation.clock._dispatching:
+		return
+	_sunrise_pending = false
+	if simulation.terminal == &"" and checkpoint_writer.is_valid() and not checkpoint_writer.call(self):
+		_refuse(tr(&"MENU_AUTOSAVE_FAILED"))
+
+func ensure_checkpoint_deleted() -> bool:
+	if _terminal_deleted:
+		return true
+	_sunrise_pending = false
+	if checkpoint_deleter.is_valid() and not checkpoint_deleter.call():
+		_cleanup_blocked = true
+		input_router.set_context(InputRouter.Context.UI)
+		hud.hide()
+		navigation.show_menu(tr(&"MENU_CHECKPOINT_UNAVAILABLE"), tr(&"MENU_DELETE_FAILED"), [[&"cleanup_retry", &"MENU_RETRY"]])
+		return false
+	_terminal_deleted = true
+	_cleanup_blocked = false
+	return true
+
+func show_save_error() -> void:
+	_open_pause()
+	navigation.show_error(&"MENU_SAVE_FAILED")
 
 ## Wires a run-owned fire to a model-free site; e.g. add_fire_site(simulation.create_fire(p)).
 func add_fire_site(fire: FireController) -> WorldInteractable:
@@ -432,8 +696,6 @@ func _make_fire() -> void:
 func _prompt() -> String:
 	if simulation.terminal != &"" or paused or backpack_open:
 		return ""
-	if _setup_failed:
-		return tr(&"HUD_CHAPTER_INVALID")
 	if simulation.actions.action != &"":
 		return tr(&"HUD_WORKING") % [tr(VERB_NAMES.get(simulation.actions.action, "VERB_WORKING")), input_router.glyph_for(&"cancel_action")]
 	if _target == null:
@@ -475,18 +737,24 @@ func _check_smolder() -> void:
 			hud.show_cue(tr(&"HUD_EMBER_EXPIRED"))
 		_smolder_stage[fire.id] = fire.stage
 
+func _render_shelter() -> void:
+	_shelter_visual.render_stage(_shelter.stage)
+	if _shelter.stage == 2:
+		_shelter_target.position = _shelter_visual.transform * Vector3(0, 0, -0.8)
+
+func _add_hare_bundle() -> void:
+	_pile_target = world.add_site(HareFoodFeature.BUNDLE, _food.bundle_position, "TARGET_HARE_PILE")
+	_pile_target.chapter_target = true
+	_pile_target.add_child(HareTrailVisual.bundle_mesh())
+
 func _on_action_resolved(action: StringName, success: bool, cause: StringName) -> void:
 	if success and action in [ShelterFeature.FRAME, ShelterFeature.COVER]:
-		_shelter_visual.render_stage(_shelter.stage)
-		if _shelter.stage == 2:
-			_shelter_target.position += Vector3(0, 0, -0.8)
+		_render_shelter()
 	if cause == &"nothing_yet":
 		_refuse(tr(&"HUD_HARE_NOTHING"))
 		return
 	if cause == &"piled":
-		_pile_target = world.add_site(HareFoodFeature.BUNDLE, _food.bundle_position, "TARGET_HARE_PILE")
-		_pile_target.chapter_target = true
-		_pile_target.add_child(HareTrailVisual.bundle_mesh())
+		_add_hare_bundle()
 		_refuse(tr(&"HUD_HARE_PILED"))
 		return
 	if cause == &"wire_broken":

@@ -32,18 +32,20 @@ func test_survivor_capsule_and_camera_read_custom_playfield_tuning() -> void:
 
 func test_shell_restart_replaces_all_mutable_run_state() -> void:
 	var shell: Node = auto_free(SHELL.instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/scene_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
-	var old_run := shell.get_child(0) as RunCoordinator
+	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
+	var old_run := shell.get("_run") as RunCoordinator
 	old_run.simulation.inventory.add(&"log", 2)
 	var fire := old_run.simulation.create_fire(Vector3(1, 0, 0))
 	old_run.add_fire_site(fire)
 	assert_bool(old_run.simulation.start_action(&"clear_snow", fire)).is_true()
 	var old_id := old_run.get_instance_id()
-	shell.call("_mount_run")
-	var fresh := shell.get_child(0) as RunCoordinator
+	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
+	var fresh := shell.get("_run") as RunCoordinator
 	assert_bool(is_instance_id_valid(old_id)).is_false()
-	assert_int(shell.get_child_count()).is_equal(1)
+	assert_int(shell.get_child_count()).is_equal(3)
 	assert_int(fresh.simulation.inventory.count(&"log")).is_zero()
 	assert_int(fresh.simulation.fires.size()).is_zero()
 	assert_str(fresh.simulation.actions.action).is_empty()
@@ -53,9 +55,11 @@ func test_shell_restart_replaces_all_mutable_run_state() -> void:
 
 func test_scene_routes_gathering_and_backpack_keeps_work_and_time_running() -> void:
 	var shell: Node = auto_free(SHELL.instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/scene_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
-	var run := shell.get_child(0) as RunCoordinator
+	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
+	var run := shell.get("_run") as RunCoordinator
 	run.input_router.action_pressed.emit(&"interact")
 	assert_str(run.simulation.actions.action).is_equal("gather_sticks")
 	run.input_router.action_pressed.emit(&"backpack")
@@ -115,9 +119,11 @@ func test_gather_verb_cache_reuses_storage_and_invalidates_on_reserves_and_tools
 
 func test_open_ground_creates_only_two_sites_and_rejects_busy_or_critical_work() -> void:
 	var shell: Node = auto_free(SHELL.instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/scene_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
-	var run := shell.get_child(0) as RunCoordinator
+	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
+	var run := shell.get("_run") as RunCoordinator
 	run.survivor.facing = Vector3.BACK
 	run.input_router.action_pressed.emit(&"secondary")
 	assert_int(run.simulation.fires.size()).is_equal(1)
@@ -139,9 +145,11 @@ func test_open_ground_creates_only_two_sites_and_rejects_busy_or_critical_work()
 
 func test_critical_survivor_cannot_spend_a_site_on_impossible_snow_clear() -> void:
 	var shell: Node = auto_free(SHELL.instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/scene_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
-	var run := shell.get_child(0) as RunCoordinator
+	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
+	var run := shell.get("_run") as RunCoordinator
 	run.survivor.facing = Vector3.BACK
 	run.simulation.body.stage = &"Critical"
 	run.input_router.action_pressed.emit(&"secondary")
@@ -159,9 +167,11 @@ func test_camera_projects_diagonal_input_to_unit_ground_vector() -> void:
 
 func test_fire_adapter_tracks_stage_and_exact_fi6_light_radius() -> void:
 	var shell: Node = auto_free(SHELL.instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/scene_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
-	var run := shell.get_child(0) as RunCoordinator
+	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
+	var run := shell.get("_run") as RunCoordinator
 	var fire := run.simulation.create_fire(Vector3.ZERO)
 	var entry := run.add_fire_site(fire)
 	assert_str(entry.site_id).is_equal(fire.id)
@@ -243,9 +253,11 @@ func test_survival_hud_clears_prompts_and_replaces_cues_without_model_access() -
 
 func test_f3_toggles_numeric_debug_surface_only_in_debug_builds() -> void:
 	var shell: Node = auto_free(SHELL.instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/scene_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
-	var run := shell.get_child(0) as RunCoordinator
+	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
+	var run := shell.get("_run") as RunCoordinator
 	var debug: Label = run.hud.get("_debug")
 	assert_bool(debug.visible).is_false()
 	var key := InputEventKey.new()
@@ -268,9 +280,11 @@ func test_f3_toggles_numeric_debug_surface_only_in_debug_builds() -> void:
 
 func test_demo_arrival_latches_while_turning_without_teleporting_or_seeding() -> void:
 	var shell: Node = auto_free(SHELL.instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/scene_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
-	var run := shell.get_child(0) as RunCoordinator
+	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
+	var run := shell.get("_run") as RunCoordinator
 	var demo := FirstNightDemo.new(run)
 	assert_int(run.simulation.fires.size()).is_zero()
 	assert_int(run.simulation.inventory.count(&"log")).is_zero()
@@ -286,9 +300,11 @@ func test_demo_arrival_latches_while_turning_without_teleporting_or_seeding() ->
 
 func test_lit_fire_without_an_available_verb_never_requests_tinder() -> void:
 	var shell: Node = auto_free(SHELL.instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/scene_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
-	var run := shell.get_child(0) as RunCoordinator
+	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
+	var run := shell.get("_run") as RunCoordinator
 	var fire := run.simulation.create_fire(Vector3(0, 0, 1))
 	run.add_fire_site(fire)
 	fire.stage = &"Burning"
@@ -306,9 +322,11 @@ func test_lit_fire_without_an_available_verb_never_requests_tinder() -> void:
 
 func test_missing_material_prompt_and_help_reopen() -> void:
 	var shell: Node = auto_free(SHELL.instantiate())
+	shell.set("save_store", SaveStore.new("user://test-checkpoints/scene_" + str(Time.get_ticks_usec())))
 	shell.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(shell)
-	var run := shell.get_child(0) as RunCoordinator
+	shell.call("start_run", {&"profile": &"first_night", &"seed": 20261119})
+	var run := shell.get("_run") as RunCoordinator
 	var fire := run.simulation.create_fire(Vector3(0, 0, -1))
 	fire.stage = &"Cleared"
 	run.add_fire_site(fire)

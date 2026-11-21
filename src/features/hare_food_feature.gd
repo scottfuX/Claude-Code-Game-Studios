@@ -77,6 +77,56 @@ func dispose() -> void:
 	_live = false
 	_place_bundle = Callable()
 
+## Captures finite trail and pickup progression, not pending attempts.
+func export_state() -> Dictionary:
+	var bundle: Variant = null
+	if bundle_count > 0:
+		bundle = {"item": String(_bundle_item), "count": bundle_count, "position": CheckpointValues.encode_vector(bundle_position)}
+	return {"state": int(state), "armed_minute": armed_minute, "bundle": bundle}
+
+## Validates progression against the restored clock and inventory, optionally checking authored terrain.
+func restore_state(dto: Dictionary) -> bool:
+	if not _live or not CheckpointValues.keys(dto, ["state", "armed_minute", "bundle"]):
+		return false
+	if not CheckpointValues.integer(dto.state, Trap.UNSET, Trap.SPENT) or not CheckpointValues.integer(dto.armed_minute, -1, _now()):
+		return false
+	var restored := int(dto.state) as Trap
+	var armed := int(dto.armed_minute)
+	var closing := _closing_minute(armed)
+	if (restored == Trap.UNSET and armed != -1) or (restored != Trap.UNSET and (armed < 0 or closing < 0)):
+		return false
+	var raw := _inventory.count(RAW)
+	var cooked := _inventory.count(COOKED)
+	if restored != Trap.SPENT and (dto.bundle != null or raw > 0 or cooked > 0):
+		return false
+	if restored == Trap.SPENT and _now() < closing:
+		return false
+	var bundle: Variant = dto.bundle
+	var item: StringName = &""
+	var count := 0
+	var point := Vector3.ZERO
+	if bundle != null:
+		if not CheckpointValues.keys(bundle, ["item", "count", "position"]) or not CheckpointValues.text(bundle.item) or bundle.item not in [RAW, COOKED]:
+			return false
+		item = StringName(bundle.item)
+		if not CheckpointValues.integer(bundle.count, 1, 1 if item == RAW else 2) or not CheckpointValues.vector(bundle.position):
+			return false
+		count = int(bundle.count)
+		point = CheckpointValues.decode_vector(bundle.position)
+		if _place_bundle.is_valid() and not _place_bundle.call(point):
+			return false
+		raw += count if item == RAW else 0
+		cooked += count if item == COOKED else 0
+	if raw > 1 or cooked > 2 or (raw > 0 and cooked > 0):
+		return false
+	state = restored
+	armed_minute = armed
+	bundle_count = count
+	bundle_position = point
+	_bundle_item = item
+	_bundle_revision += 1
+	return true
+
 func _now() -> int:
 	return (_clock.day - 1) * DAY_MINUTES + _clock.minute_of_day
 

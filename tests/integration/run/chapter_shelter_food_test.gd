@@ -109,6 +109,20 @@ func test_authored_chapter_sites_reserve_empty_plot_and_leave_outdoor_fire() -> 
 	assert_bool(WorldMap.within_chapter_reach(drop[-2], (drop[-1] - drop[-2]).normalized(), drop[-1])).is_true()
 	assert_bool(WorldMap.within_chapter_reach(drop[-2], (drop[-2] - drop[-1]).normalized(), drop[-1])).is_false()
 
+func test_chapter_actions_select_loaded_animation_states() -> void:
+	var scene: RunCoordinator = auto_free(SCENE.instantiate())
+	scene.tuning = CHAPTER
+	scene.process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(scene)
+	var visual: SurvivorVisual = scene.get("_survivor_visual")
+	var tree: AnimationTree = visual.get("_tree")
+	var machine := tree.tree_root as AnimationNodeStateMachine
+	for action: StringName in [ShelterFeature.FRAME, ShelterFeature.COVER, HareFoodFeature.SET,
+			HareFoodFeature.CHECK, HareFoodFeature.COOK, HareFoodFeature.TAKE, &"eat_hare"]:
+		var clip := SurvivorClips.select(action, 0.0, 37.0, false)
+		assert_bool(machine.has_node(clip)).is_true()
+		assert_float(visual.get("_lengths").get(action, 0.0)).is_greater(0.0)
+
 
 func test_snare_uses_one_wire_charge_and_claims_one_hare_after_crossing() -> void:
 	var run := _run()

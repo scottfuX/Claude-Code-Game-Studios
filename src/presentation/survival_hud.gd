@@ -8,6 +8,7 @@ signal eat_requested
 signal eat_hare_requested
 
 var model := HudModel.new()
+var external_navigation: bool = false
 var _canvas: HudCanvas
 var _prompt: Label
 var _cue: Label
@@ -103,6 +104,10 @@ func toggle_debug() -> void:
 
 ## Renders only a detached end-of-update snapshot; the HUD never owns game state.
 func render_snapshot(snapshot: Dictionary) -> void:
+	if external_navigation and (_context == &"pause" or snapshot.get(&"terminal", &"") != &""):
+		hide()
+		return
+	show()
 	var dt: float = snapshot.get(&"real_delta_s", 0.0)
 	var paused: bool = snapshot.get(&"paused", false)
 	if not model.update(snapshot, dt, paused) and not _invalid_reported:
@@ -240,3 +245,14 @@ func _button(parent: Node, key: StringName, callback: Callable) -> Button:
 	button.pressed.connect(callback)
 	parent.add_child(button)
 	return button
+
+func handle_ui_action(action: StringName) -> void:
+	var focus := get_viewport().gui_get_focus_owner()
+	if focus == null:
+		return
+	if action == &"ui_accept" and focus is Button:
+		(focus as Button).pressed.emit()
+	elif action in [&"ui_down", &"ui_right", &"ui_focus_next"]:
+		focus.find_next_valid_focus().grab_focus()
+	elif action in [&"ui_up", &"ui_left", &"ui_focus_prev"]:
+		focus.find_prev_valid_focus().grab_focus()

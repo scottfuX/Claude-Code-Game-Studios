@@ -6,7 +6,10 @@ const ACTIONS: Dictionary[StringName, StringName] = {
 	&"chop_log": &"chop_log", &"strip_bark": &"strip_bark",
 	&"clear_snow": &"clear_snow", &"arrange_tinder": &"arrange_tinder",
 	&"strike": &"strike", &"blow_embers": &"blow_embers", &"add_fuel": &"add_fuel",
-	&"eat": &"eat", &"eat_snow": &"eat_snow",
+	&"eat": &"eat", &"eat_snow": &"eat_snow", &"eat_hare": &"eat",
+	ShelterFeature.FRAME: &"add_fuel", ShelterFeature.COVER: &"arrange_tinder",
+	HareFoodFeature.SET: &"arrange_tinder", HareFoodFeature.CHECK: &"gather_grass",
+	HareFoodFeature.COOK: &"arrange_tinder", HareFoodFeature.TAKE: &"gather_grass",
 }
 const STATES: Array[StringName] = [&"idle", &"cold_idle", &"warm_hands", &"walk", &"sleep"]
 const KNEEL: float = 0.34

@@ -96,3 +96,58 @@ func has_tool(tool: StringName) -> bool:
 ## Returns a detached counts snapshot.
 func snapshot() -> Dictionary[StringName, int]:
 	return _counts.duplicate()
+
+func export_state(chapter: bool = false) -> Dictionary:
+	var counts := {}
+	var revisions := {}
+	for item: StringName in _counts:
+		counts[String(item)] = _counts[item]
+		revisions[String(item)] = _revisions[item]
+	var kit: Array = []
+	for tool: StringName in tools:
+		kit.append(String(tool))
+	var dto := {"tools": kit, "counts": counts, "revisions": revisions}
+	if chapter:
+		dto["wire_uses"] = _wire_uses
+	return dto
+
+func restore_state(dto: Dictionary, chapter: bool = false) -> bool:
+	var keys := ["tools", "counts", "revisions"]
+	if chapter:
+		keys.append("wire_uses")
+	if not CheckpointValues.keys(dto, keys) or not dto.tools is Array or not dto.counts is Dictionary or not dto.revisions is Dictionary:
+		return false
+	var wire_uses := 0
+	if chapter:
+		if not CheckpointValues.integer(dto.wire_uses, 0, _chapter_data.wire_durability):
+			return false
+		wire_uses = int(dto.wire_uses)
+	var tool_ids := ["hatchet", "knife", "ferro_rod"]
+	if wire_uses > 0:
+		tool_ids.append("snare_wire")
+	var kit: Array[StringName] = []
+	for tool: Variant in dto.tools:
+		if not CheckpointValues.text(tool) or tool not in tool_ids or StringName(tool) in kit:
+			return false
+		kit.append(StringName(tool))
+	if kit.has(&"snare_wire") != (wire_uses > 0):
+		return false
+	if dto.counts.size() != dto.revisions.size():
+		return false
+	var item_ids := ["stick", "log", "grass", "bark", "pemmican"]
+	if chapter:
+		item_ids.append_array(["tarp", "hare_raw", "hare_cooked"])
+	for item: Variant in dto.counts:
+		if not CheckpointValues.text(item) or item not in item_ids or not dto.revisions.has(item):
+			return false
+		if not CheckpointValues.integer(dto.counts[item], 0, 1000000) or not CheckpointValues.integer(dto.revisions[item], 1, 2147483647):
+			return false
+	tools = kit
+	_wire_uses = wire_uses
+	_wire_revision += 1
+	_counts.clear()
+	_revisions.clear()
+	for item: String in dto.counts:
+		_counts[StringName(item)] = int(dto.counts[item])
+		_revisions[StringName(item)] = int(dto.revisions[item])
+	return true
