@@ -33,7 +33,7 @@ static func validate(dto: Variant) -> bool:
 	if not CheckpointValues.decimal(dto.seed) or not CheckpointValues.integer(dto.saved_at_unix, 0, 9007199254740991) or not CheckpointValues.keys(dto.owners, owner_keys):
 		return false
 	var owners: Dictionary = dto.owners
-	if not owners.survivor is Dictionary or not SurvivorController.validate_state(owners.survivor) or not owners.gathering is Dictionary:
+	if not owners.survivor is Dictionary or not SurvivorController.validate_state(owners.survivor, chapter) or not owners.gathering is Dictionary:
 		return false
 	var tuning := tuning_for(String(dto.profile))
 	var nodes := GatherCatalog.create(tuning)

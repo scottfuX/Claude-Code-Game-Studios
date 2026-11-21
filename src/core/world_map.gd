@@ -54,7 +54,7 @@ func _ready() -> void:
 
 ## Returns the extent of the active authored clearing.
 func half_extent() -> float:
-	return maxf(TUNING.half_extent, 34.0) if chapter_sites else TUNING.half_extent
+	return TUNING.half_extent_for(chapter_sites)
 
 ## Validates a walking corridor against the same flat ground and obstacle data used by Jolt.
 func clear_approach(points: PackedVector3Array) -> bool:
