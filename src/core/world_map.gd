@@ -272,7 +272,7 @@ func _build_spawn_frame() -> void:
 	var rocks := [Vector3(-8, 0, 5), Vector3(9, 0, -4), Vector3(-12, 0, -5), Vector3(11, 0, 9)]
 	for points: Array in [trees, rocks]:
 		for p: Vector3 in points:
-			if not _clear_of_nodes(p, 3.0) or disc_intersects_plot(p, 2.5, SHELTER_TRANSFORM, SHELTER_BOUNDS) or p.distance_to(Geometry3D.get_closest_point_to_segment(p, Vector3.ZERO, HARE_APPROACH)) < 2.5:
+			if not _clear_of_nodes(p, layout.tuning.spawn_resource_clearance) or disc_intersects_plot(p, layout.tuning.spawn_shelter_clearance, SHELTER_TRANSFORM, SHELTER_BOUNDS) or p.distance_to(Geometry3D.get_closest_point_to_segment(p, Vector3.ZERO, HARE_APPROACH)) < layout.tuning.spawn_approach_clearance:
 				continue
 			var instance := _place(PINE if points == trees else ROCK, p, p.x, 1.35)
 			instance.add_to_group(&"spawn_decor")

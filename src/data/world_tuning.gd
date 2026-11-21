@@ -11,6 +11,9 @@ class_name WorldTuning extends Resource
 @export var placement_retries: int = 30
 @export var placement_margin: float = 1.0
 @export var camp_clearance: float = 2.0
+@export var spawn_resource_clearance: float = 3.0
+@export var spawn_shelter_clearance: float = 2.5
+@export var spawn_approach_clearance: float = 2.5
 @export var camp_half_size: float = 4.0
 @export var facing_deadfall_distance: Vector2 = Vector2(20, 30)
 @export var second_deadfall_distance: Vector2 = Vector2(31, 37)

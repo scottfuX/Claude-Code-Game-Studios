@@ -36,9 +36,9 @@ func test_chapter_scene_uses_run_layout_and_legacy_scene_is_unchanged() -> void:
 			continue
 		framed += 1
 		assert_float(decor.position.length()).is_between(8.0, 20.0)
-		assert_bool(WorldMap.disc_intersects_plot(decor.position, 2.5, WorldMap.SHELTER_TRANSFORM, WorldMap.SHELTER_BOUNDS)).is_false()
+		assert_bool(WorldMap.disc_intersects_plot(decor.position, chapter.world.layout.tuning.spawn_shelter_clearance, WorldMap.SHELTER_TRANSFORM, WorldMap.SHELTER_BOUNDS)).is_false()
 		for node: Dictionary in chapter.simulation.map_layout.nodes:
-			assert_float(decor.position.distance_to(node[&"position"])).is_greater_equal(3.0)
+			assert_float(decor.position.distance_to(node[&"position"])).is_greater_equal(chapter.world.layout.tuning.spawn_resource_clearance)
 	assert_int(framed).is_greater_equal(6)
 	assert_object(chapter.world.layout).is_same(chapter.simulation.map_layout)
 	assert_int(chapter.world.interactables.size()).is_equal(chapter.simulation.map_layout.nodes.size() + 2)
@@ -56,6 +56,23 @@ func test_chapter_scene_uses_run_layout_and_legacy_scene_is_unchanged() -> void:
 	assert_float(legacy.world.half_extent()).is_equal(30.0)
 	assert_int(legacy.world.interactables.size()).is_equal(13)
 	assert_vector(legacy.world.interactables[0].position).is_equal(Vector3(0, 0, -1.6))
+
+func test_spawn_framing_uses_each_configured_collider_clearance() -> void:
+	for setting: StringName in [&"", &"spawn_resource_clearance", &"spawn_shelter_clearance", &"spawn_approach_clearance"]:
+		var world := auto_free(WorldMap.new()) as WorldMap
+		world.layout = LargeMapLayout.new(RunRng.new(7))
+		world.layout.tuning = WorldTuning.new()
+		var resource := WorldInteractable.new()
+		world.add_child(resource)
+		world.interactables.append(resource)
+		if setting != &"":
+			world.layout.tuning.set(setting, 100.0)
+		world.call("_build_spawn_frame")
+		var obstacles: Array = world.get("_obstacles")
+		if setting == &"":
+			assert_int(obstacles.size()).is_greater_equal(6)
+		else:
+			assert_array(obstacles).is_empty()
 
 func test_map_rng_finishes_before_weather_initialization() -> void:
 	var run := RunSimulation.new(20261119, preload("res://assets/data/three_day_survival.tres"))
