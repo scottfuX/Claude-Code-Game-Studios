@@ -586,7 +586,7 @@ func advance_loading(delta: float) -> void:
 		survivor.frozen = input_router.is_paused() or simulation.needs.is_asleep
 
 func flush_autosave() -> void:
-	if not _sunrise_pending or simulation.actions.action != &"" or simulation.clock._dispatching:
+	if not _sunrise_pending or simulation.in_water or simulation.actions.action != &"" or simulation.clock._dispatching:
 		return
 	_sunrise_pending = false
 	if simulation.terminal == &"" and checkpoint_writer.is_valid() and not checkpoint_writer.call(self):

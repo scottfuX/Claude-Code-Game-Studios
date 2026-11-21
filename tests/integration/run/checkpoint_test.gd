@@ -157,6 +157,29 @@ func test_legacy_harvested_bark_is_deducted_from_birch_bark_reserves() -> void:
 	assert_bool(harvested).is_true()
 	assert_int(remaining).is_equal(initial - 2)
 
+func test_sunrise_autosave_is_deferred_through_ice_escape_and_written_once() -> void:
+	var shell := _shell()
+	assert_bool(shell.call("start_run", {&"profile": &"three_night", &"seed": 443})).is_true()
+	var run: RunCoordinator = shell.get("_run")
+	var attempts: Array[bool] = []
+	run.checkpoint_writer = func(owner: RunCoordinator) -> bool:
+		attempts.append(true)
+		return _store.save(RunCheckpoint.capture(owner))
+	run.simulation.in_water = true
+	run.simulation.clock.day = 2
+	run.simulation.clock.minute_of_day = ceili(run.simulation.clock.sunrise_hour() * 60.0) - 1
+	run.simulation.step_minute()
+	run.flush_autosave()
+	assert_int(attempts.size()).is_zero()
+	assert_bool(run.get("_sunrise_pending")).is_true()
+	run.simulation.leave_water()
+	run.flush_autosave()
+	assert_int(attempts.size()).is_equal(1)
+	assert_dict(_store.probe()).is_not_empty()
+	assert_bool(run.get("_sunrise_pending")).is_false()
+	run.flush_autosave()
+	assert_int(attempts.size()).is_equal(1)
+
 func test_seeded_world_weather_broken_ice_and_wet_materials_survive_json_continue() -> void:
 	var shell := _shell()
 	assert_bool(shell.call("start_run", {&"profile": &"three_night", &"seed": 443})).is_true()
