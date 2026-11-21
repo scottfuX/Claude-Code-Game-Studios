@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1")
+fire_placement_radius = 1.0
 snow_speed_probe_distance = 0.65
 snow_body_press_radius = 0.30
 snow_body_press_strength = 0.72

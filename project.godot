@@ -115,7 +115,7 @@ help={
 
 [internationalization]
 
-locale/translations=PackedStringArray("res://assets/localization/hud.en.translation")
+locale/translations=PackedStringArray("res://assets/localization/hud.en.translation", "res://assets/localization/chapter.en.translation", "res://assets/localization/chapter.zh.translation")
 locale/fallback="en"
 
 [rendering]

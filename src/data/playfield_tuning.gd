@@ -40,6 +40,7 @@ class_name PlayfieldTuning extends Resource
 @export var facing_dot: float = 0.15
 @export var fire_spacing: float = 3.0
 @export var fire_clearance: float = 1.5
+@export var fire_placement_radius: float = 1.0
 @export var resource_clearance: float = 0.7
 @export var obstacle_radius: float = 0.65
 @export var fire_placement_distance: float = 1.2

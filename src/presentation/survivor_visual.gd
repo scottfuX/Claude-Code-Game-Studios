@@ -41,7 +41,9 @@ func _ready() -> void:
 	_feet.append(_skeleton.find_bone(&"RightFoot"))
 	var machine := AnimationNodeStateMachine.new()
 	var states: Array[StringName] = SurvivorClips.STATES.duplicate()
-	states.append_array(SurvivorClips.ACTIONS.values())
+	for clip: StringName in SurvivorClips.ACTIONS.values():
+		if clip not in states:
+			states.append(clip)
 	for name: StringName in states:
 		machine.add_node(name, _state_blend(name))
 	for from: StringName in states:

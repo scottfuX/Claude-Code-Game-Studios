@@ -24,11 +24,17 @@ var _loading_token: int = 0
 var _loading_elapsed: float = 0.0
 
 const PLAYFIELD: PlayfieldTuning = preload("res://assets/data/playfield_defaults.tres")
+const CHAPTER_CONTENT: ChapterContentTuning = preload("res://assets/data/chapter_content_defaults.tres")
 const VERB_NAMES: Dictionary[StringName, String] = {
 	&"gather_sticks": "VERB_GATHER_STICKS", &"chop_log": "VERB_CHOP_LOG", &"strip_bark": "VERB_STRIP_BARK",
 	&"gather_grass": "VERB_GATHER_GRASS", &"clear_snow": "VERB_CLEAR_SNOW", &"arrange_tinder": "VERB_ARRANGE_TINDER",
 	&"strike": "VERB_STRIKE", &"blow_embers": "VERB_BLOW_EMBERS", &"add_fuel": "VERB_ADD_FUEL",
 	&"eat_snow": "VERB_DRINK_SNOW", &"eat": "VERB_EAT_RATION",
+	&"eat_hare": "VERB_EAT_HARE",
+	ShelterFeature.FRAME: "VERB_BUILD_SHELTER", ShelterFeature.COVER: "VERB_COVER_SHELTER",
+	&"sleep": "VERB_SLEEP_SHELTER",
+	HareFoodFeature.SET: "VERB_SET_HARE_SNARE", HareFoodFeature.CHECK: "VERB_CHECK_HARE_SNARE",
+	HareFoodFeature.COOK: "VERB_COOK_HARE", HareFoodFeature.TAKE: "VERB_TAKE_HARE",
 }
 var tuning: SliceTuning
 var simulation: RunSimulation
@@ -50,6 +56,13 @@ var _smolder_stage: Dictionary[StringName, StringName] = {}
 var _survivor_visual: SurvivorVisual
 var _footprints: FootprintPool
 var _demo_driver: FirstNightDemo
+var _shelter: ShelterFeature
+var _shelter_target: WorldInteractable
+var _shelter_visual: ShelterVisual
+var _food: HareFoodFeature
+var _trail_target: WorldInteractable
+var _pile_target: WorldInteractable
+var _trail_visual: HareTrailVisual
 
 @onready var input_router: InputRouter = $InputRouter
 @onready var world: WorldMap = $WorldMap
@@ -67,9 +80,11 @@ func _enter_tree() -> void:
 	if tuning != null:
 		var run_world := get_node("WorldMap") as WorldMap
 		run_world.extra_deadfalls.assign(tuning.extra_deadfalls)
+		run_world.chapter_sites = tuning.chapter_needs_enabled
 
 func _ready() -> void:
 	simulation = RunSimulation.new(seed_value, tuning)
+	var drop := survivor.global_position
 	if not restore_checkpoint.is_empty():
 		initialization_ok = _restore_owners(restore_checkpoint)
 		if not initialization_ok:
@@ -93,6 +108,9 @@ func _ready() -> void:
 	camera.target = survivor
 	camera.position = survivor.position + Vector3.UP * camera.tuning.camera_target_height
 	survivor.configure(simulation, input_router, camera)
+	if chapter and not _setup_chapter_sites(drop):
+		initialization_ok = false
+		return
 	_footprints = FootprintPool.new()
 	add_child(_footprints)
 	_survivor_visual = SurvivorVisual.new()
@@ -106,6 +124,7 @@ func _ready() -> void:
 	hud.restart_requested.connect(func() -> void: restart_requested.emit())
 	hud.switch_chapter_requested.connect(func() -> void: switch_chapter_requested.emit())
 	hud.eat_requested.connect(_try_eat)
+	hud.eat_hare_requested.connect(_try_eat.bind(HareFoodFeature.COOKED))
 	hud.resume_requested.connect(_resume)
 	hud.external_navigation = true
 	navigation = MENU.instantiate() as NavigationScreen
@@ -158,8 +177,57 @@ func _ready() -> void:
 	survivor.set_physics_process(true)
 	survivor.frozen = _loading_token != 0 or simulation.needs.is_asleep
 
+func _setup_chapter_sites(drop: Vector3) -> bool:
+	var plot := world.shelter_plot(drop)
+	var route := world.hare_approach(drop)
+	var cooked_minutes: float = simulation.tuning.eat_minutes.get(HareFoodFeature.COOKED, 0.0)
+	var cooked_kcal: float = simulation.tuning.food_kcal.get(HareFoodFeature.COOKED, 0.0)
+	if plot.is_empty() or route.is_empty() or not CHAPTER_CONTENT.is_valid() or not (cooked_minutes >= 0.25 and cooked_minutes <= 30.0 and cooked_kcal >= 250.0 and cooked_kcal <= 450.0):
+		push_error("Chapter 2: invalid shelter plot, hare route, or cooked hare data")
+		return false
+	simulation.fire_site_eligible = world.can_place_fire
+	_shelter = ShelterFeature.new(plot, simulation.inventory, simulation.thermal, CHAPTER_CONTENT)
+	_food = HareFoodFeature.new(simulation.inventory, simulation.clock, world.can_place_bundle, CHAPTER_CONTENT)
+	if restore_checkpoint.is_empty():
+		simulation.inventory.add(&"tarp", 1)
+		simulation.inventory.equip_snare_wire()
+	else:
+		var chapter: Dictionary = restore_checkpoint.owners.chapter
+		if not _shelter.restore_stage(int(chapter.shelter_stage)) or not _food.restore_state(chapter.hare):
+			return false
+	var site: Transform3D = plot[&"site"]
+	_shelter_target = world.add_site(ShelterFeature.ID, site.origin, "TARGET_SHELTER")
+	_shelter_target.chapter_target = true
+	_shelter_visual = ShelterVisual.new()
+	_shelter_visual.transform = site
+	world.add_child(_shelter_visual)
+	_render_shelter()
+	_trail_target = world.add_site(HareFoodFeature.TRAIL, route[-1], "TARGET_HARE_TRAIL")
+	_trail_target.chapter_target = true
+	_trail_visual = HareTrailVisual.new()
+	_trail_visual.route = route
+	world.add_child(_trail_visual)
+	if _food.bundle_count > 0:
+		_add_hare_bundle()
+	return true
+
+## Exports only settled chapter progression; first-night checkpoints omit this owner.
+func export_chapter_state() -> Dictionary:
+	if _shelter == null or _food == null:
+		return {}
+	return {"shelter_stage": _shelter.stage, "hare": _food.export_state()}
+
+func _exit_tree() -> void:
+	if simulation != null:
+		simulation.cancel_action()
+		simulation.fire_site_eligible = Callable()
+	if _shelter != null:
+		_shelter.dispose()
+	if _food != null:
+		_food.dispose()
+
 func _process(delta: float) -> void:
-	if simulation == null:
+	if simulation == null or not initialization_ok:
 		return
 	if _loading_token != 0:
 		advance_loading(delta)
@@ -177,6 +245,8 @@ func _process(delta: float) -> void:
 	_check_smolder()
 	_update_target()
 	_update_lighting()
+	if _trail_visual != null:
+		_trail_visual.render_catch(_food.catch_ready())
 	hud.set_visibility_context(_hud_context())
 	var snapshot := simulation.snapshot()
 	snapshot[&"prompt"] = _prompt()
@@ -284,7 +354,8 @@ func _try_sleep() -> void:
 		if fire.stage not in [&"Site", &"Cleared", &"Laid"] and fire.position.distance_to(survivor.global_position) <= PLAYFIELD.reach:
 			near_fire = true
 			break
-	if not near_fire:
+	var in_shelter := _shelter != null and _shelter.can_sleep(survivor.global_position)
+	if not near_fire and not in_shelter:
 		_refuse(tr(&"HUD_SLEEP_FIRE"))
 	elif simulation.body.stage == &"Critical":
 		_refuse(tr(&"HUD_TOO_COLD_TIRED"))
@@ -301,14 +372,14 @@ func _try_snow() -> void:
 	elif not simulation.start_snow_intake(true):
 		_refuse(tr(&"HUD_TOO_COLD_TIRED"))
 
-func _try_eat() -> void:
+func _try_eat(item: StringName = &"pemmican") -> void:
 	if paused or not backpack_open or simulation.terminal != &"":
 		return
 	backpack_open = false
 	_sync_context()
-	var cause := simulation.start_eating(&"pemmican")
+	var cause := simulation.start_eating(item)
 	if cause != &"":
-		_on_action_resolved(&"eat", false, cause)
+		_on_action_resolved(&"eat_hare" if item == HareFoodFeature.COOKED else &"eat", false, cause)
 
 func _on_sleep_changed(asleep: bool, cause: StringName) -> void:
 	if asleep:
@@ -448,6 +519,7 @@ func _restore_owners(dto: Dictionary) -> bool:
 	var survivor_state: Dictionary = owners.survivor
 	owners.erase("gathering")
 	owners.erase("survivor")
+	owners.erase("chapter")
 	if not simulation.restore_state(owners) or not survivor.restore_state(survivor_state):
 		return false
 	for entry: WorldInteractable in world.interactables:
@@ -455,6 +527,8 @@ func _restore_owners(dto: Dictionary) -> bool:
 			return false
 	simulation.position = survivor.position
 	for fire: FireController in simulation.fires:
+		if world.chapter_sites and not world.can_place_fire(fire.position):
+			return false
 		add_fire_site(fire)
 	return true
 
@@ -519,12 +593,33 @@ func _update_target() -> void:
 	_verbs.clear()
 	if _target == null:
 		return
+	if _target == _shelter_target:
+		if _shelter.can_sleep(survivor.global_position):
+			_verbs.append(&"sleep")
+		else:
+			var offered := _shelter.offered_action()
+			if offered != &"":
+				_verbs.append(offered)
+		return
+	if _target == _trail_target:
+		if simulation.body.stage != &"Critical":
+			if _food.can_set(simulation.action_duration_multiplier()):
+				_verbs.append(HareFoodFeature.SET)
+			elif _food.state == HareFoodFeature.Trap.ARMED:
+				_verbs.append(HareFoodFeature.CHECK)
+		return
+	if _target == _pile_target:
+		if simulation.body.stage != &"Critical":
+			_verbs.append(HareFoodFeature.TAKE)
+		return
 	if _target_fire == null:
 		_verbs.assign(_target.gather_verbs(_gather_query, simulation.inventory))
 	else:
 		for action: StringName in [&"clear_snow", &"arrange_tinder", &"strike", &"blow_embers", &"add_fuel"]:
 			if _target_fire.can_act(action, simulation.inventory):
 				_verbs.append(action)
+		if _food != null and _target_fire.stage == &"Burning" and simulation.body.stage != &"Critical" and simulation.inventory.count(HareFoodFeature.RAW) > 0 and _fire_in_reach(_target):
+			_verbs.insert(mini(_verbs.size(), 1), HareFoodFeature.COOK)
 
 func _try_action(index: int) -> void:
 	if simulation.actions.action != &"":
@@ -540,8 +635,39 @@ func _try_action(index: int) -> void:
 			_refuse(_fire_requirement())
 		return
 	var action := _verbs[index]
+	if action == &"sleep":
+		_try_sleep()
+		return
+	if _target == _shelter_target:
+		if not _shelter.start(simulation, action, _is_focused.bind(_target)):
+			_refuse(tr(&"HUD_TOO_COLD_TIRED"))
+		return
+	if _target == _trail_target:
+		if not _food.start_trail(simulation, action, _is_focused.bind(_target), _survivor_position):
+			_refuse(tr(&"HUD_TOO_COLD_TIRED"))
+		return
+	if _target == _pile_target:
+		if not _food.start_take(simulation, _is_focused.bind(_target)):
+			_refuse(tr(&"HUD_TOO_COLD_TIRED"))
+		return
+	if action == HareFoodFeature.COOK:
+		if not _food.start_cook(simulation, _target_fire, _same_cooking_fire.bind(_target, _target_fire), _survivor_position):
+			_refuse(tr(&"HUD_TOO_COLD_TIRED"))
+		return
 	if not simulation.start_action(action, _target_fire, _target.gather_node):
 		_refuse(tr(&"HUD_TOO_COLD_TIRED"))
+
+func _is_focused(target: WorldInteractable) -> bool:
+	return is_instance_valid(target) and world.nearest(survivor.global_position, survivor.facing) == target
+
+func _fire_in_reach(target: WorldInteractable) -> bool:
+	return WorldMap.within_chapter_reach(survivor.global_position, survivor.facing, target.global_position)
+
+func _same_cooking_fire(target: WorldInteractable, fire: FireController) -> bool:
+	return _is_focused(target) and _fire_in_reach(target) and simulation.fires.has(fire) and _site_fires.get(target.site_id) == fire
+
+func _survivor_position() -> Vector3:
+	return survivor.global_position
 
 func _make_fire() -> void:
 	if simulation.body.stage == &"Critical" or simulation.needs.stage == &"Exhausted":
@@ -549,7 +675,7 @@ func _make_fire() -> void:
 		return
 	var p := survivor.global_position + survivor.facing * PLAYFIELD.fire_placement_distance
 	p.y = 0
-	if absf(p.x) > PLAYFIELD.half_extent - PLAYFIELD.edge_inset or absf(p.z) > PLAYFIELD.half_extent - PLAYFIELD.edge_inset:
+	if absf(p.x) > world.half_extent() - PLAYFIELD.edge_inset or absf(p.z) > world.half_extent() - PLAYFIELD.edge_inset:
 		_refuse(tr(&"HUD_INSIDE_CLEARING"))
 		return
 	if not world.can_place_fire(p):
@@ -575,6 +701,19 @@ func _prompt() -> String:
 	if _target == null:
 		return tr(&"HUD_MAKE_FIRE") % input_router.glyph_for(&"secondary") if simulation.fires.size() < simulation.tuning.max_fire_sites else ""
 	if _verbs.is_empty():
+		if _target == _shelter_target:
+			match _shelter.stage:
+				0: return tr(&"HUD_SHELTER_LOG")
+				1: return tr(&"HUD_SHELTER_TARP")
+				_: return tr(&"HUD_SHELTER_INSIDE")
+		if _target == _trail_target:
+			if simulation.body.stage == &"Critical":
+				return tr(&"HUD_TOO_COLD_TIRED")
+			if _food.state == HareFoodFeature.Trap.SPENT:
+				return tr(&"HUD_HARE_SPENT")
+			return tr(&"HUD_HARE_WIRE" if simulation.inventory.wire_revision() < 0 else &"HUD_HARE_MISSED")
+		if _target == _pile_target:
+			return tr(&"HUD_TOO_COLD_TIRED")
 		return _fire_requirement() if _target_fire != null else tr(&"HUD_NEED_TINDER") % tr(_target.display_name)
 	if _target_fire != null and _target_fire.stage == &"Smoldering":
 		return tr(&"HUD_VERB") % [input_router.glyph_for(&"interact"), tr(&"HUD_BLOW_NOW")]
@@ -598,7 +737,33 @@ func _check_smolder() -> void:
 			hud.show_cue(tr(&"HUD_EMBER_EXPIRED"))
 		_smolder_stage[fire.id] = fire.stage
 
+func _render_shelter() -> void:
+	_shelter_visual.render_stage(_shelter.stage)
+	if _shelter.stage == 2:
+		_shelter_target.position = _shelter_visual.transform * Vector3(0, 0, -0.8)
+
+func _add_hare_bundle() -> void:
+	_pile_target = world.add_site(HareFoodFeature.BUNDLE, _food.bundle_position, "TARGET_HARE_PILE")
+	_pile_target.chapter_target = true
+	_pile_target.add_child(HareTrailVisual.bundle_mesh())
+
 func _on_action_resolved(action: StringName, success: bool, cause: StringName) -> void:
+	if success and action in [ShelterFeature.FRAME, ShelterFeature.COVER]:
+		_render_shelter()
+	if cause == &"nothing_yet":
+		_refuse(tr(&"HUD_HARE_NOTHING"))
+		return
+	if cause == &"piled":
+		_add_hare_bundle()
+		_refuse(tr(&"HUD_HARE_PILED"))
+		return
+	if cause == &"wire_broken":
+		_refuse(tr(&"HUD_HARE_WIRE_BROKE"))
+		return
+	if action == HareFoodFeature.TAKE and success and _food.bundle_count == 0 and _pile_target != null:
+		world.interactables.erase(_pile_target)
+		_pile_target.queue_free()
+		_pile_target = null
 	if action == &"blow_embers":
 		for fire: FireController in simulation.fires:
 			_smolder_stage[fire.id] = fire.stage

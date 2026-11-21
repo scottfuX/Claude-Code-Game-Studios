@@ -1,16 +1,16 @@
 // Persistent snow heightfield. Compatibility: five vertex reads, one fragment read.
 shader_type spatial;
 
-const float WORLD_SIZE = 64.0;
 const float FRESH_HEIGHT = 0.28;
 const float PACKED_HEIGHT = 0.025;
 const float NORMAL_STEP = 0.125;
 
 uniform sampler2D trail_map : filter_linear, repeat_disable;
+uniform float world_size = 64.0;
 varying vec2 snow_position;
 
 float compact(vec2 p) {
-	return texture(trail_map, p / WORLD_SIZE + vec2(0.5)).r;
+	return texture(trail_map, p / world_size + vec2(0.5)).r;
 }
 
 float height_at(vec2 p) {

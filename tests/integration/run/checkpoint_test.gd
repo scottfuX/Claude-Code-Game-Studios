@@ -57,6 +57,53 @@ func _write_raw(contents: String) -> void:
 	file.store_string(contents)
 	file.close()
 
+func test_chapter_continue_restores_cover_wire_and_one_spent_hare_site() -> void:
+	var shell := _shell()
+	assert_bool(shell.call("start_run", {&"profile": &"three_night"})).is_true()
+	var run: RunCoordinator = shell.get("_run")
+	var simulation := run.simulation
+	var shelter: ShelterFeature = run.get("_shelter")
+	var food: HareFoodFeature = run.get("_food")
+	var focus := func() -> bool: return true
+	var feet := func() -> Vector3: return Vector3(3, 0, 3)
+	simulation.inventory.add(&"log", 1)
+	assert_bool(shelter.start(simulation, ShelterFeature.FRAME, focus)).is_true()
+	for minute in 6:
+		simulation.update(simulation.clock.seconds_per_minute())
+	assert_bool(shelter.start(simulation, ShelterFeature.COVER, focus)).is_true()
+	for minute in 4:
+		simulation.update(simulation.clock.seconds_per_minute())
+	assert_bool(food.start_trail(simulation, HareFoodFeature.SET, focus, feet)).is_true()
+	for minute in 3:
+		simulation.update(simulation.clock.seconds_per_minute())
+	simulation.clock.minute_of_day = 1320
+	simulation.inventory.add(&"log", 30)
+	assert_bool(food.start_trail(simulation, HareFoodFeature.CHECK, focus, feet)).is_true()
+	for minute in 2:
+		simulation.update(simulation.clock.seconds_per_minute())
+	run.survivor.position = Vector3(25, 0, -23)
+	var dto := RunCheckpoint.capture(run)
+	assert_int(dto.owners.chapter.hare.bundle.count).is_equal(1)
+	assert_bool(_store.save(dto)).is_true()
+	var loaded := _store.probe()
+	assert_bool(shell.call("start_run", {&"profile": &"three_night", &"restore": loaded})).is_true()
+	var continued: RunCoordinator = shell.get("_run")
+	var bed := WorldMap.SHELTER_TRANSFORM * Vector3(0, 0, -0.8)
+	assert_float(continued.simulation.thermal.components(bed)[&"shelter_bonus"]).is_equal(2.0)
+	assert_int(continued.simulation.inventory.count(&"tarp")).is_zero()
+	assert_int(continued.simulation.inventory.export_state(true).wire_uses).is_equal(49)
+	assert_dict(continued.export_chapter_state()).is_equal(dto.owners.chapter)
+	var pile: WorldInteractable = continued.get("_pile_target")
+	assert_vector(pile.position).is_equal(feet.call())
+	var restored_food: HareFoodFeature = continued.get("_food")
+	assert_bool(restored_food.start_trail(continued.simulation, HareFoodFeature.CHECK, focus, feet)).is_false()
+	var legacy := dto.duplicate(true)
+	legacy.owners.erase("chapter")
+	assert_bool(RunCheckpoint.validate(legacy)).is_false()
+	var duplicate_catch := dto.duplicate(true)
+	duplicate_catch.owners.chapter.hare.bundle.count = 2
+	assert_bool(RunCheckpoint.validate(duplicate_catch)).is_false()
+
 func test_round_trip_each_owner_both_profiles_and_rng_continuation() -> void:
 	for profile: StringName in [&"first_night", &"three_night"]:
 		var dto := _fixture(profile)
@@ -71,6 +118,7 @@ func test_round_trip_each_owner_both_profiles_and_rng_continuation() -> void:
 			assert_dict((nodes[id] as GatherNode).export_state()).is_equal(owners.gathering[String(id)])
 		owners.erase("survivor")
 		owners.erase("gathering")
+		owners.erase("chapter")
 		var restored := RunSimulation.new(2, RunCheckpoint.tuning_for(String(profile)))
 		assert_bool(restored.restore_state(owners)).is_true()
 		assert_dict(restored.export_state()).is_equal(owners)

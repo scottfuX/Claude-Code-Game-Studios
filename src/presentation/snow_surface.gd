@@ -2,15 +2,20 @@
 class_name SnowSurface extends MeshInstance3D
 
 @export var tuning: PlayfieldTuning = preload("res://assets/data/playfield_defaults.tres")
-var deformation := SnowDeformation.new()
+var deformation: SnowDeformation
 var _survivor: SurvivorController
 var _last_press := Vector3.INF
 var _cleared_fires: Dictionary = {}
 
+func _init(world_size: float = 64.0) -> void:
+	deformation = SnowDeformation.new(512, world_size)
+
 func _ready() -> void:
 	name = "SnowSurface"
+	var world_size := deformation.extent
+	var half := world_size * 0.5
 	var plane := PlaneMesh.new()
-	plane.size = Vector2(64, 64)
+	plane.size = Vector2.ONE * world_size
 	plane.subdivide_width = 255
 	plane.subdivide_depth = 255
 	mesh = plane
@@ -18,8 +23,9 @@ func _ready() -> void:
 	var material := ShaderMaterial.new()
 	material.shader = preload("res://src/presentation/spatial_deep_snow.gdshader")
 	material.set_shader_parameter("trail_map", deformation.texture)
+	material.set_shader_parameter("world_size", world_size)
 	material_override = material
-	custom_aabb = AABB(Vector3(-32, -0.1, -32), Vector3(64, 1, 64))
+	custom_aabb = AABB(Vector3(-half, -0.1, -half), Vector3(world_size, 1, world_size))
 	_initialize_contacts.call_deferred()
 
 func _initialize_contacts() -> void:

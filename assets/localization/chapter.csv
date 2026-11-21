@@ -1,0 +1,28 @@
+keys,en,zh
+TARGET_SHELTER,Shelter,棚子
+HUD_CHAPTER_INVALID,The chapter site could not load.,无法加载章节营地。
+HUD_SHELTER_LOG,Bring a log to frame the shelter.,带一根木柴来搭棚架。
+HUD_SHELTER_TARP,Bring the tarp to cover the frame.,带防水布来盖棚顶。
+HUD_SHELTER_INSIDE,Step under the tarp to sleep.,走到棚内才能睡觉。
+VERB_BUILD_SHELTER,Build shelter frame,搭棚架
+VERB_COVER_SHELTER,Fit tarp,盖防水布
+VERB_SLEEP_SHELTER,Sleep under cover,在棚里睡觉
+TARGET_HARE_TRAIL,Hare trail,野兔足迹
+TARGET_HARE_PILE,Hare bundle,野兔肉包
+VERB_SET_HARE_SNARE,Set hare snare,布置野兔套索
+VERB_CHECK_HARE_SNARE,Check hare snare,查看野兔套索
+VERB_COOK_HARE,Cook hare,烹煮野兔
+VERB_EAT_HARE,Eat cooked hare,吃熟野兔肉
+VERB_TAKE_HARE,Pick up hare bundle,捡起野兔肉包
+ITEM_TARP,Tarp,防水布
+ITEM_HARE_RAW,Raw hare,生野兔肉
+ITEM_HARE_COOKED,Cooked hare,熟野兔肉
+TOOL_SNARE_WIRE,Snare wire,套索铁丝
+HUD_HARE_NOTHING,Nothing yet.,暂时没有捕获。
+HUD_HARE_PILED,Pack full. Hare bundle at your feet.,背包满了。野兔肉包放在脚边。
+HUD_HARE_SPENT,The snare is spent.,套索已用完。
+HUD_HARE_MISSED,No more crossings tonight.,错过了最后一次野兔活动时段。
+HUD_HARE_WIRE,Bring a usable snare wire.,需要可用的套索铁丝。
+HUD_HARE_WIRE_BROKE,Snare set. The wire broke.,套索已布置。铁丝断了。
+CAUSE_PACK_FULL,pack full,背包满了
+CAUSE_MISSED_WINDOW,missed the crossing,错过了野兔活动时段

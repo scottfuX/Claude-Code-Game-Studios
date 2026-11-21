@@ -20,18 +20,21 @@ var movement: StringName = &"idle"
 var terminal: StringName = &""
 var last_felt_temp_c: float = NAN
 var minute_sequence: int = 0
+var fire_site_eligible: Callable
 var _fire_target: FireController
 var _gather_target: GatherNode
 var _action_delta_s: float = 0.0
 var _food_item: StringName = &""
 var _food_revision: int = -1
+var _feature_valid: Callable
+var _feature_commit: Callable
 
 func export_state() -> Dictionary:
 	var fire_states: Array = []
 	for fire: FireController in fires:
 		fire_states.append(fire.export_state())
 	return {"clock": clock.export_state(), "body": body.export_state(), "needs": needs.export_state(),
-		"inventory": inventory.export_state(), "rng": rng.export_state(), "fires": fire_states,
+		"inventory": inventory.export_state(tuning.chapter_needs_enabled), "rng": rng.export_state(), "fires": fire_states,
 		"run": {"minute_sequence": minute_sequence, "last_felt_temp_c": last_felt_temp_c if is_finite(last_felt_temp_c) else null}}
 
 func restore_state(dto: Dictionary) -> bool:
@@ -47,7 +50,7 @@ func restore_state(dto: Dictionary) -> bool:
 	if dto.run.last_felt_temp_c != null and not CheckpointValues.number(dto.run.last_felt_temp_c, -1000, 1000):
 		return false
 	var staged := RunSimulation.new(1, tuning)
-	if not staged.clock.restore_state(dto.clock) or not staged.body.restore_state(dto.body) or not staged.needs.restore_state(dto.needs) or not staged.inventory.restore_state(dto.inventory) or not staged.rng.restore_state(dto.rng):
+	if not staged.clock.restore_state(dto.clock) or not staged.body.restore_state(dto.body) or not staged.needs.restore_state(dto.needs) or not staged.inventory.restore_state(dto.inventory, tuning.chapter_needs_enabled) or not staged.rng.restore_state(dto.rng):
 		return false
 	if staged.needs.is_asleep != (staged.clock.rate_mode == &"sleep") or staged._survived():
 		return false
@@ -130,9 +133,27 @@ func start_eating(item: StringName) -> StringName:
 func create_fire(site_position: Vector3) -> FireController:
 	if terminal != &"" or fires.size() >= tuning.max_fire_sites or not site_position.is_finite():
 		return null
+	if fire_site_eligible.is_valid() and not fire_site_eligible.call(site_position):
+		return null
 	var fire := FireController.new(StringName("fire_%d" % fires.size()), site_position, thermal, tuning)
 	fires.append(fire)
 	return fire
+
+## Shares IA1's capped action multiplier with feature eligibility projections.
+func action_duration_multiplier() -> float:
+	return minf(2.0, body.action_mult() * needs.action_mult())
+
+## Registers one revalidated feature attempt with the ordered completion gate.
+## For example, [code]run.start_feature_action(id, minutes, still_eligible, commit)[/code].
+func start_feature_action(action: StringName, minutes: float, still_eligible: Callable, commit: Callable) -> bool:
+	if not _can_use_consumables() or actions.action != &"" or not _allowed(action) or not still_eligible.is_valid() or not commit.is_valid() or not still_eligible.call():
+		return false
+	clock.request_rate_mode(&"normal", &"work")
+	if not actions.start(action, minutes, clock.seconds_per_minute(), action_duration_multiplier()):
+		return false
+	_feature_valid = still_eligible
+	_feature_commit = commit
+	return true
 
 ## Starts an eligible transaction with target and duration fixed at admission.
 func start_action(action: StringName, fire: FireController = null, node: GatherNode = null) -> bool:
@@ -140,6 +161,8 @@ func start_action(action: StringName, fire: FireController = null, node: GatherN
 		return false
 	if fire != null:
 		if not fires.has(fire) or not fire.can_act(action, inventory):
+			return false
+		if action == &"clear_snow" and fire_site_eligible.is_valid() and not fire_site_eligible.call(fire.position):
 			return false
 	elif node != null:
 		if not gathering.can_gather(node, action, inventory):
@@ -166,12 +189,14 @@ func cancel_action() -> void:
 	_action_delta_s = 0.0
 	_food_item = &""
 	_food_revision = -1
+	_feature_valid = Callable()
+	_feature_commit = Callable()
 
 ## Advances unpaused time, arbitrates all owed minutes before committing completion.
 func update(delta_s: float, paused: bool = false) -> void:
 	if terminal != &"" or paused or not is_finite(delta_s) or delta_s <= 0:
 		return
-	if movement != &"idle":
+	if movement != &"idle" or (_feature_valid.is_valid() and not _feature_valid.call()):
 		cancel_action()
 	if actions.action != &"" and actions.action != &"eat_snow":
 		_action_delta_s += delta_s
@@ -231,7 +256,7 @@ func _integrate_minute() -> void:
 	elif _survived():
 		_end(&"dawn_survived")
 	else:
-		if actions.action != &"" and (needs.collapse_due or not _allowed(actions.action)):
+		if actions.action != &"" and (needs.collapse_due or not _allowed(actions.action) or (_feature_valid.is_valid() and not _feature_valid.call())):
 			cancel_action()
 		if actions.action == &"eat_snow" and actions.advance(1.0) == &"eat_snow":
 			var accepted := needs.accept_snow()
@@ -282,11 +307,19 @@ func _allowed(action: StringName) -> bool:
 func _work_activity(action: StringName) -> StringName:
 	if action in [&"", &"eat", &"eat_snow"]:
 		return &"idle"
-	return &"heavy" if action in [&"clear_snow", &"chop_log"] else &"light"
+	return &"heavy" if action in [&"clear_snow", &"chop_log", &"build_shelter_frame"] else &"light"
 
 func _commit_completion(action: StringName) -> void:
 	if not _allowed(action):
 		cancel_action()
+		return
+	if _feature_commit.is_valid():
+		var valid: bool = _feature_valid.is_valid() and _feature_valid.call()
+		var commit := _feature_commit
+		cancel_action()
+		if valid:
+			var cause: StringName = commit.call()
+			action_resolved.emit(action, cause in [&"", &"nothing_yet", &"piled", &"wire_broken"], cause)
 		return
 	if action == &"eat":
 		var item := _food_item
@@ -301,9 +334,11 @@ func _commit_completion(action: StringName) -> void:
 			cause = &"no_ration"
 		else:
 			needs.accept_food(kcal)
-		action_resolved.emit(action, cause == &"", cause)
+		action_resolved.emit(&"eat_hare" if item == &"hare_cooked" else action, cause == &"", cause)
 		return
 	var eligible := _fire_target.can_act(action, inventory) if _fire_target != null else gathering.can_gather(_gather_target, action, inventory)
+	if action == &"clear_snow" and _fire_target != null and fire_site_eligible.is_valid():
+		eligible = eligible and fire_site_eligible.call(_fire_target.position)
 	if not eligible:
 		cancel_action()
 		return

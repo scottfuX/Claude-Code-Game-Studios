@@ -5,7 +5,12 @@ signal loss(kind: StringName)
 var tuning: SliceTuning
 var id: StringName
 var position: Vector3
-var stage: StringName = &"Site"
+var interaction_revision: int = 0
+var stage: StringName = &"Site":
+	set(value):
+		if stage != value:
+			interaction_revision += 1
+		stage = value
 var fuel: float = 0.0
 var burning_wetness: float = 0.0
 var smolder_minutes: int = 0

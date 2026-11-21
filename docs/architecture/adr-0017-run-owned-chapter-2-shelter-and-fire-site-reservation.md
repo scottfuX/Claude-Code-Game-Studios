@@ -1,16 +1,16 @@
 # ADR-0017: Run-owned Chapter 2 shelter and fire-site reservation
 
 ## Status
-Proposed
+Accepted
 
 ## Date
 2026-11-20
 
 ## Last Verified
-2026-11-20 — reconciled with the pinned engine references, Shelter GDD and Accepted ADRs; implementation behavior is not yet runtime-verified.
+2026-11-21 — Godot 4.7.2 integration fixtures exercised two-stage commit, stale/cancelled attempts, rotation and footprint contact, rejected registration, and next-minute insulation.
 
 ## Decision Makers
-Devin (proposal); Scott (acceptance pending).
+Devin (proposal and acceptance delegated by Scott).
 
 ## Summary
 Add a run-owned Shelter Feature provider for Chapter 2. It commits stage, material spend and insulation through the existing action gate; Map supplies the plot reservation that FireController checks at placement.

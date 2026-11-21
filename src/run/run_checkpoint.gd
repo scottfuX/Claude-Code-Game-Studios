@@ -16,6 +16,8 @@ static func capture(run: RunCoordinator) -> Dictionary:
 			gathering[String(entry.site_id)] = entry.gather_node.export_state()
 	owners["gathering"] = gathering
 	owners["survivor"] = run.survivor.export_state()
+	if run.simulation.tuning.chapter_needs_enabled:
+		owners["chapter"] = run.export_chapter_state()
 	return {"schema_version": SCHEMA_VERSION, "profile": "three_night" if run.simulation.tuning.chapter_needs_enabled else "first_night",
 		"seed": str(run.seed_value), "saved_at_unix": int(Time.get_unix_time_from_system()), "owners": owners}
 
@@ -24,7 +26,11 @@ static func validate(dto: Variant) -> bool:
 		return false
 	if not CheckpointValues.integer(dto.schema_version, SCHEMA_VERSION, SCHEMA_VERSION) or not CheckpointValues.text(dto.profile) or dto.profile not in ["first_night", "three_night"]:
 		return false
-	if not CheckpointValues.decimal(dto.seed) or not CheckpointValues.integer(dto.saved_at_unix, 0, 9007199254740991) or not CheckpointValues.keys(dto.owners, OWNER_VERSIONS.keys()):
+	var owner_keys := OWNER_VERSIONS.keys()
+	var chapter: bool = dto.profile == "three_night"
+	if chapter:
+		owner_keys.append("chapter")
+	if not CheckpointValues.decimal(dto.seed) or not CheckpointValues.integer(dto.saved_at_unix, 0, 9007199254740991) or not CheckpointValues.keys(dto.owners, owner_keys):
 		return false
 	var owners: Dictionary = dto.owners
 	if not owners.survivor is Dictionary or not SurvivorController.validate_state(owners.survivor) or not owners.gathering is Dictionary:
@@ -39,7 +45,16 @@ static func validate(dto: Variant) -> bool:
 	var state := owners.duplicate(true)
 	state.erase("survivor")
 	state.erase("gathering")
+	state.erase("chapter")
 	var simulation := RunSimulation.new(dto.seed.to_int(), tuning)
 	if not simulation.restore_state(state) or simulation.rng.export_state().seed != dto.seed:
 		return false
+	if chapter:
+		if not CheckpointValues.keys(owners.chapter, ["shelter_stage", "hare"]) or not CheckpointValues.integer(owners.chapter.shelter_stage, 0, 2) or not owners.chapter.hare is Dictionary:
+			return false
+		if simulation.inventory.count(&"tarp") != (0 if owners.chapter.shelter_stage == 2 else 1):
+			return false
+		var food := HareFoodFeature.new(simulation.inventory, simulation.clock, Callable())
+		if not food.restore_state(owners.chapter.hare):
+			return false
 	return true
