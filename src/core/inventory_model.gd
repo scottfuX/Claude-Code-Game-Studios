@@ -14,15 +14,13 @@ var _immersions: Dictionary[int, bool] = {}
 const SOAKABLE: Array[StringName] = [&"stick", &"log", &"bark", &"grass"]
 var tuning: SliceTuning
 
-## Injects item material defaults without introducing an inventory singleton.
-func _init(data: SliceTuning = null) -> void:
-	tuning = data if data != null else preload("res://assets/data/slice_defaults.tres")
+## Accepts run material or chapter inventory tuning, with run-local defaults.
+func _init(data: Resource = null) -> void:
+	tuning = data if data is SliceTuning else preload("res://assets/data/slice_defaults.tres")
+	_chapter_data = data if data is ChapterContentTuning else preload("res://assets/data/chapter_content_defaults.tres")
 
 func tinder_quality(item: StringName) -> float:
 	return tuning.tinder_quality.get(item, 0.0)
-
-func _init(chapter_data: ChapterContentTuning = null) -> void:
-	_chapter_data = chapter_data if chapter_data != null else preload("res://assets/data/chapter_content_defaults.tres")
 
 func soak_carried(event_id: int) -> void:
 	if event_id < 0 or _immersions.has(event_id):

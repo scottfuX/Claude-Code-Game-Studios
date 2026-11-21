@@ -26,12 +26,13 @@ func break_ice(cell: Vector2i) -> bool:
 	return lake_surface != null and lake_surface.break_ice(cell)
 
 func half_extent() -> float:
-	return layout.tuning.half_extent if layout != null else TUNING.half_extent
+	return layout.tuning.half_extent if layout != null else TUNING.half_extent_for(chapter_sites)
 
 func zone_at(p: Vector3) -> StringName:
 	return layout.zone_at(p) if layout != null else &"open"
 
 func _ready() -> void:
+	_shelter_reserved = chapter_sites
 	if layout != null:
 		_build_large_map()
 		return
@@ -69,10 +70,6 @@ func _ready() -> void:
 		for p: Vector3 in [Vector3(32.6, 0, -28), Vector3(32.9, 0, -31), Vector3(28.5, 0, -32.8)]:
 			_place(PINE, p, p.x, 1.3)
 		_shelter_reserved = true
-
-## Returns the extent of the active authored clearing.
-func half_extent() -> float:
-	return TUNING.half_extent_for(chapter_sites)
 
 ## Validates a walking corridor against the same flat ground and obstacle data used by Jolt.
 func clear_approach(points: PackedVector3Array) -> bool:
