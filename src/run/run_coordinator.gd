@@ -563,7 +563,6 @@ func _restore_legacy_harvest(gathering: Dictionary) -> void:
 			var target_field := field
 			if field == "bark_remaining":
 				kind = &"birch"
-				target_field = "remaining"
 			for entry: WorldInteractable in world.interactables:
 				var node := entry.gather_node
 				if node == null or node.kind != kind or spent <= 0:

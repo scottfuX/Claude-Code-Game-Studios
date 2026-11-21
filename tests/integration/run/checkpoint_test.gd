@@ -128,6 +128,35 @@ func test_continue_resumes_retained_chopping_progress() -> void:
 	assert_bool(restored.simulation.start_action(&"chop_log", null, restored.world.interactables[0].gather_node)).is_true()
 	assert_float(restored.simulation.actions.elapsed_s / restored.simulation.actions.duration_s).is_equal_approx(0.4, 0.00001)
 
+func test_legacy_harvested_bark_is_deducted_from_birch_bark_reserves() -> void:
+	var dto := _fixture()
+	dto.owners.run.erase("weather")
+	dto.owners.run.erase("broken_ice")
+	var legacy := GatherCatalog.legacy(RunCheckpoint.tuning_for("three_night"))
+	dto.owners.gathering = {}
+	var harvested := false
+	for id: StringName in legacy:
+		var node: GatherNode = legacy[id]
+		var state := node.export_state()
+		if node.kind == &"deadfall" and not harvested:
+			state.bark_remaining -= 2
+			harvested = true
+		dto.owners.gathering[String(id)] = state
+	assert_bool(_store.save(dto)).is_true()
+	var shell := _shell()
+	assert_bool(shell.call("start_run", {&"profile": &"three_night", &"restore": _store.probe()})).is_true()
+	var run: RunCoordinator = shell.get("_run")
+	var initial := 0
+	var remaining := 0
+	for node: GatherNode in GatherCatalog.create(run.simulation.tuning, dto.seed.to_int()).values():
+		if node.kind == &"birch":
+			initial += node.bark_remaining
+	for entry: WorldInteractable in run.world.interactables:
+		if entry.gather_node != null and entry.gather_node.kind == &"birch":
+			remaining += entry.gather_node.bark_remaining
+	assert_bool(harvested).is_true()
+	assert_int(remaining).is_equal(initial - 2)
+
 func test_seeded_world_weather_broken_ice_and_wet_materials_survive_json_continue() -> void:
 	var shell := _shell()
 	assert_bool(shell.call("start_run", {&"profile": &"three_night", &"seed": 443})).is_true()
