@@ -40,6 +40,13 @@ slash-command skills. This fork runs on **Devin**, not Claude Code:
 
 Engine version reference: `docs/engine-reference/godot/VERSION.md`
 
+Godot editor files: `.godot/` is generated and untracked (run
+`godot --headless --path . --import` on a fresh clone). Keep `project.godot` in
+the editor's saved format: after editing it by hand, run
+`godot --headless --path . -s res://tools/normalize_project_godot.gd`
+(CI fails otherwise), or the editor rewrites it on Scott's machine and blocks
+`git pull`.
+
 `project.yaml` is the single source of truth for engine, rigor (`modes.rigor`),
 automation, naming and performance budgets. Resolve config keys with
 `bash .claude/hooks/yaml-helper.sh resolve_config --keys ...`.
